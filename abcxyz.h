@@ -9,6 +9,10 @@ static const int A = 0;
 static const int B = 1;
 static const int C = 2;
 
+const uint AL = 12;
+const uint BL = 14;
+const uint CL = 8;
+
 void LogVec(const string &Msg, const vector<double> &v);
 void LogMx(const string &Msg, const vector<vector<double> > &Mx);
 void InvertMx(const vector<vector<double> > &Mx,
@@ -26,6 +30,10 @@ void CrossProduct(
   const vector<double> &a,
   const vector<double> &b,
   vector<double> &Prod);
+void GetTriForm(
+  vector<vector<double> > &MotifCoords,
+  vector<double> &t,
+  vector<vector<double> > &R);
 
 void GetTriangleCentroid(const vector<vector<double> > &MotifCoords,
   vector<double> &CentroidCoords);
@@ -232,7 +240,7 @@ static void AssertSameLengths(const vector<vector<double> > &Mx1,
 		}
 	}
 #else
-#define AssertSameLengths(x)	0
+#define AssertSameLengths(x, y)	0
 #endif // DEBUG
 
 #if DEBUG
@@ -250,7 +258,7 @@ static void AssertSameAngles(const vector<vector<double> > &Mx1,
 		}
 	}
 #else
-#define AssertSameLengths(x)	0
+#define AssertSameAngles(x, y)	0
 #endif // DEBUG
 
 #if DEBUG

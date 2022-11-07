@@ -81,8 +81,7 @@ public:
 	  const RPHit &Hit_C, bool Permuted);
 	void GetAlnRows(vector<string> &Rows) const;
 	void GetMotifsSeq(const string &Sep, string &Seq) const;
-	void GetTri(char &aD, char &bG, char &cD,
-	  uint &PosaD, uint &PosbG, uint &PoscD) const;
+	uint GetMotifPos(uint MotifIndex) const;
 	void GetTrimmedSeq(string &Seq) const;
 	void GetMotifPositions(uint &APos, uint &BPos, uint &CPos) const;
 	void GetAln(const RPHit &Hit, string &Q, string &P, string &Annot,
@@ -93,7 +92,6 @@ public:
 	void WriteOutput() const;
 	void WriteReport(FILE *f) const;
 	void WriteTsv(FILE *f) const;
-	void WriteTri(FILE *f) const;
 
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;
 

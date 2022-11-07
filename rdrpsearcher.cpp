@@ -120,6 +120,15 @@ void RdRpSearcher::GetTrimmedSeq(string &Seq) const
 	//	Seq += m_QuerySeq[Pos];
 	}
 
+uint RdRpSearcher::GetMotifPos(uint MotifIndex) const
+	{
+	const RPHit *Hit = &m_TopPalmHit.GetHit(MotifIndex);
+	if (Hit == 0 || Hit->m_Score == 0)
+		return UINT_MAX;
+	uint Pos = Hit->m_QPos;
+	return Pos;
+	}
+
 void RdRpSearcher::GetMotifsSeq(const string &Sep, string &s) const
 	{
 	s.clear();
@@ -146,52 +155,6 @@ static bool IsNegarna(const string &GroupName)
 	x(Serpentovirales)
 #undef x
 	return false;
-	}
-
-void RdRpSearcher::GetTri(char &aD, char &bG, char &cD,
-  uint &PosaD, uint &PosbG, uint &PoscD) const
-	{
-	aD = '.';
-	bG = '.';
-	cD = '.';
-	PosaD = 0;
-	PosbG = 0;
-	PoscD = 0;
-
-	if (m_TopPalmHit.m_Score <= 0)
-		return;
-
-	string A, B, C;
-	GetMotifSeq(0, A);
-	GetMotifSeq(1, B);
-	GetMotifSeq(2, C);
-	if (A.empty() || B.empty() || C.empty())
-		return;
-
-	const RPHit *HitA = &m_TopPalmHit.GetHit(0);
-	const RPHit *HitB = &m_TopPalmHit.GetHit(1);
-	const RPHit *HitC = &m_TopPalmHit.GetHit(2);
-
-	PosaD = HitA->m_QPos + 4;
-	PoscD = HitC->m_QPos + 4;
-
-	uint GroupIndex = m_TopPalmHit.m_GroupIndex;
-	string GroupName;
-	GetGroupName(GroupIndex, GroupName);
-	if (IsNegarna(GroupName))
-		PosbG = HitB->m_QPos + 4;
-	else
-		PosbG = HitB->m_QPos + 2;
-
-	const uint QL = SIZE(m_QuerySeq);
-
-	asserta(PosaD > 0 && PosaD < QL);
-	asserta(PosbG > 0 && PosbG < QL);
-	asserta(PoscD > 0 && PoscD < QL);
-
-	aD = m_QuerySeq[PosaD-1];
-	bG = m_QuerySeq[PosbG-1];
-	cD = m_QuerySeq[PoscD-1];
 	}
 
 void RdRpSearcher::GetSpan(uint &QLo, uint &QHi) const

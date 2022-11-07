@@ -991,6 +991,35 @@ const char *MemBytesToStr(double Bytes)
 	return Str;
 	}
 
+bool IsUintStr(const char *s)
+	{
+	if (!isdigit(*s++))
+		return false;
+	while (*s)
+		if (!isdigit(*s++))
+			return false;
+	return true;
+	}
+
+unsigned StrToUint(const char *s)
+	{
+	if (!IsUintStr(s))
+		Die("Invalid integer '%s'", s);
+	unsigned n = 0;
+	while (char c = *s++)
+		{
+		if (!isdigit(c))
+			return n;
+		n = n*10 + (c - '0');
+		}
+	return n;
+	}
+
+unsigned StrToUint(const string &s)
+	{
+	return StrToUint(s.c_str());
+	}
+
 double StrToFloat(const char *s)
 	{
 	char *p;

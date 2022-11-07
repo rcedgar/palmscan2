@@ -29,6 +29,8 @@ int main(int argc, char **argv)
 	x(search_pssms, cmd_search_pssms)
 	x(cluster_cl, cmd_cluster_cl)
 	x(scanpdb, cmd_scanpdb)
+	x(alignabc, cmd_alignabc)
+	x(pdbss, cmd_pdbss)
 #undef x
 	else
 		Die("No command specified");

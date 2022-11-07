@@ -103,7 +103,13 @@ void PSSM::SetFreqsCol(unsigned ColIndex)
 		N += n;
 		}
 	if (N == 0)
-		Die("PSSM::SetFreqsCol(%u): no valid letters", ColIndex);
+		{
+		// Special case for all Xs
+		Warning("PSSM::SetFreqsCol(%u): no valid letters", ColIndex);
+		for (unsigned Letter = 0; Letter < AlphaSize; ++Letter)
+			Counts[Letter] = 1;
+		N = AlphaSize;
+		}
 
 	float Sum = 0.0;
 	for (unsigned Letter = 0; Letter < AlphaSize; ++Letter)

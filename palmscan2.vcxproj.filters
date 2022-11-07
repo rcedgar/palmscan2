@@ -167,6 +167,12 @@
     <ClCompile Include="scanpdb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trisearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -302,6 +308,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pdb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trisearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

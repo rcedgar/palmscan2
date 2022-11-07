@@ -284,6 +284,7 @@
     <ClCompile Include="fastqrec.cpp" />
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getseg.cpp" />
+    <ClCompile Include="getss.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="invertmx.cpp" />
     <ClCompile Include="linereader.cpp" />
@@ -319,6 +320,7 @@
     <ClCompile Include="timing.cpp" />
     <ClCompile Include="triangle.cpp" />
     <ClCompile Include="triform.cpp" />
+    <ClCompile Include="trisearcher.cpp" />
     <ClCompile Include="xbasis.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -363,6 +365,7 @@
     <ClInclude Include="timers.h" />
     <ClInclude Include="timing.h" />
     <ClInclude Include="tracebit.h" />
+    <ClInclude Include="trisearcher.h" />
     <ClInclude Include="usearch.h" />
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />

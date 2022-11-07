@@ -1,88 +1,109 @@
 #include "myutils.h"
 #include "pdb.h"
+#include "trisearcher.h"
+#include "abcxyz.h"
 
 #define TRACE	0
 
-void PDB::SearchTriangle(const TriParams &TP,
-  vector<uint> &PosAs,
-  vector<uint> &PosBs,
-  vector<uint> &PosCs,
-  vector<double> &RMSDs)
+void TriSearcher::Search(const PDB &Query, const PDB &Ref)
 	{
-	asserta(TP.NABmin <= TP.NABmax);
-	asserta(TP.NBCmin <= TP.NBCmax);
-	asserta(TP.NACmin <= TP.NACmax);
+	m_Query = &Query;
+	m_Ref = &Ref;
 
-	PosAs.clear();
-	PosBs.clear();
-	PosCs.clear();
-	RMSDs.clear();
+	double RefAB = 0;
+	double RefBC = 0;
+	double RefAC = 0;
+	m_Ref->GetMotifDists(RefAB, RefBC, RefAC);
 
-	const uint L = GetSeqLength();
+	vector<vector<double> > MotifCoords;
+	//m_Ref->GetMotifCoords(MotifCoords);
+	//LogMx("MotifCoords", MotifCoords);
+
+	asserta(NABmin <= NABmax);
+	asserta(NBCmin <= NBCmax);
+	asserta(NACmin <= NACmax);
+
+	m_PosAs.clear();
+	m_PosBs.clear();
+	m_PosCs.clear();
+	m_RMSDs.clear();
+
+	const uint QL = m_Query->GetSeqLength();
 #if TRACE
 	Log("\n");
-	Log("SearchTriangle()\n");
-	Log("L=%u\n", L);
+	Log("TriSearcher::Search() QL=%u\n", QL);
+	LogMe();
+	Log("RefAB %.1f, RefBC %.1f, RefAC %.1f\n", RefAB, RefBC, RefAC);
 #endif
-	for (uint PosA = 0; PosA < L; ++PosA)
+	for (uint PosA = 0; PosA < QL; ++PosA)
 		{
-		if (PosA + TP.NACmin > L)
+		if (PosA + NACmin > QL)
 			{
 #if TRACE
-			Log("PosA=%u + NACmin > L\n", PosA);
+			Log("PosA=%u + NACmin > QL\n", PosA);
 #endif
 			break;
 			}
 
-		for (uint PosC = PosA + TP.NACmin; PosC <= PosA + TP.NACmax; ++PosC)
+		for (uint PosC = PosA + NACmin; PosC <= PosA + NACmax; ++PosC)
 			{
-			if (PosC >= L)
+			if (PosC + CL > QL)
 				{
 #if TRACE
-				Log("PosC=%u > L\n", PosC);
+				Log("PosC+CL=%u > QL\n", PosC+CL);
 #endif
 				break;
 				}
 
-			double AC = GetDist(PosA, PosC);
+			double QueryAC = m_Query->GetDist(PosA, PosC);
 #if TRACE
-			Log("PosA=%u, PosC=%u, AC=%.1f LAC=%.1f\n", PosA, PosC, AC, TP.LAC);
+			Log("PosA=%u, PosC=%u, QueryAC=%.1f RefAC=%.1f\n",
+			  PosA, PosC, QueryAC, RefAC);
 #endif
-			if (AC < TP.LAC - TP.Radius || AC > TP.LAC + TP.Radius)
+			if (QueryAC < RefAC - Radius || QueryAC > RefAC + Radius)
+				{
+#if TRACE
+				Log("  outside radius\n");
+#endif
 				continue;
+				}
 
-			for (uint PosB = PosA + TP.NABmin; PosB <= PosA + TP.NABmax; ++PosB)
+			for (uint PosB = PosA + NABmin; PosA + NABmax; ++PosB)
 				{
 				if (PosB >= PosC)
-					continue;
+					break;
 				uint NBC = PosC - PosB;
-				if (NBC < TP.NBCmin || NBC > TP.NBCmax)
+				if (NBC < NBCmin || NBC > NBCmax)
 					continue;
 
-				double AB = GetDist(PosA, PosB);
+				double QueryAB = m_Query->GetDist(PosA, PosB);
 #if TRACE
-				Log("PosA=%u, PosB=%u, AB=%.1f LAB=%.1f\n", PosA, PosB, AB, TP.LAB);
+				Log("PosA=%u, PosB=%u, QueryAB=%.1f RefAB=%.1f\n",
+				  PosA, PosB, QueryAB, RefAB);
 #endif
-				if (AB < TP.LAB - TP.Radius || AB > TP.LAB + TP.Radius)
+				if (QueryAB < RefAB - Radius || QueryAB > RefAB + Radius)
 					continue;
 
-				double BC = GetDist(PosB, PosC);
+				double QueryBC = m_Query->GetDist(PosB, PosC);
 #if TRACE
-				Log("PosB=%u, PosC=%u, BC=%.1f LBC=%.1f\n", PosB, PosC, BC, TP.LBC);
+				Log("PosB=%u, PosC=%u, QueryBC=%.1f RefBC=%.1f\n",
+				  PosB, PosC, QueryBC, RefBC);
 #endif
-				if (BC < TP.LBC - TP.Radius || BC > TP.LBC + TP.Radius)
+				if (QueryBC < RefBC - Radius || QueryBC > RefBC + Radius)
 					continue;
 
-				double dAB = TP.LAB - AB;
-				double dBC = TP.LBC - BC;
-				double dAC = TP.LAC - AC;
-				double d2 = dAB*dAB + dBC*dBC + dAC*dAC;
+				double DistAB = RefAB - QueryAB;
+				double DistBC = RefBC - QueryBC;
+				double DistAC = RefAC - QueryAC;
+				double d2 = DistAB*DistAB + DistBC*DistBC + DistAC*DistAC;
 				double RMSD = sqrt(d2);
-
-				PosAs.push_back(PosA);
-				PosBs.push_back(PosB);
-				PosCs.push_back(PosC);
-				RMSDs.push_back(RMSD);
+				if (RMSD < MaxRMSD)
+					{
+					m_PosAs.push_back(PosA);
+					m_PosBs.push_back(PosB);
+					m_PosCs.push_back(PosC);
+					m_RMSDs.push_back(RMSD);
+					}
 				}
 			}
 		}

@@ -27,7 +27,6 @@ void RdRpSearcher::WriteOutput() const
 	omp_set_lock(&g_OutputLock);
 	WriteReport(g_fRep);
 	WriteTsv(g_fTsv);
-	WriteTri(g_fTri);
 	omp_unset_lock(&g_OutputLock);
 	}
 
@@ -92,6 +91,12 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 		fprintf(f, "\tHi");
 		fprintf(f, "\tPPL");
 		fprintf(f, "\tSuff");
+		fprintf(f, "\tPosA");
+		fprintf(f, "\tSeqA");
+		fprintf(f, "\tPosB");
+		fprintf(f, "\tSeqB");
+		fprintf(f, "\tPosC");
+		fprintf(f, "\tSeqC");
 		fprintf(f, "\n");
 		}
 
@@ -120,6 +125,7 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 		++Lo;
 		++Hi;
 		assert(Hi <= QL);
+		PPL = Hi - Lo + 1;
 		Suff = QL - Hi;
 		}
 
@@ -131,6 +137,36 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 		Diff2 = Score - SecondScore;
 		}
 
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+
+	string SeqA = ".";
+	string SeqB = ".";
+	string SeqC = ".";
+
+	if (PosA == UINT_MAX)
+		PosA = 0;
+	else
+		{
+		GetMotifSeq(0, SeqA);
+		++PosA;
+		}
+	if (PosB == UINT_MAX)
+		PosB = 0;
+	else
+		{
+		GetMotifSeq(1, SeqB);
+		++PosB;
+		}
+	if (PosC == UINT_MAX)
+		PosC = 0;
+	else
+		{
+		GetMotifSeq(2, SeqC);
+		++PosC;
+		}
+
 	fprintf(f, "%s", QueryLabel.c_str());
 	fprintf(f, "\t%.1f", Score);
 	fprintf(f, "\t%s", GroupName.c_str());
@@ -140,59 +176,13 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 	fprintf(f, "\t%u", QL);
 	fprintf(f, "\t%u", Lo);
 	fprintf(f, "\t%u", Hi);
+	fprintf(f, "\t%u", PPL);
 	fprintf(f, "\t%u", Suff);
-	fprintf(f, "\n");
-	}
-
-void RdRpSearcher::WriteTri(FILE *f) const
-	{
-	if (f == 0)
-		return;
-
-	static bool HdrDone = false;
-	if (!HdrDone)
-		{
-		HdrDone = true;
-
-		fprintf(f, "Label");
-		fprintf(f, "\tScore");
-		fprintf(f, "\tGroup");
-		fprintf(f, "\taD");
-		fprintf(f, "\tbG");
-		fprintf(f, "\tcD");
-		fprintf(f, "\tPosaD");
-		fprintf(f, "\tPosbG");
-		fprintf(f, "\tPoscD");
-		fprintf(f, "\n");
-		}
-
-	string QueryLabel = m_QueryLabel;
-	float Score = 0;
-	string GroupName = ".";
-	char aD = '.';
-	char bG = '.';
-	char cD = '.';
-	uint PosaD = 0;
-	uint PosbG = 0;
-	uint PoscD = 0;
-
-	if (m_TopPalmHit.m_Score > 0)
-		{
-		Score = m_TopPalmHit.m_Score;
-		uint GroupIndex = m_TopPalmHit.m_GroupIndex;
-		GetGroupName(GroupIndex, GroupName);
-		}
-
-	GetTri(aD, bG, cD, PosaD, PosbG, PoscD);
-
-	fprintf(f, "%s", QueryLabel.c_str());
-	fprintf(f, "\t%.1f", Score);
-	fprintf(f, "\t%s", GroupName.c_str());
-	fprintf(f, "\t%c", aD);
-	fprintf(f, "\t%c", bG);
-	fprintf(f, "\t%c", cD);
-	fprintf(f, "\t%u", PosaD);
-	fprintf(f, "\t%u", PosbG);
-	fprintf(f, "\t%u", PoscD);
+	fprintf(f, "\t%u", PosA);
+	fprintf(f, "\t%s", SeqA.c_str());
+	fprintf(f, "\t%u", PosB);
+	fprintf(f, "\t%s", SeqB.c_str());
+	fprintf(f, "\t%u", PosC);
+	fprintf(f, "\t%s", SeqC.c_str());
 	fprintf(f, "\n");
 	}

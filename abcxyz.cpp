@@ -32,7 +32,7 @@ void LogMx(const string &Msg, const vector<vector<double> > &Mx)
 	double BC = GetDist3D(
 	  Mx[B][X], Mx[B][Y], Mx[B][Z], 
 	  Mx[C][X], Mx[C][Y], Mx[C][Z]);
-	Log("AB=%.2f, AC=%.2f, BC=%.2f\n", AB, AC, BC);
+	Log("AB=%.2f, BC=%.2f, AC=%.2f\n", AB, BC, AC);
 	}
 
 void GetIdentityMx(vector<vector<double> > &Mx)

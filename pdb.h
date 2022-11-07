@@ -1,19 +1,5 @@
 #pragma once
 
-struct TriParams
-	{
-	double LAB;
-	double LBC;
-	double LAC;
-	double Radius;
-	uint NABmin;
-	uint NABmax;
-	uint NBCmin;
-	uint NBCmax;
-	uint NACmin;
-	uint NACmax;
-	};
-
 class PDB
 	{
 public:
@@ -35,16 +21,18 @@ public:
 
 	uint GetSeqLength() const;
 	void FromFile(const string &FileName);
-	void LogMe() const;
+	void ToCal(FILE *f) const;
+	void ToCal(const string &FileName) const;
+	void ToPDB(const string &FileName) const;
+	void LogMe(bool WithCoords = false) const;
 	const char *GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
+	void GetPt(uint Pos, vector<double> &Pt) const;
+	void SetPt(uint Pos, const vector<double> &Pt);
 	double GetDist(uint Pos1, uint Pos2) const;
-	void GetMotifTriangle(double &LAB, double &LBC, double &LAC) const;
-	void SearchTriangle(const TriParams &TP,
-	  vector<uint> &PosAs,
-	  vector<uint> &PosBs,
-	  vector<uint> &PosCs,
-	  vector<double> &RMSDs);
-	void GetMotifSeqFromMidPos(uint MidPos, uint MotifLength,
+	void GetMotifCoords(vector<vector<double> > &MotifCoords) const;
+	void GetMotifDists(double &AB, double &BC, double &AC) const;
+	void GetMotifSeq(uint MotifStartPos, uint MotifLength,
 	  bool FailOnOverflow, string &MotifSeq) const;
+	void GetSS(uint StartPos, uint n, string &ss) const;
 	};
