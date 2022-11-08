@@ -31,6 +31,7 @@ int main(int argc, char **argv)
 	x(scanpdb, cmd_scanpdb)
 	x(alignabc, cmd_alignabc)
 	x(pdbss, cmd_pdbss)
+	x(search3d, cmd_search3d)
 #undef x
 	else
 		Die("No command specified");

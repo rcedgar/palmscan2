@@ -28,6 +28,7 @@ STR_OPT(OTHER, cluster_cl)
 STR_OPT(OTHER, alignabc)
 STR_OPT(OTHER, scanpdb)
 STR_OPT(OTHER, pdbss)
+STR_OPT(OTHER, search3d)
 
 STR_OPT(OTHER, test_inv)
 

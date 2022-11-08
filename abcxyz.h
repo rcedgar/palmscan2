@@ -13,6 +13,8 @@ const uint AL = 12;
 const uint BL = 14;
 const uint CL = 8;
 
+extern const uint MotifLVec[3];
+
 void LogVec(const string &Msg, const vector<double> &v);
 void LogMx(const string &Msg, const vector<vector<double> > &Mx);
 void InvertMx(const vector<vector<double> > &Mx,
@@ -52,6 +54,33 @@ static inline void Resize3x3(vector<vector<double> > &Mx)
 		Mx[i].resize(3);
 	}
 
+static inline double GetDist2(
+  const vector<double> &Pt1,
+  const vector<double> &Pt2)
+	{
+	assert(Pt1.size() == 3);
+	assert(Pt2.size() == 3);
+	double dx = Pt1[X] - Pt2[X];
+	double dy = Pt1[Y] - Pt2[Y];
+	double dz = Pt1[Z] - Pt2[Z];
+	double d2 = dx*dx + dy*dy + dz*dz;
+	return d2;
+	}
+
+static inline double GetDist(
+  const vector<double> &Pt1,
+  const vector<double> &Pt2)
+	{
+	assert(Pt1.size() == 3);
+	assert(Pt2.size() == 3);
+	double dx = Pt1[X] - Pt2[X];
+	double dy = Pt1[Y] - Pt2[Y];
+	double dz = Pt1[Z] - Pt2[Z];
+	double d2 = dx*dx + dy*dy + dz*dz;
+	double d = sqrt(d2);
+	return d;
+	}
+
 static inline double GetDist3D(
   double x1, double y1, double z1,
   double x2, double y2, double z2)
@@ -62,6 +91,25 @@ static inline double GetDist3D(
 	double d2 = dx*dx + dy*dy + dz*dz;
 	double d = sqrt(d2);
 	return d;
+	}
+
+static inline double GetDist2_Mxij(const vector<vector<double> > &Mx,
+  uint i, uint j)
+	{
+	double xi = Mx[i][X];
+	double yi = Mx[i][Y];
+	double zi = Mx[i][Z];
+
+	double xj = Mx[j][X];
+	double yj = Mx[j][Y];
+	double zj = Mx[j][Z];
+
+	double dx = xi - xj;
+	double dy = yi - yj;
+	double dz = zi - zj;
+
+	double d2 = dx*dx + dy*dy + dz*dz;
+	return d2;
 	}
 
 static inline double GetDist_Mxij(const vector<vector<double> > &Mx,

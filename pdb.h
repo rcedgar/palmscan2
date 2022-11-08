@@ -13,6 +13,7 @@ public:
 public:
 	void Clear()
 		{
+		m_Seq.clear();
 		m_Xs.clear();
 		m_Ys.clear();
 		m_Zs.clear();
@@ -30,8 +31,10 @@ public:
 	void GetPt(uint Pos, vector<double> &Pt) const;
 	void SetPt(uint Pos, const vector<double> &Pt);
 	double GetDist(uint Pos1, uint Pos2) const;
+	double GetDist2(uint Pos1, uint Pos2) const;
 	void GetMotifCoords(vector<vector<double> > &MotifCoords) const;
 	void GetMotifDists(double &AB, double &BC, double &AC) const;
+	void GetMotifDists2(double &AB, double &BC, double &AC) const;
 	void GetMotifSeq(uint MotifStartPos, uint MotifLength,
 	  bool FailOnOverflow, string &MotifSeq) const;
 	void GetSS(uint StartPos, uint n, string &ss) const;

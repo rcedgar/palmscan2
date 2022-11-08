@@ -76,7 +76,7 @@ Assume terminals appear in all paths, and DI/ID forbidden.
 
 Intuitively seems that by these definitions D is in box iff
 DM or MD is in box, I is in box iff IM or MI is in box.
-Don't have proof..
+Don't have proof.
 ***/
 	bool InBoxDPM(unsigned i, unsigned j) const
 		{

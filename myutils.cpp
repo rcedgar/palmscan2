@@ -71,6 +71,11 @@ static char *GetThreadStr()
 	return Str;
 	}
 
+unsigned GetThreadIndex()
+	{
+	return omp_get_thread_num();
+	}
+
 const char *GetPlatform()
 	{
 #if	BITS==32
@@ -1853,6 +1858,23 @@ static void CompilerInfo()
 #endif
 
 	exit(0);
+	}
+
+bool EndsWith(const string &s, const string &t)
+	{
+	size_t ns = s.size();
+	size_t nt = t.size();
+	if (nt > ns)
+		return false;
+
+	for (uint i = 0; i < nt; ++i)
+		{
+		char tc = t[i];
+		char sc = s[ns - nt + i];
+		if (tc != sc)
+			return false;
+		}
+	return true;
 	}
 
 bool StartsWith(const char *S, const char *T)

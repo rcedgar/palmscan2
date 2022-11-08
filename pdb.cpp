@@ -294,9 +294,9 @@ void PDB::SetPt(uint Pos, const vector<double> &Pt)
 
 void PDB::GetXYZ(uint Pos, double &x, double &y, double &z) const
 	{
-	asserta(Pos < SIZE(m_Xs));
-	asserta(Pos < SIZE(m_Ys));
-	asserta(Pos < SIZE(m_Zs));
+	assert(Pos < SIZE(m_Xs));
+	assert(Pos < SIZE(m_Ys));
+	assert(Pos < SIZE(m_Zs));
 	x = m_Xs[Pos];
 	y = m_Ys[Pos];
 	z = m_Zs[Pos];
@@ -312,6 +312,27 @@ double PDB::GetDist(uint Pos1, uint Pos2) const
 	return d;
 	}
 
+double PDB::GetDist2(uint Pos1, uint Pos2) const
+	{
+	double x1 = m_Xs[Pos1];
+	double y1 = m_Ys[Pos1];
+	double z1 = m_Zs[Pos1];
+
+	double x2 = m_Xs[Pos2];
+	double y2 = m_Ys[Pos2];
+	double z2 = m_Zs[Pos2];
+
+	double dx = x1 - x2;
+	double dy = y1 - y2;
+	double dz = z1 - z2;
+
+	double d = GetDist(Pos1, Pos2);
+
+	double d2 = dx*dx + dy*dy + dz*dz;
+	asserta(feq(d*d, d2));
+	return d2;
+	}
+
 void PDB::GetMotifDists(double &AB, double &BC, double &AC) const
 	{
 	vector<vector<double> > MotifCoords;
@@ -319,6 +340,15 @@ void PDB::GetMotifDists(double &AB, double &BC, double &AC) const
 	AB = GetDist_Mxij(MotifCoords, A, B);
 	BC = GetDist_Mxij(MotifCoords, B, C);
 	AC = GetDist_Mxij(MotifCoords, A, C);
+	}
+
+void PDB::GetMotifDists2(double &AB, double &BC, double &AC) const
+	{
+	vector<vector<double> > MotifCoords;
+	GetMotifCoords(MotifCoords);
+	AB = GetDist2_Mxij(MotifCoords, A, B);
+	BC = GetDist2_Mxij(MotifCoords, B, C);
+	AC = GetDist2_Mxij(MotifCoords, A, C);
 	}
 
 void PDB::GetMotifCoords(vector<vector<double> > &MotifCoords) const

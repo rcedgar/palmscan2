@@ -14,6 +14,7 @@ void TriSearcher::Search(const PDB &Query, const PDB &Ref)
 	double RefBC = 0;
 	double RefAC = 0;
 	m_Ref->GetMotifDists(RefAB, RefBC, RefAC);
+//	m_Ref->GetMotifDists2(RefAB, RefBC, RefAC);
 
 	vector<vector<double> > MotifCoords;
 	//m_Ref->GetMotifCoords(MotifCoords);
@@ -26,7 +27,8 @@ void TriSearcher::Search(const PDB &Query, const PDB &Ref)
 	m_PosAs.clear();
 	m_PosBs.clear();
 	m_PosCs.clear();
-	m_RMSDs.clear();
+	m_TriRMSD2s.clear();
+	m_MotifRMSD2s.clear();
 
 	const uint QL = m_Query->GetSeqLength();
 #if TRACE
@@ -95,16 +97,20 @@ void TriSearcher::Search(const PDB &Query, const PDB &Ref)
 				double DistAB = RefAB - QueryAB;
 				double DistBC = RefBC - QueryBC;
 				double DistAC = RefAC - QueryAC;
-				double d2 = DistAB*DistAB + DistBC*DistBC + DistAC*DistAC;
-				double RMSD = sqrt(d2);
-				if (RMSD < MaxRMSD)
+				double TriRMSD2 = DistAB*DistAB + DistBC*DistBC + DistAC*DistAC;
+				if (TriRMSD2 < MaxTriRMSD2)
 					{
 					m_PosAs.push_back(PosA);
 					m_PosBs.push_back(PosB);
 					m_PosCs.push_back(PosC);
-					m_RMSDs.push_back(RMSD);
+
+					double MotifRMSD2 = GetRMSDMotifs(PosA, PosB, PosC);
+
+					m_TriRMSD2s.push_back(TriRMSD2);
+					m_MotifRMSD2s.push_back(MotifRMSD2);
 					}
 				}
 			}
 		}
+	SetHitOrder();
 	}

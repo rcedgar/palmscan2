@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "pdb.h"
 #include "trisearcher.h"
+#include "abcxyz.h"
 
 void cmd_alignabc()
 	{
@@ -18,7 +19,7 @@ void cmd_alignabc()
 
 	TriSearcher TS;
 	TS.Radius = 1.5;
-	TS.MaxRMSD = 1.5;
+	TS.MaxTriRMSD2 = 1.5;
 	TS.NABmin = 10;
 	TS.NABmax = 80;
 	TS.NBCmin = 10;
@@ -27,5 +28,14 @@ void cmd_alignabc()
 	TS.NACmax = 200;
 
 	TS.Search(Q, R);
+	TS.SetTriForm();
 	TS.LogMe();
+
+	//uint QPosA, QPosB, QPosC;
+	//double MotifRMSD2;
+	//bool Found = TS.GetTopHit(QPosA, QPosB, QPosC, MotifRMSD2);
+	//asserta(Found);
+
+	//string Path;
+	//TS.AlignPalm(QPosA, QPosB, QPosC, Path);
 	}

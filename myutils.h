@@ -325,6 +325,7 @@ inline bool feq(double x, double y)
 void InitRand();
 unsigned randu32();
 void Split(const string &Str, vector<string> &Fields, char Sep = '\t');
+bool EndsWith(const string &s, const string &t);
 bool StartsWith(const string &s, const string &t);
 bool StartsWith(const char *s, const char *t);
 static inline double GetRatio(double x, double y) { if (y == 0) { asserta(x == 0); return 0; } return x/y; }

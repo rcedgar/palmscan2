@@ -15,7 +15,4 @@ float ViterbiFastMainDiagMem(XDPMem &Mem, const byte *A, unsigned LA,
   const byte *B, unsigned LB, unsigned BandRadius, const AlnParams &AP,
   PathInfo &PI);
 
-void USort(const SeqInfo &Query, const SeqDB &DB, vector<unsigned> &WordCounts, 
-  vector<unsigned> &Order);
-
 #endif // viterbi_h
