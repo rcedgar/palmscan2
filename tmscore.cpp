@@ -28,8 +28,7 @@ static const double d02 = d0*d0;
 double TriSearcher::GetMotifsTM() const
 	{
 	uint QPosA, QPosB, QPosC;
-	double MotifsRMSD2;
-	bool Found = GetTopHit(QPosA, QPosB, QPosC, MotifsRMSD2);
+	bool Found = GetTopHit(QPosA, QPosB, QPosC);
 	if (!Found)
 		return DBL_MAX;
 

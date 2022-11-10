@@ -149,7 +149,7 @@
     <ClCompile Include="one2three.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pdb.cpp">
+    <ClCompile Include="pdbchain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="searchtriangle.cpp">
@@ -192,6 +192,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="readpdbs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tsoutput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tshitmgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tshit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="calreader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pdbchaincal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="search3dcal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="palmsketch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="initts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -328,10 +352,19 @@
     <ClInclude Include="abcxyz.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pdb.h">
+    <ClInclude Include="pdbchain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trisearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tshitmgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tshit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="calreader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -87,7 +87,7 @@ void LogAllocs()
 
 void *myalloc_track(uint32 Bytes, uint32 Id, const char *FileName, int LineNr)
 	{
-	LOCK();
+	LOCK("myalloc_track");
 	if (g_Trace && g_fLog != 0)
 		Log("myalloc(%u, %s) %s(%d)\n",
 		  Bytes, AllocIdToStr(Id), FileName, LineNr);
@@ -100,7 +100,7 @@ void *myalloc_track(uint32 Bytes, uint32 Id, const char *FileName, int LineNr)
 
 	++g_AllocCounts[Id];
 	g_NetBytes[Id] += Bytes;
-	UNLOCK();
+	UNLOCK("myalloc_track");
 	return pu;
 	}
 
@@ -109,7 +109,7 @@ void myfree_track(void *p, const char *FileName, int LineNr)
 	if (p == 0)
 		return;
 
-	LOCK();
+	LOCK("myfree_track");
 	uint32 *pu = (uint32 *) p;
 
 	unsigned Bytes = pu[-1];
@@ -129,5 +129,5 @@ void myfree_track(void *p, const char *FileName, int LineNr)
 #else
 	free(pu - 2);
 #endif
-	UNLOCK();
+	UNLOCK("myfree_track");
 	}

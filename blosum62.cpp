@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "mx.h"
 #include "omplock.h"
+#include "alpha.h"
 
 Mx<float> g_SubstMxf;
 float **g_SubstMx;
@@ -86,11 +87,26 @@ void SetBLOSUM62Mx(Mx<float> &Sf)
 
 void SetBLOSUM62()
 	{
-	LOCK();
+	LOCK("SetBLOSUM62");
 	if (g_SubstMx == 0)
 		{
 		SetBLOSUM62Mx(g_SubstMxf);
 		g_SubstMx = g_SubstMxf.GetData();
 		}
-	UNLOCK();
+	UNLOCK("SetBLOSUM62");
+	}
+
+float GetBlosum62Score(char a, char b)
+	{
+	static bool InitDone = false;
+	if (!InitDone)
+		{
+		SetBLOSUM62();
+		InitDone = true;
+		}
+
+	//uint Lettera = g_CharToLetterAmino[(byte) a];
+	//uint Letterb = g_CharToLetterAmino[(byte) b];
+	float Score = g_SubstMx[(byte) a][(byte) b];
+	return Score;
 	}

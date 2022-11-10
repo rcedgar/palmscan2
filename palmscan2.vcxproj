@@ -279,6 +279,7 @@
     <ClCompile Include="blosum62.cpp" />
     <ClCompile Include="buildpsm.cpp" />
     <ClCompile Include="build_rdrp_model.cpp" />
+    <ClCompile Include="calreader.cpp" />
     <ClCompile Include="cluster_cl.cpp" />
     <ClCompile Include="diagbox.cpp" />
     <ClCompile Include="fastaseqsource.cpp" />
@@ -287,6 +288,7 @@
     <ClCompile Include="getseg.cpp" />
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="help.cpp" />
+    <ClCompile Include="initts.cpp" />
     <ClCompile Include="invertmx.cpp" />
     <ClCompile Include="linereader.cpp" />
     <ClCompile Include="lockobj.cpp" />
@@ -301,13 +303,16 @@
     <ClCompile Include="output.cpp" />
     <ClCompile Include="palmscan2_main.cpp" />
     <ClCompile Include="getfilenames.cpp" />
+    <ClCompile Include="palmsketch.cpp" />
+    <ClCompile Include="pdbchaincal.cpp" />
     <ClCompile Include="readpdbs.cpp" />
     <ClCompile Include="search3d.cpp" />
-    <ClCompile Include="pdb.cpp" />
+    <ClCompile Include="pdbchain.cpp" />
     <ClCompile Include="psms.cpp" />
     <ClCompile Include="pssm.cpp" />
     <ClCompile Include="quarts.cpp" />
     <ClCompile Include="rdrpsearcher.cpp" />
+    <ClCompile Include="search3dcal.cpp" />
     <ClCompile Include="searchaatop.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="searchgroup.cpp" />
@@ -327,6 +332,9 @@
     <ClCompile Include="triangle.cpp" />
     <ClCompile Include="triform.cpp" />
     <ClCompile Include="trisearcher.cpp" />
+    <ClCompile Include="tshit.cpp" />
+    <ClCompile Include="tshitmgr.cpp" />
+    <ClCompile Include="tsoutput.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xbasis.cpp" />
   </ItemGroup>
@@ -338,6 +346,7 @@
     <ClInclude Include="alnheuristics.h" />
     <ClInclude Include="alnparams.h" />
     <ClInclude Include="alpha.h" />
+    <ClInclude Include="calreader.h" />
     <ClInclude Include="conncomp.h" />
     <ClInclude Include="diagbox.h" />
     <ClInclude Include="fastaseqsource.h" />
@@ -355,7 +364,7 @@
     <ClInclude Include="omplock.h" />
     <ClInclude Include="palmhit.h" />
     <ClInclude Include="pathinfo.h" />
-    <ClInclude Include="pdb.h" />
+    <ClInclude Include="pdbchain.h" />
     <ClInclude Include="pssm.h" />
     <ClInclude Include="pssms.h" />
     <ClInclude Include="pssmsearch.h" />
@@ -373,6 +382,8 @@
     <ClInclude Include="timing.h" />
     <ClInclude Include="tracebit.h" />
     <ClInclude Include="trisearcher.h" />
+    <ClInclude Include="tshit.h" />
+    <ClInclude Include="tshitmgr.h" />
     <ClInclude Include="usearch.h" />
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />

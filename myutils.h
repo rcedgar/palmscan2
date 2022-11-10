@@ -366,10 +366,10 @@ void GetCmdLine(string &s);
 #define oc(optname)	(opt_##optname)
 #define os(optname)	(string(opt_##optname))
 
-#define FLAG_OPT(OC, Name)						extern bool opt_##Name; extern bool optset_##Name;
-#define UNS_OPT(OC, Name, Default, Min, Max)	extern unsigned opt_##Name; extern bool optset_##Name;
-#define FLT_OPT(OC, Name, Default, Min, Max)	extern double opt_##Name; extern bool optset_##Name;
-#define STR_OPT(OC, Name)						extern const char *opt_##Name; extern bool optset_##Name;
+#define FLAG_OPT(Name)						extern bool opt_##Name; extern bool optset_##Name;
+#define UNS_OPT(Name, Default, Min, Max)	extern unsigned opt_##Name; extern bool optset_##Name;
+#define FLT_OPT(Name, Default, Min, Max)	extern double opt_##Name; extern bool optset_##Name;
+#define STR_OPT(Name)						extern const char *opt_##Name; extern bool optset_##Name;
 #include "myopts.h"
 
 extern FILE *g_fLog;
@@ -387,6 +387,10 @@ void RevCompSeq(string &Seq);
 void StripWhiteSpace(string &Str);
 char GetOneFromThree(const string &AAA);
 
+#ifdef _MSC_VER
 #define brk(x)       if (x) __debugbreak()
+#else
+#define brk(x)		(0)
+#endif
 
 #endif	// myutils_h

@@ -45,10 +45,6 @@ static double g_PeakMemUseBytes;
 
 const char *SVN_VERSION = "srcver";
 
-FILE *g_fOut;
-FILE *g_fOut2;
-FILE *g_fRep;
-
 static char **g_ThreadStrs;
 static unsigned g_ThreadStrCount;
 
@@ -1626,10 +1622,10 @@ void ProgressStep(size_t i, size_t N, const char *Format, ...)
 
 vector<string> g_Argv;
 
-#define FLAG_OPT(OC, Name)						bool opt_##Name; bool optset_##Name;
-#define UNS_OPT(OC, Name, Default, Min, Max)	unsigned opt_##Name; bool optset_##Name;
-#define FLT_OPT(OC, Name, Default, Min, Max)	double opt_##Name; bool optset_##Name;
-#define STR_OPT(OC, Name)						const char *opt_##Name = ""; bool optset_##Name;
+#define FLAG_OPT(Name)						bool opt_##Name; bool optset_##Name;
+#define UNS_OPT(Name, Default, Min, Max)	unsigned opt_##Name; bool optset_##Name;
+#define FLT_OPT(Name, Default, Min, Max)	double opt_##Name; bool optset_##Name;
+#define STR_OPT(Name)						const char *opt_##Name = ""; bool optset_##Name;
 #include "myopts.h"
 
 static void CmdLineErr(const char *Format, ...)
@@ -1668,10 +1664,10 @@ static void GetArgsFromFile(const string &FileName, vector<string> &Args)
 
 static bool TryFlagOpt(const char *OptName)
 	{
-#define FLAG_OPT(OC, Name)	if (strcmp(OptName, #Name) == 0) { opt_##Name = true; optset_##Name = true; return true; }
-#define UNS_OPT(OC, Name, Default, Min, Max)	/* empty */
-#define FLT_OPT(OC, Name, Default, Min, Max)	/* empty */
-#define STR_OPT(OC, Name)						/* empty */
+#define FLAG_OPT(Name)	if (strcmp(OptName, #Name) == 0) { opt_##Name = true; optset_##Name = true; return true; }
+#define UNS_OPT(Name, Default, Min, Max)	/* empty */
+#define FLT_OPT(Name, Default, Min, Max)	/* empty */
+#define STR_OPT(Name)						/* empty */
 
 #include "myopts.h"
 	return false;
@@ -1679,30 +1675,30 @@ static bool TryFlagOpt(const char *OptName)
 
 static bool TryUnsOpt(const char *OptName, const char *Value)
 	{
-#define UNS_OPT(OC, Name, Default, Min, Max)	if (strcmp(OptName, #Name) == 0) { opt_##Name = atou(Value); optset_##Name = true; return true; }
-#define FLAG_OPT(OC, Name)						/* empty */
-#define FLT_OPT(OC, Name, Default, Min, Max)	/* empty */
-#define STR_OPT(OC, Name)						/* empty */
+#define UNS_OPT(Name, Default, Min, Max)	if (strcmp(OptName, #Name) == 0) { opt_##Name = atou(Value); optset_##Name = true; return true; }
+#define FLAG_OPT(Name)						/* empty */
+#define FLT_OPT(Name, Default, Min, Max)	/* empty */
+#define STR_OPT(Name)						/* empty */
 #include "myopts.h"
 	return false;
 	}
 
 static bool TryFloatOpt(const char *OptName, const char *Value)
 	{
-#define FLT_OPT(OC, Name, Default, Min, Max)	if (strcmp(OptName, #Name) == 0) { opt_##Name = StrToFloat(Value); optset_##Name = true; return true; }
-#define UNS_OPT(OC, Name, Default, Min, Max)	/* empty */
-#define FLAG_OPT(OC, Name)						/* empty */
-#define STR_OPT(OC, Name)						/* empty */
+#define FLT_OPT(Name, Default, Min, Max)	if (strcmp(OptName, #Name) == 0) { opt_##Name = StrToFloat(Value); optset_##Name = true; return true; }
+#define UNS_OPT(Name, Default, Min, Max)	/* empty */
+#define FLAG_OPT(Name)						/* empty */
+#define STR_OPT(Name)						/* empty */
 #include "myopts.h"
 	return false;
 	}
 
 static bool TryStrOpt(const char *OptName, const char *Value)
 	{
-#define STR_OPT(OC, Name)	if (strcmp(OptName, #Name) == 0) { opt_##Name = mystrsave(Value); optset_##Name = true; return true; }
-#define UNS_OPT(OC, Name, Default, Min, Max)	/* empty */
-#define FLT_OPT(OC, Name, Default, Min, Max)	/* empty */
-#define FLAG_OPT(OC, Name)						/* empty */
+#define STR_OPT(Name)	if (strcmp(OptName, #Name) == 0) { opt_##Name = mystrsave(Value); optset_##Name = true; return true; }
+#define UNS_OPT(Name, Default, Min, Max)	/* empty */
+#define FLT_OPT(Name, Default, Min, Max)	/* empty */
+#define FLAG_OPT(Name)						/* empty */
 #include "myopts.h"
 	return false;
 	}
@@ -1715,10 +1711,10 @@ void MyCmdLine(int argc, char **argv)
 	if (argc == 1)
 		Help();
 
-#define UNS_OPT(OC, Name, Default, Min, Max)	opt_##Name = Default;
-#define FLT_OPT(OC, Name, Default, Min, Max)	opt_##Name = Default;
-#define FLAG_OPT(OC, Name)						/* empty */
-#define STR_OPT(OC, Name)						/* empty */
+#define UNS_OPT(Name, Default, Min, Max)	opt_##Name = Default;
+#define FLT_OPT(Name, Default, Min, Max)	opt_##Name = Default;
+#define FLAG_OPT(Name)						/* empty */
+#define STR_OPT(Name)						/* empty */
 #include "myopts.h"
 
 	for (unsigned i = 0; i < (unsigned) argc; )

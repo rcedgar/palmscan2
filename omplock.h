@@ -20,10 +20,11 @@ static bool omp_lock_init()
 	}
 static bool omp_lock_init_done = omp_lock_init();
 
-static inline void Lock()
+static inline void Lock(const char *Msg)
 	{
 #if	TRACE_GLOBAL_LOCKS
-	Log("%d: Global lock %lx\n", omp_get_thread_num(), (long) &g_Lock);
+	Log("%s:%d %d: Global lock %p %s\n",
+	  __FILE__, __LINE__, omp_get_thread_num(), &g_Lock, Msg);
 #endif
 #if	TIME_LOCKS
 	TICKS t1 = GetClockTicks();
@@ -35,10 +36,11 @@ static inline void Lock()
 #endif
 	}
 
-static inline void Unlock()
+static inline void Unlock(const char *Msg)
 	{
 #if	TRACE_GLOBAL_LOCKS
-	Log("%d: Global unock %lx\n", omp_get_thread_num(), (long) &g_Lock);
+	Log("%s:%d %d: Global unlock %p %s\n",
+	  __FILE__, __LINE__, omp_get_thread_num(), &g_Lock, Msg);
 #endif
 	omp_unset_lock(&g_Lock);
 	}
@@ -46,11 +48,11 @@ static inline void Unlock()
 #endif // USE_OMP
 
 #if USE_OMP==1
-#define LOCK()		Lock()
-#define UNLOCK()	Unlock()
+#define LOCK(Msg)		Lock(Msg)
+#define UNLOCK(Msg)		Unlock(Msg)
 #else
-#define LOCK()		/* empty */
-#define UNLOCK()	/* empty */
+#define LOCK(Msg)		/* empty */
+#define UNLOCK(Msg)		/* empty */
 #endif
 
 #endif // omplock_h

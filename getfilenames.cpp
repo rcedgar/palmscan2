@@ -1,5 +1,5 @@
 #include "myutils.h"
-#include "pdb.h"
+#include "pdbchain.h"
 
 void GetFileNames(const string &SpecFileName, vector<string> &FileNames)
 	{

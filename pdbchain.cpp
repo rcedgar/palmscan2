@@ -1,11 +1,23 @@
 #include "myutils.h"
-#include "pdb.h"
+#include "pdbchain.h"
 #include "abcxyz.h"
 
 void GetThreeFromOne(char aa, string &AAA);
 
+void ReadLinesFromFile(const string &FileName, vector<string> &Lines)
+	{
+	Lines.clear();
+	FILE *f = OpenStdioFile(FileName);
+	string Line;
+	while (ReadLineStdioFile(f, Line))
+		{
+		Lines.push_back(Line);
+		}
+	CloseStdioFile(f);
+	}
+
 /***
-PDB ATOM record format
+PDBChain ATOM record format
 http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM
 
 COLUMNS        DATA  TYPE    FIELD        DEFINITION
@@ -37,15 +49,18 @@ ATOM      3  C   PHE A   1      32.243  19.483  -9.229  1.00 24.35           C
 ATOM      4  CB  PHE A   1      33.494  21.006  -7.685  1.00 24.35           C  
 ***/
 
-void PDB::LogMe(bool WithCoords) const
+void PDBChain::LogMe(bool WithCoords) const
 	{
 	const size_t L = m_Xs.size();
 	asserta(m_Ys.size() == L);
 	asserta(m_Zs.size() == L);
 	asserta(m_Seq.size() == L);
 
+	string Label;
+	GetLabel(Label);
+
 	Log("\n");
-	Log(">%s\n", m_Label.c_str());
+	Log(">%s\n", Label.c_str());
 	Log("%s\n", m_Seq.c_str());
 	if (!m_MotifPosVec.empty())
 		{
@@ -73,7 +88,7 @@ void PDB::LogMe(bool WithCoords) const
 		}
 	}
 
-void PDB::ToCal(const string &FileName) const
+void PDBChain::ToCal(const string &FileName) const
 	{
 	if (FileName == "")
 		return;
@@ -82,14 +97,17 @@ void PDB::ToCal(const string &FileName) const
 	CloseStdioFile(f);
 	}
 
-void PDB::ToCal(FILE *f) const
+void PDBChain::ToCal(FILE *f) const
 	{
 	const size_t L = m_Xs.size();
 	asserta(m_Ys.size() == L);
 	asserta(m_Zs.size() == L);
 	asserta(m_Seq.size() == L);
 
-	fprintf(f, ">%s", m_Label.c_str());
+	string Label;
+	GetLabel(Label);
+
+	fprintf(f, ">%s", Label.c_str());
 	if (!m_MotifPosVec.empty())
 		{
 		asserta(m_MotifPosVec.size() == 3);
@@ -112,7 +130,7 @@ void PDB::ToCal(FILE *f) const
 		}
 	}
 
-void PDB::ToPDB(const string &FileName) const
+void PDBChain::ToPDB(const string &FileName) const
 	{
 	if (FileName == "")
 		return;
@@ -124,7 +142,11 @@ void PDB::ToPDB(const string &FileName) const
 	asserta(m_Zs.size() == L);
 	asserta(m_Seq.size() == L);
 
-	fprintf(f, "TITLE %s\n", m_Label.c_str());
+	char Chain = m_Chain;
+	if (Chain == 0)
+		Chain = 'A';
+
+	fprintf(f, "TITLE %s\n", m_ChainLabel.c_str());
 	if (!m_MotifPosVec.empty())
 		{
 		asserta(m_MotifPosVec.size() == 3);
@@ -133,16 +155,6 @@ void PDB::ToPDB(const string &FileName) const
 		  m_MotifPosVec[0] + 1, GetMotifSeq(0, A), 
 		  m_MotifPosVec[1] + 1, GetMotifSeq(1, B), 
 		  m_MotifPosVec[2] + 1, GetMotifSeq(2, C));
-
-		string SSA, SSB, SSC;
-		GetSS(m_MotifPosVec[0], AL, SSA);
-		GetSS(m_MotifPosVec[1], BL, SSB);
-		GetSS(m_MotifPosVec[2], CL, SSC);
-
-		fprintf(f, "REMARK PPMOTIFSS A:%u:%s B:%u:%s C:%u:%s\n",
-		  m_MotifPosVec[0] + 1, SSA.c_str(),
-		  m_MotifPosVec[1] + 1, SSB.c_str(),
-		  m_MotifPosVec[2] + 1, SSC.c_str());
 		}
 
 	for (uint i = 0; i < L; ++i)
@@ -153,13 +165,13 @@ void PDB::ToPDB(const string &FileName) const
 		const char *AAA = sAAA.c_str();
 
 		fprintf(f, "ATOM  ");			//  1 -  6        Record name   "ATOM  "
-		fprintf(f, "%5u", i+1);			//  7 - 11        Integer       serial       Atom  serial number.
+		fprintf(f, "%5u", i+1);			//  7 - 11        Integer       serial       Atom serial number.
 		fprintf(f, " ");				// 12
 		fprintf(f, " CA ");				// 13 - 16        Atom          name         Atom name.
 		fprintf(f, " ");				// 17             Character     altLoc       Alternate location indicator.
 		fprintf(f, "%3.3s", AAA);		// 18 - 20        Residue name  resName      Residue name.
 		fprintf(f, " ");				// 21
-		fprintf(f, "A");				// 22             Character     chainID      Chain identifier.
+		fprintf(f, "%c", Chain);		// 22             Character     chainID      Chain identifier.
 		fprintf(f, "%4u", i+1);			// 23 - 26        Integer       resSeq       Residue sequence number.
 		fprintf(f, " ");				// 27             AChar         iCode        Code for insertion of residues.
 		fprintf(f, "   ");				// 28 - 30
@@ -170,27 +182,39 @@ void PDB::ToPDB(const string &FileName) const
 		fprintf(f, "%6.2f", 0.0);		// 61 - 66        Real(6.2)     tempFactor   Temperature  factor.
 		fprintf(f, "          ");		// 67 - 76
 		fprintf(f, " C");				// 77 - 78        LString(2)    element      Element symbol, right-justified.
-		fprintf(f, "  ");				// 79 - 80        LString(2)    charge       Charge  on the atom.
+		fprintf(f, "  ");				// 79 - 80        LString(2)    charge       Charge on the atom.
 
 		fprintf(f, "\n");
 		}
 	}
 
-void PDB::FromFile(const string &FileName)
+void PDBChain::FromLines(const string &Label, char ChainChar,
+  const vector<string> &Lines)
 	{
 	Clear();
-	m_Label = FileName;
 
-	FILE *f = OpenStdioFile(FileName);
-
-	string Line;
-	while(ReadLineStdioFile(f, Line))
+	vector<string> Fields;
+	Split(Label, Fields, '/');
+	uint FieldCount = SIZE(Fields);
+	asserta(FieldCount > 0);
+	string FixedLabel = Fields[FieldCount-1];
+	if (EndsWith(FixedLabel, ".pdb"))
 		{
-		const size_t L = Line.size();
-		if (L < 50)
-			continue;
+		uint n = SIZE(FixedLabel);
+		if (n > 4)
+			FixedLabel = FixedLabel.substr(0, n-4);
+		}
 
-		if (Line.substr(0, 16) == "REMARK PALMPRINT")
+	m_Chain = ChainChar;
+	m_ChainLabel = FixedLabel;
+	const uint N = SIZE(Lines);
+	m_Chain = 0;
+	for (uint LineNr = 0; LineNr < N; ++LineNr)
+		{
+		const string &Line = Lines[LineNr];
+		const size_t L = Line.size();
+
+		if (strncmp(Line.c_str(), "REMARK PALMPRINT", 16) == 0)
 			{
 		//                  0 1              2  3                4   5        6
 		// REMARK PALMPRINT A:1:VATDVSDHDTFW B:73:SGQGATDLMGTLLM C:130:SKSDDAML
@@ -212,7 +236,7 @@ void PDB::FromFile(const string &FileName)
 			m_MotifPosVec.push_back(PosC-1);
 			}
 
-		if (Line.substr(0, 6) != "ATOM  ")
+		if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
 			continue;
 
 		string AtomName = Line.substr(12, 4);
@@ -220,6 +244,11 @@ void PDB::FromFile(const string &FileName)
 		if (AtomName != "CA")
 			continue;
 
+		char Chain = Line[21];
+		if (m_Chain == 0)
+			m_Chain = Chain;
+		else if (Chain != m_Chain)
+			Die("PDBChain::FromLines() two chains %c, %c", m_Chain, Chain);
 		string AAA = Line.substr(17, 3);
 		char aa = GetOneFromThree(AAA);
 		m_Seq.push_back(aa);
@@ -241,11 +270,9 @@ void PDB::FromFile(const string &FileName)
 		m_Ys.push_back(Y);
 		m_Zs.push_back(Z);
 		}
-
-	CloseStdioFile(f);
 	}
 
-const char *PDB::GetMotifSeq(uint i, string &s) const
+const char *PDBChain::GetMotifSeq(uint i, string &s) const
 	{
 	asserta(m_MotifPosVec.size() == 3);
 
@@ -269,7 +296,7 @@ const char *PDB::GetMotifSeq(uint i, string &s) const
 	return s.c_str();
 	}
 
-void PDB::GetPt(uint Pos, vector<double> &Pt) const
+void PDBChain::GetPt(uint Pos, vector<double> &Pt) const
 	{
 	assert(Pos < SIZE(m_Xs));
 	assert(Pos < SIZE(m_Ys));
@@ -281,7 +308,7 @@ void PDB::GetPt(uint Pos, vector<double> &Pt) const
 	Pt[Z] = m_Zs[Pos];
 	}
 
-void PDB::SetPt(uint Pos, const vector<double> &Pt)
+void PDBChain::SetPt(uint Pos, const vector<double> &Pt)
 	{
 	assert(Pos < SIZE(m_Xs));
 	assert(Pos < SIZE(m_Ys));
@@ -292,7 +319,7 @@ void PDB::SetPt(uint Pos, const vector<double> &Pt)
 	m_Zs[Pos] = Pt[Z];
 	}
 
-void PDB::GetXYZ(uint Pos, double &x, double &y, double &z) const
+void PDBChain::GetXYZ(uint Pos, double &x, double &y, double &z) const
 	{
 	assert(Pos < SIZE(m_Xs));
 	assert(Pos < SIZE(m_Ys));
@@ -302,7 +329,7 @@ void PDB::GetXYZ(uint Pos, double &x, double &y, double &z) const
 	z = m_Zs[Pos];
 	}
 
-double PDB::GetDist(uint Pos1, uint Pos2) const
+double PDBChain::GetDist(uint Pos1, uint Pos2) const
 	{
 	double x1, y1, z1;
 	double x2, y2, z2;
@@ -312,7 +339,7 @@ double PDB::GetDist(uint Pos1, uint Pos2) const
 	return d;
 	}
 
-double PDB::GetDist2(uint Pos1, uint Pos2) const
+double PDBChain::GetDist2(uint Pos1, uint Pos2) const
 	{
 	double x1 = m_Xs[Pos1];
 	double y1 = m_Ys[Pos1];
@@ -333,7 +360,7 @@ double PDB::GetDist2(uint Pos1, uint Pos2) const
 	return d2;
 	}
 
-void PDB::GetMotifDists(double &AB, double &BC, double &AC) const
+void PDBChain::GetMotifDists(double &AB, double &BC, double &AC) const
 	{
 	vector<vector<double> > MotifCoords;
 	GetMotifCoords(MotifCoords);
@@ -342,7 +369,7 @@ void PDB::GetMotifDists(double &AB, double &BC, double &AC) const
 	AC = GetDist_Mxij(MotifCoords, A, C);
 	}
 
-void PDB::GetMotifDists2(double &AB, double &BC, double &AC) const
+void PDBChain::GetMotifDists2(double &AB, double &BC, double &AC) const
 	{
 	vector<vector<double> > MotifCoords;
 	GetMotifCoords(MotifCoords);
@@ -351,7 +378,7 @@ void PDB::GetMotifDists2(double &AB, double &BC, double &AC) const
 	AC = GetDist2_Mxij(MotifCoords, A, C);
 	}
 
-void PDB::GetMotifCoords(vector<vector<double> > &MotifCoords) const
+void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 	{
 	asserta(m_MotifPosVec.size() == 3);
 
@@ -374,26 +401,112 @@ void PDB::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 	MotifCoords[C][Z] = m_Zs[PosC];
 	}
 
-uint PDB::GetSeqLength() const
+void PDBChain::GetLabel(string &Label) const
+	{
+	if (m_Chain == 0 || m_Chain == 'A')
+		Label = m_ChainLabel;
+	else
+		Label = m_ChainLabel + "_" + m_Chain;
+	}
+
+uint PDBChain::GetSeqLength() const
 	{
 	return SIZE(m_Seq);
 	}
 
-void PDB::GetMotifSeq(uint MotifStartPos, uint MotifLength,
+void PDBChain::GetSubSeq(uint MotifStartPos, uint n,
   bool FailOnOverflow, string &MotifSeq) const
 	{
 	MotifSeq.clear();
 	const uint L = GetSeqLength();
-	for (uint i = 0; i < MotifLength; ++i)
+	for (uint i = 0; i < n; ++i)
 		{
 		uint Pos = MotifStartPos + i;
 		if (Pos < 0 || Pos >= L)
 			{
 			if (FailOnOverflow)
-				Die("GetMotifSeqFromMidPos overflow");
+				Die("'%s' GetMotifSeqFromMidPos overflow", m_ChainLabel.c_str());
 			MotifSeq += '!';
 			}
 		else
 			MotifSeq += m_Seq[Pos];
+		}
+	}
+
+void PDBChain::ReadChainsFromLines(const string &Label,
+  const vector<string> &Lines, vector<PDBChain *> &Chains)
+	{
+	Chains.clear();
+	const uint N = SIZE(Lines);
+	vector<string> ChainLines;
+	char CurrChainChar = 0;
+	bool AnyAtoms = false;
+	for (uint i = 0; i < N; ++i)
+		{
+		const string &Line = Lines[i];
+
+		if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
+			{
+			if (Line.size() < 57)
+				continue;
+			char ChainChar = Line[21];
+			if (ChainChar != CurrChainChar)
+				{
+				if (AnyAtoms && !ChainLines.empty())
+					{
+					PDBChain *Chain = new PDBChain;
+					Chain->FromLines(Label, CurrChainChar, ChainLines);
+					ChainLines.clear();
+					AnyAtoms = false;
+
+					Chains.push_back(Chain);
+					}
+				CurrChainChar = ChainChar;
+				}
+			ChainLines.push_back(Line);
+			AnyAtoms = true;
+			}
+		else if (
+		  strncmp(Line.c_str(), "REMARK PALMPRINT", 6) == 0)
+			ChainLines.push_back(Line);
+		}
+	if (!ChainLines.empty())
+		{
+		PDBChain *Chain = new PDBChain;
+		Chain->FromLines(Label, CurrChainChar, ChainLines);
+		ChainLines.clear();
+		Chains.push_back(Chain);
+		}
+	}
+
+void PDBChain::ReadChainsFromFile(const string &FileName,
+  vector<PDBChain *> &Chains)
+	{
+	vector<string> Lines;
+	ReadLinesFromFile(FileName, Lines);
+	ReadChainsFromLines(FileName, Lines, Chains);
+	}
+
+void PDBChain::CopyTriForm(const vector<double> &t,
+  const vector<vector<double> > &R,
+  PDBChain &XChain) const
+	{
+	XChain.Clear();
+	XChain.m_ChainLabel = m_ChainLabel;
+	XChain.m_Seq = m_Seq;
+	XChain.m_MotifPosVec = m_MotifPosVec;
+	const uint N = SIZE(m_Xs);
+	asserta(SIZE(m_Seq) == N);
+	asserta(SIZE(m_Ys) == N);
+	asserta(SIZE(m_Zs) == N);
+	vector<double> Pt(3);
+	vector<double> XPt(3);
+	for (uint Pos = 0; Pos < N; ++Pos)
+		{
+		GetPt(Pos, Pt);
+		XFormPt(Pt, t, R, XPt);
+		XChain.m_Xs.push_back(XPt[X]);
+		XChain.m_Ys.push_back(XPt[Y]);
+		XChain.m_Zs.push_back(XPt[Z]);
 		}
 	}

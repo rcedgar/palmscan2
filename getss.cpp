@@ -1,5 +1,9 @@
 #include "myutils.h"
-#include "pdb.h"
+#include "pdbchain.h"
+
+void ReadPDBs(const vector<string> &FileNames, vector<PDBChain *> &Structures);
+void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
+void GetPalmSketch(const string &ss, uint PSL, string &Sketch);
 
 static char GetSSChar(
   double dis13, double dis14, double dis15,
@@ -10,33 +14,31 @@ static char GetSSChar(
 	if (fabs(dis15 - 6.37) < DH && fabs(dis14 - 5.18) < DH &&
 		fabs(dis25 - 5.18) < DH && fabs(dis13 - 5.45) < DH &&
 		fabs(dis24 - 5.45) < DH && fabs(dis35 - 5.45) < DH)
-		return 'H';
+		return 'h';
 
 // Strand
 	const double DS = 1.42;
 	if (fabs(dis15 - 13) < DS && fabs(dis14 - 10.4) < DS &&
 		fabs(dis25 - 10.4) < DS && fabs(dis13 - 6.1) < DS &&
 		fabs(dis24 - 6.1) < DS && fabs(dis35 - 6.1) < DS)
-		return 'E';
+		return 's';
 
 // Turn
 	if (dis15 < 8.0)
-		return 'T';
+		return 't';
 
 // Default to loop, no well-defined ss
-	return 'L';
+	return '~';
 	}
 
-void PDB::GetSS(uint StartPos, uint n, string &ss) const
+void PDBChain::GetSS(string &SS) const
 	{
-	ss.clear();
 	uint L = int(SIZE(m_Seq));
-	asserta(StartPos + n <= L);
-	for (uint Pos = StartPos; Pos < StartPos + n; ++Pos)
+	for (uint Pos = 0; Pos < L; ++Pos)
 		{
 		if (Pos < 2 || Pos + 2 >= L)
 			{
-			ss += 'L';
+			SS += '~';
 			continue;
 			}
 
@@ -53,7 +55,7 @@ void PDB::GetSS(uint StartPos, uint n, string &ss) const
 		double d35 = GetDist(Pos, Pos_plus_2);
 
 		char c = GetSSChar(d13, d14, d15, d24, d25, d35);
-		ss += c;
+		SS += c;
 		}
 	}
 
@@ -61,11 +63,22 @@ void cmd_pdbss()
 	{
 	const string &QueryFN = opt_pdbss;
 
-	PDB Q;
-	Q.FromFile(QueryFN);
+	vector<string> FileNames;
+	GetFileNames(QueryFN, FileNames);
+	vector<PDBChain *> Qs;
+	ReadPDBs(FileNames, Qs);
 
-	string ss;
-	uint QL = Q.GetSeqLength();
-	Q.GetSS(0, QL, ss);
-	Log("%s\n", ss.c_str());
+	const uint N = SIZE(FileNames);
+	for (uint i = 0; i < N; ++i)
+		{
+		PDBChain &Q = *Qs[i];
+		string ss;
+		uint QL = Q.GetSeqLength();
+		string Sketch;
+		string SS;
+		Q.GetSS(SS);
+		GetPalmSketch(ss, 50, Sketch);
+		Log("%s   %s\n", Q.m_ChainLabel.c_str(), ss.c_str());
+		Log("%s   Sketch %s\n", Q.m_ChainLabel.c_str(), Sketch.c_str());
+		}
 	}

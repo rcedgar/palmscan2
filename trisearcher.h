@@ -2,12 +2,16 @@
 
 #include "xdpmem.h"
 #include "pathinfo.h"
-#include "pdb.h"
+#include "pdbchain.h"
+#include "tshit.h"
+
+class TSHit;
 
 class TriSearcher
 	{
 public:
 	double MaxTriRMSD2 = 0;
+	double MaxMotifRMSD2 = 0;
 	double Radius = 0;
 	uint NABmin = 0;
 	uint NABmax = 0;
@@ -16,8 +20,8 @@ public:
 	uint NACmin = 0;
 	uint NACmax = 0;
 
-	const PDB *m_Query = 0;
-	const PDB *m_Ref = 0;
+	const PDBChain *m_Query = 0;
+	const PDBChain *m_Ref = 0;
 	vector<uint> m_PosAs;
 	vector<uint> m_PosBs;
 	vector<uint> m_PosCs;
@@ -46,7 +50,7 @@ public:
 		}
 
 	void LogMe(FILE *f = g_fLog) const;
-	void Search(const PDB &Query, const PDB &Ref);
+	void Search(const PDBChain &Query, const PDBChain &Ref);
 	void SetHitOrder();
 	double GetRMSDMotifs(uint QueryPosA, uint QueryPosB,
 	  uint QueryPosC) const;
@@ -54,8 +58,7 @@ public:
 	  const vector<double> &t, const vector<vector<double> > &R) const;
 	double GetMotifsTM() const;
 	double GetTMSum(uint QPos, uint RPos, uint n) const;
-	bool GetTopHit(uint &QueryPosA, uint &QueryPosB, uint &QueryPosC,
-	  double &MotifRMSD2) const;
+	bool GetTopHit(uint &QueryPosA, uint &QueryPosB, uint &QueryPosC) const;
 	bool AlignPalm(uint QueryPosA, uint QueryPosB, uint QueryPosC,
 	  string &Path);
 	void AlignSeg(uint QPos, uint QLen, uint RPos, uint RLen,
@@ -63,4 +66,14 @@ public:
 	  string &Path);
 	void SetTriForm();
 	void AllocDPScoreMx();
+	void WriteOutput();
+	void WriteTsv();
+	void WriteReport();
+	void WriteAln(FILE *f);
+	void GetHit(uint Index, TSHit &TH) const;
+	bool GetTopHit(TSHit &TH) const;
+
+public:
+	static void OpenOutputFiles();
+	static void CloseOutputFiles();
 	};

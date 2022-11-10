@@ -1,6 +1,6 @@
 #include "myutils.h"
 #include "trisearcher.h"
-#include "pdb.h"
+#include "pdbchain.h"
 #include "sort.h"
 #include "abcxyz.h"
 
@@ -52,9 +52,9 @@ void TriSearcher::LogMe(FILE *f) const
 			double MotifRMSD2 = m_MotifRMSD2s[i];
 
 			string A, B, C;
-			m_Query->GetMotifSeq(PosA, AL, false, A);
-			m_Query->GetMotifSeq(PosB, BL, false, B);
-			m_Query->GetMotifSeq(PosC, CL, false, C);
+			m_Query->GetSubSeq(PosA, AL, false, A);
+			m_Query->GetSubSeq(PosB, BL, false, B);
+			m_Query->GetSubSeq(PosC, CL, false, C);
 
 			Log("%5u", PosA);
 			Log("  %5u", PosB);
@@ -154,15 +154,13 @@ double TriSearcher::GetRMSD2Segment(uint QueryStartPos, uint RefStartPos,
 	return Sum;
 	}
 
-bool TriSearcher::GetTopHit(uint &QueryPosA, uint &QueryPosB, uint &QueryPosC,
-  double &MotifRMSD2) const
+bool TriSearcher::GetTopHit(uint &QueryPosA, uint &QueryPosB, uint &QueryPosC) const
 	{
 	if (m_HitOrder.empty())
 		{
 		QueryPosA = UINT_MAX;
 		QueryPosB = UINT_MAX;
 		QueryPosC = UINT_MAX;
-		MotifRMSD2 = DBL_MAX;
 		return false;
 		}
 
@@ -170,6 +168,38 @@ bool TriSearcher::GetTopHit(uint &QueryPosA, uint &QueryPosB, uint &QueryPosC,
 	QueryPosA = m_PosAs[k];
 	QueryPosB = m_PosBs[k];
 	QueryPosC = m_PosCs[k];
-	MotifRMSD2 = m_MotifRMSD2s[k];
+	return true;
+	}
+
+void TriSearcher::GetHit(uint Index, TSHit &TH) const
+	{
+	asserta(Index < SIZE(m_HitOrder));
+	uint k = m_HitOrder[Index];
+
+	TH.m_Query = m_Query;
+	TH.m_Ref = m_Ref;
+
+	TH.m_MotifRMSD2 = m_MotifRMSD2s[k];
+	TH.m_TriRMSD2 = m_TriRMSD2s[k];
+
+	TH.m_QPosA = m_PosAs[k];
+	TH.m_QPosB = m_PosBs[k];
+	TH.m_QPosC = m_PosCs[k];
+
+	asserta(m_Ref != 0 && m_Ref->m_MotifPosVec.size() == 3);
+
+	TH.m_RPosA = m_Ref->m_MotifPosVec[A];
+	TH.m_RPosB = m_Ref->m_MotifPosVec[B];
+	TH.m_RPosC = m_Ref->m_MotifPosVec[C];
+	}
+
+bool TriSearcher::GetTopHit(TSHit &TH) const
+	{
+	if (m_HitOrder.empty())
+		{
+		TH.Clear();
+		return false;
+		}
+	GetHit(0, TH);
 	return true;
 	}

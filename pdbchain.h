@@ -1,18 +1,22 @@
 #pragma once
 
-class PDB
+class PDBChain
 	{
 public:
-	string m_Label;
+	string m_ChainLabel;
+	char m_Chain = 0;
 	string m_Seq;
 	vector<double> m_Xs;
 	vector<double> m_Ys;
 	vector<double> m_Zs;
 	vector<uint> m_MotifPosVec;
+	string m_SS;
 
 public:
 	void Clear()
 		{
+		m_ChainLabel.clear();
+		m_Chain = 0;
 		m_Seq.clear();
 		m_Xs.clear();
 		m_Ys.clear();
@@ -20,11 +24,17 @@ public:
 		m_MotifPosVec.clear();
 		}
 
+	void GetLabel(string &Label) const;
 	uint GetSeqLength() const;
-	void FromFile(const string &FileName);
+	void FromLines(const string &Label, char ChainChar,
+	  const vector<string> &Lines);
+	void FromCalLines(const vector<string> &Lines);
 	void ToCal(FILE *f) const;
 	void ToCal(const string &FileName) const;
 	void ToPDB(const string &FileName) const;
+	void CopyTriForm(const vector<double> &t,
+	  const vector<vector<double> > &R,
+	  PDBChain &XChain) const;
 	void LogMe(bool WithCoords = false) const;
 	const char *GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
@@ -35,7 +45,17 @@ public:
 	void GetMotifCoords(vector<vector<double> > &MotifCoords) const;
 	void GetMotifDists(double &AB, double &BC, double &AC) const;
 	void GetMotifDists2(double &AB, double &BC, double &AC) const;
-	void GetMotifSeq(uint MotifStartPos, uint MotifLength,
+	void GetSubSeq(uint StartPos, uint n,
 	  bool FailOnOverflow, string &MotifSeq) const;
-	void GetSS(uint StartPos, uint n, string &ss) const;
+	void GetSS(string &SS) const;
+	void SetSS()
+		{
+		GetSS(m_SS);
+		}
+
+public:
+	static void ReadChainsFromLines(const string &Label,
+	  const vector<string> &Lines, vector<PDBChain *> &Chains);
+	static void ReadChainsFromFile(const string &FileName,
+	  vector<PDBChain *> &Chains);
 	};

@@ -3,9 +3,9 @@
 
 static omp_lock_t g_OutputLock;
 
-static FILE *g_fRep = 0;
-static FILE *g_fTsv = 0;
-static FILE *g_fTri = 0;
+FILE *g_fRep = 0;
+FILE *g_fTsv = 0;
+FILE *g_fTri = 0;
 
 void RdRpSearcher::InitOutput()
 	{

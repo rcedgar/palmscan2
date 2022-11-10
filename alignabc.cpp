@@ -1,41 +1,39 @@
 #include "myutils.h"
-#include "pdb.h"
+#include "pdbchain.h"
 #include "trisearcher.h"
 #include "abcxyz.h"
+
+void InitTS(TriSearcher &TS);
 
 void cmd_alignabc()
 	{
 	const string &QueryFN = opt_alignabc;
 	const string &RefFN = opt_ref;
 
-	PDB Q;
-	PDB R;
-
-	Q.FromFile(QueryFN);
-	Q.LogMe();
-
-	R.FromFile(RefFN);
-	R.LogMe();
-
 	TriSearcher TS;
-	TS.Radius = 1.5;
-	TS.MaxTriRMSD2 = 1.5;
-	TS.NABmin = 10;
-	TS.NABmax = 80;
-	TS.NBCmin = 10;
-	TS.NBCmax = 80;
-	TS.NACmin = 80;
-	TS.NACmax = 200;
+	InitTS(TS);
 
-	TS.Search(Q, R);
-	TS.SetTriForm();
-	TS.LogMe();
+	vector<PDBChain *> Qs;
+	vector<PDBChain *> Rs;
 
-	//uint QPosA, QPosB, QPosC;
-	//double MotifRMSD2;
-	//bool Found = TS.GetTopHit(QPosA, QPosB, QPosC, MotifRMSD2);
-	//asserta(Found);
+	PDBChain::ReadChainsFromFile(RefFN, Rs);
+	PDBChain::ReadChainsFromFile(QueryFN, Qs);
 
-	//string Path;
-	//TS.AlignPalm(QPosA, QPosB, QPosC, Path);
+	const uint NQ = SIZE(Qs);
+	const uint NR = SIZE(Rs);
+
+	for (uint i = 0; i < NQ; ++i)
+		{
+		PDBChain &Q = *Qs[i];
+//		Q.LogMe();
+		for (uint j = 0; j < NR; ++j)
+			{
+			PDBChain &R = *Rs[j];
+//			R.LogMe();
+
+			TS.Search(Q, R);
+			TS.SetTriForm();
+			TS.LogMe();
+			}
+		}
 	}

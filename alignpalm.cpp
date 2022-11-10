@@ -112,8 +112,7 @@ bool TriSearcher::AlignPalm(uint QueryPosA, uint QueryPosB,
 	{
 	Path.clear();
 	uint QPosA, QPosB, QPosC;
-	double MotifRMSD2;
-	bool Found = GetTopHit(QPosA, QPosB, QPosC, MotifRMSD2);
+	bool Found = GetTopHit(QPosA, QPosB, QPosC);
 	if (!Found)
 		return false;
 

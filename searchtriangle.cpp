@@ -1,11 +1,11 @@
 #include "myutils.h"
-#include "pdb.h"
+#include "pdbchain.h"
 #include "trisearcher.h"
 #include "abcxyz.h"
 
 #define TRACE	0
 
-void TriSearcher::Search(const PDB &Query, const PDB &Ref)
+void TriSearcher::Search(const PDBChain &Query, const PDBChain &Ref)
 	{
 	m_Query = &Query;
 	m_Ref = &Ref;
@@ -94,20 +94,25 @@ void TriSearcher::Search(const PDB &Query, const PDB &Ref)
 				if (QueryBC < RefBC - Radius || QueryBC > RefBC + Radius)
 					continue;
 
+				if (PosA + AL >= PosB)
+					continue;
+				if (PosB + BL >= PosC)
+					continue;
 				double DistAB = RefAB - QueryAB;
 				double DistBC = RefBC - QueryBC;
 				double DistAC = RefAC - QueryAC;
 				double TriRMSD2 = DistAB*DistAB + DistBC*DistBC + DistAC*DistAC;
 				if (TriRMSD2 < MaxTriRMSD2)
 					{
-					m_PosAs.push_back(PosA);
-					m_PosBs.push_back(PosB);
-					m_PosCs.push_back(PosC);
-
 					double MotifRMSD2 = GetRMSDMotifs(PosA, PosB, PosC);
-
-					m_TriRMSD2s.push_back(TriRMSD2);
-					m_MotifRMSD2s.push_back(MotifRMSD2);
+					if (MotifRMSD2 < MaxMotifRMSD2)
+						{
+						m_TriRMSD2s.push_back(TriRMSD2);
+						m_MotifRMSD2s.push_back(MotifRMSD2);
+						m_PosAs.push_back(PosA);
+						m_PosBs.push_back(PosB);
+						m_PosCs.push_back(PosC);
+						}
 					}
 				}
 			}
