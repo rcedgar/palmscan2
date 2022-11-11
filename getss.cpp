@@ -33,6 +33,7 @@ static char GetSSChar(
 
 void PDBChain::GetSS(string &SS) const
 	{
+	SS.clear();
 	uint L = int(SIZE(m_Seq));
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{

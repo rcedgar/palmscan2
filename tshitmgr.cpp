@@ -3,31 +3,9 @@
 #include "sort.h"
 #include "abcxyz.h"
 #include "omplock.h"
+#include "outputfiles.h"
 
 double GetConfidenceScore(double MotifRMSD);
-
-static FILE *g_fTsv;
-static FILE *g_fRep;
-static FILE *g_fPPFa;
-
-void TSHitMgr::OpenOutputFiles()
-	{
-	if (optset_tsvout)
-		g_fTsv = CreateStdioFile(opt_tsvout);
-
-	if (optset_report)
-		g_fRep = CreateStdioFile(opt_report);
-
-	if (optset_palmprint_fastaout)
-		g_fPPFa = CreateStdioFile(opt_palmprint_fastaout);
-	}
-
-void TSHitMgr::CloseOutputFiles()
-	{
-	CloseStdioFile(g_fTsv);
-	CloseStdioFile(g_fRep);
-	CloseStdioFile(g_fPPFa);
-	}
 
 void TSHitMgr::SetQuery(const PDBChain &Query)
 	{
@@ -43,10 +21,10 @@ void TSHitMgr::Add(TSHit &TH)
 void TSHitMgr::SetTopHit()
 	{
 	double BestMotifRMSD2 = DBL_MAX;
-	const TSHit *BestHit = 0;
+	TSHit *BestHit = 0;
 	for (uint i = 0; i < SIZE(m_Hits); ++i)
 		{
-		const TSHit &Hit = m_Hits[i];
+		TSHit &Hit = m_Hits[i];
 		if (Hit.m_MotifRMSD2 < BestMotifRMSD2)
 			{
 			BestMotifRMSD2 = Hit.m_MotifRMSD2;
@@ -132,36 +110,71 @@ void TSHitMgr::WriteReport(FILE *f) const
 		fprintf(f, "\n");
 		}
 
+	double SketchPct = m_TopHit->m_SketchPct;
 	m_TopHit->WriteSketch(f);
-
 	m_TopHit->WriteAln(f);
 
+	double FinalScore = m_TopHit->GetScore();
+
 	fprintf(f, "\n");
-	fprintf(f, "Score %.2f", TopScore);
-	if (TopScore >= 0.80)
+	fprintf(f, "Score %.3f (%.2f, %.1f%%)", FinalScore, TopScore, SketchPct);
+	if (TopScore >= 0.75)
 		fprintf(f, " high confidence");
-	else if (TopScore >= 0.70)
-		fprintf(f, " good confidence");
-	else if (TopScore >= 0.60)
+	else if (TopScore >= 0.50)
 		fprintf(f, " low confidence");
 	else
-		fprintf(f, " very low confidence");
+		fprintf(f, " likely false positive");
 	fprintf(f, "\n");
 	}
 
 void TSHitMgr::WriteOutput()
 	{
-	Lock("TSHitMgr::WriteOutput");
+	LockOutput();
 	SetTopHit();
 	if (m_TopHit == 0)
 		{
-		Unlock("TSHitMgr::WriteOutput");
+		UnlockOutput();
 		return;
 		}
-	m_TopHit->WriteTsv(g_fTsv);
-	m_TopHit->WritePalmprintFasta(g_fPPFa);
-	if (optset_palmprint_pdbout)
-		m_TopHit->WritePalmprintPDB(opt_palmprint_pdbout);
-	WriteReport(g_fRep);
-	Unlock("TSHitMgr::WriteOutput");
+	m_TopHit->SetSketch();
+	m_TopHit->WriteTsv(g_ftsv);
+	m_TopHit->WritePalmprintFasta(g_fppfa);
+	WritePPC(g_fppc);
+	WriteReport(g_freport);
+	UnlockOutput();
+	}
+
+void TSHitMgr::WritePPC(FILE* f) const
+	{
+	if (f == 0)
+		return;
+	if (m_TopHit == 0)
+		return;
+
+	uint QPosA = m_TopHit->m_QPosA;
+	uint QPosB = m_TopHit->m_QPosB;
+	uint QPosC = m_TopHit->m_QPosC;
+
+	asserta(QPosA < QPosB&& QPosB < QPosC);
+	uint PPL = QPosC + CL - QPosA + 1;
+
+	vector<vector<double> > MotifCoords(3);
+	m_Query->GetPt(QPosA, MotifCoords[A]);
+	m_Query->GetPt(QPosB, MotifCoords[B]);
+	m_Query->GetPt(QPosC, MotifCoords[C]);
+
+	vector<double> t;
+	vector<vector<double> > R;
+	GetTriForm(MotifCoords, t, R);
+
+	PDBChain XChain;
+	m_Query->CopyTriForm(t, R, XChain);
+	XChain.m_MotifPosVec.clear();
+	XChain.m_MotifPosVec.push_back(QPosA);
+	XChain.m_MotifPosVec.push_back(QPosB);
+	XChain.m_MotifPosVec.push_back(QPosC);
+
+	string Label;
+	m_Query->GetLabel(Label);
+	XChain.ToCalSeg(f, QPosA, PPL);
 	}

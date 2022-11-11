@@ -90,6 +90,6 @@ const char *GetSeg(const PSSMHitNt &Hit1, const PSSMHitNt &Hit2,
   int &Frame, unsigned &Lo, unsigned &Hi);
 
 extern FILE *g_fOut;
-extern FILE *g_fRep;
+extern FILE *g_freport;
 
 #endif // pssmsearch_h

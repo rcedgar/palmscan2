@@ -20,6 +20,13 @@ public:
 		uint m = P.m_ColCount;
 		}
 
+	void Clear()
+		{
+		m_PSSM = 0;
+		m_QPos = 0;
+		m_Score = 0;
+		}
+
 	void SetNoHit()
 		{
 		m_QPos = UINT_MAX;

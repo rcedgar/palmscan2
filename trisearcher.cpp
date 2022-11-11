@@ -3,6 +3,7 @@
 #include "pdbchain.h"
 #include "sort.h"
 #include "abcxyz.h"
+#include "searchparams.h"
 
 const uint MotifLVec[3] = { 12, 14, 8 };
 

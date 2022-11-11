@@ -10,15 +10,6 @@ class TSHit;
 class TriSearcher
 	{
 public:
-	double MaxTriRMSD2 = 0;
-	double MaxMotifRMSD2 = 0;
-	double Radius = 0;
-	uint NABmin = 0;
-	uint NABmax = 0;
-	uint NBCmin = 0;
-	uint NBCmax = 0;
-	uint NACmin = 0;
-	uint NACmax = 0;
 
 	const PDBChain *m_Query = 0;
 	const PDBChain *m_Ref = 0;
@@ -72,8 +63,4 @@ public:
 	void WriteAln(FILE *f);
 	void GetHit(uint Index, TSHit &TH) const;
 	bool GetTopHit(TSHit &TH) const;
-
-public:
-	static void OpenOutputFiles();
-	static void CloseOutputFiles();
 	};

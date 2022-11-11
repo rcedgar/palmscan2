@@ -288,7 +288,6 @@
     <ClCompile Include="getseg.cpp" />
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="help.cpp" />
-    <ClCompile Include="initts.cpp" />
     <ClCompile Include="invertmx.cpp" />
     <ClCompile Include="linereader.cpp" />
     <ClCompile Include="lockobj.cpp" />
@@ -301,10 +300,13 @@
     <ClCompile Include="objmgr.cpp" />
     <ClCompile Include="one2three.cpp" />
     <ClCompile Include="output.cpp" />
+    <ClCompile Include="outputfiles.cpp" />
     <ClCompile Include="palmscan2_main.cpp" />
     <ClCompile Include="getfilenames.cpp" />
     <ClCompile Include="palmsketch.cpp" />
+    <ClCompile Include="pdb2cal.cpp" />
     <ClCompile Include="pdbchaincal.cpp" />
+    <ClCompile Include="ppcaligner.cpp" />
     <ClCompile Include="readpdbs.cpp" />
     <ClCompile Include="search3d.cpp" />
     <ClCompile Include="pdbchain.cpp" />
@@ -316,7 +318,9 @@
     <ClCompile Include="searchaatop.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="searchgroup.cpp" />
-    <ClCompile Include="scanpdb.cpp" />
+    <ClCompile Include="search3d_pssms.cpp" />
+    <ClCompile Include="searchparams.cpp" />
+    <ClCompile Include="search3d_ppc.cpp" />
     <ClCompile Include="searchtriangle.cpp" />
     <ClCompile Include="search_pssms.cpp" />
     <ClCompile Include="seqdb.cpp" />
@@ -361,10 +365,14 @@
     <ClInclude Include="msaqc2.h" />
     <ClInclude Include="myopts.h" />
     <ClInclude Include="myutils.h" />
+    <ClInclude Include="ofiles.h" />
     <ClInclude Include="omplock.h" />
+    <ClInclude Include="outputfiles.h" />
     <ClInclude Include="palmhit.h" />
     <ClInclude Include="pathinfo.h" />
     <ClInclude Include="pdbchain.h" />
+    <ClInclude Include="ppcaligner.h" />
+    <ClInclude Include="ppchitmgr.h" />
     <ClInclude Include="pssm.h" />
     <ClInclude Include="pssms.h" />
     <ClInclude Include="pssmsearch.h" />
@@ -373,6 +381,7 @@
     <ClInclude Include="rdrpmodel.h" />
     <ClInclude Include="rdrpsearcher.h" />
     <ClInclude Include="rphit.h" />
+    <ClInclude Include="searchparams.h" />
     <ClInclude Include="seqdb.h" />
     <ClInclude Include="seqsource.h" />
     <ClInclude Include="sfasta.h" />

@@ -1,39 +1,22 @@
 #include "myutils.h"
 #include "trisearcher.h"
 #include "abcxyz.h"
+#include "outputfiles.h"
 #include "omplock.h"
 
 double GetConfidenceScore(double MotifRMSD);
 
-static FILE *g_fTsv;
-static FILE *g_fRep;
-
-void TriSearcher::OpenOutputFiles()
-	{
-	if (optset_tri_tsv)
-		g_fTsv = CreateStdioFile(opt_tri_tsv);
-
-	if (optset_tri_report)
-		g_fRep = CreateStdioFile(opt_tri_report);
-	}
-
-void TriSearcher::CloseOutputFiles()
-	{
-	CloseStdioFile(g_fTsv);
-	CloseStdioFile(g_fRep);
-	}
-
 void TriSearcher::WriteOutput()
 	{
-	Lock("TriSearcher::WriteOutput");
+	LockOutput();
 	WriteTsv();
 	WriteReport();
-	Unlock("TriSearcher::WriteOutput");
+	UnlockOutput();
 	}
 
 void TriSearcher::WriteTsv()
 	{
-	FILE *f = g_fTsv;
+	FILE *f = g_ftri_tsv;
 	if (f == 0)
 		return;
 
@@ -45,13 +28,13 @@ void TriSearcher::WriteTsv()
 
 void TriSearcher::WriteReport()
 	{
-	if (g_fRep == 0)
+	if (g_freport == 0)
 		return;
 	const uint TriHitCount = SIZE(m_HitOrder);
 	if (TriHitCount == 0)
 		return;
 
-	FILE *f = g_fRep;
+	FILE *f = g_freport;
 
 	string QueryLabel;
 	string RefLabel;
@@ -117,7 +100,10 @@ void TriSearcher::WriteReport()
 	TSHit TopHit;
 	bool Ok = GetTopHit(TopHit);
 	if (Ok)
+		{
+		TopHit.SetSketch();
 		TopHit.WriteSketch(f);
+		}
 	}
 
 void TriSearcher::WriteAln(FILE *f)

@@ -9,6 +9,7 @@ public:
 	string m_PendingLine;
 	vector<string> m_Lines;
 	bool m_EOF = false;
+	uint64 m_FileSize = UINT64_MAX;
 
 public:
 	void Clear()
@@ -17,6 +18,7 @@ public:
 		m_PendingLine.clear();
 		m_Lines.clear();
 		m_EOF = false;
+		m_FileSize = UINT64_MAX;
 		}
 
 	void Close()
@@ -28,4 +30,5 @@ public:
 
 	void Open(const string &FileName);
 	bool GetNext(PDBChain &Chain);
+	void GetPctDone(string &s) const;
 	};

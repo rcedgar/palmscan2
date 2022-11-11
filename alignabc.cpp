@@ -3,15 +3,12 @@
 #include "trisearcher.h"
 #include "abcxyz.h"
 
-void InitTS(TriSearcher &TS);
-
 void cmd_alignabc()
 	{
 	const string &QueryFN = opt_alignabc;
 	const string &RefFN = opt_ref;
 
 	TriSearcher TS;
-	InitTS(TS);
 
 	vector<PDBChain *> Qs;
 	vector<PDBChain *> Rs;

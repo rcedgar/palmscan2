@@ -16,6 +16,9 @@ public:
 public:
 	void Clear()
 		{
+		m_A.Clear();
+		m_B.Clear();
+		m_C.Clear();
 		m_Score = -1;
 		m_GroupIndex = UINT_MAX;
 		m_Permuted = false;

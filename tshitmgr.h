@@ -7,7 +7,7 @@ class TSHitMgr
 public:
 	const PDBChain *m_Query = 0;
 	vector<TSHit> m_Hits;
-	const TSHit *m_TopHit = 0;
+	TSHit *m_TopHit = 0;
 
 public:
 	void SetQuery(const PDBChain &Query);
@@ -15,8 +15,5 @@ public:
 	void WriteOutput();
 	void SetTopHit();
 	void WriteReport(FILE *f) const;
-
-public:
-	static void OpenOutputFiles();
-	static void CloseOutputFiles();
+	void WritePPC(FILE* f) const;
 	};

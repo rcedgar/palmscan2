@@ -29,7 +29,9 @@ public:
 	void FromLines(const string &Label, char ChainChar,
 	  const vector<string> &Lines);
 	void FromCalLines(const vector<string> &Lines);
+	void ParseCalLabelLine(const string &Line);
 	void ToCal(FILE *f) const;
+	void ToCalSeg(FILE *f, uint Pos, uint n) const;
 	void ToCal(const string &FileName) const;
 	void ToPDB(const string &FileName) const;
 	void CopyTriForm(const vector<double> &t,
@@ -37,6 +39,7 @@ public:
 	  PDBChain &XChain) const;
 	void LogMe(bool WithCoords = false) const;
 	const char *GetMotifSeq(uint MotifIndex, string &s) const;
+	const char *GetMotifSeqNoFail(uint MotifIndex, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
 	void GetPt(uint Pos, vector<double> &Pt) const;
 	void SetPt(uint Pos, const vector<double> &Pt);

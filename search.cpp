@@ -97,6 +97,4 @@ void SearchPP()
 	double HitPct = GetPct(g_FoundCount, g_QueryCount);
 	ProgressStep(999, 1000, "Searching %u/%u hits (%.1f%%)",
 	  g_FoundCount, g_QueryCount, HitPct);
-
-	RdRpSearcher::CloseOutput();
 	}

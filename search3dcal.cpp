@@ -9,7 +9,6 @@
 
 void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
 void ReadPDBs(const vector<string> &FileNames, vector<PDBChain *> &Structures);
-void InitTS(TriSearcher &TS);
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs);
 
@@ -36,12 +35,7 @@ void cmd_search3dcal()
 	vector<vector<PDBChain *> > QVecs(ThreadCount);
 	vector<TriSearcher> TSs(ThreadCount);
 	vector<TSHitMgr> HMs(ThreadCount);
-	for (uint i = 0; i < ThreadCount; ++i)
-		InitTS(TSs[i]);
-
-	TriSearcher::OpenOutputFiles();
-	TSHitMgr::OpenOutputFiles();
-
+	
 	uint ThreadFinishedCount = 0;
 	uint DoneCount = 0;
 	uint HitCount = 0;
@@ -66,11 +60,15 @@ void cmd_search3dcal()
 			if (ThreadFinishedCount == ThreadCount)
 				break;
 			}
+		Lock("Done");
 		++DoneCount;
+		Unlock("Done");
 		if (DoneCount%100 == 0)
 			{
 			Lock("Progress");
-			Progress("%u done, %u hits\r", DoneCount, HitCount);
+			string sPct;
+			CR.GetPctDone(sPct);
+			Progress("%s%% done, %u / %u hits\r", sPct, HitCount, DoneCount);
 			Unlock("Progress");
 			}
 		TriSearcher &TS = TSs[ThreadIndex];
@@ -82,7 +80,4 @@ void cmd_search3dcal()
 			++HitCount;
 		}
 	Progress("%u done, %u hits\n", DoneCount, HitCount);
-
-	TriSearcher::CloseOutputFiles();
-	TSHitMgr::CloseOutputFiles();
 	}

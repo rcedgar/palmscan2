@@ -6,6 +6,7 @@ void CalReader::Open(const string &FileName)
 	{
 	Clear();
 	m_f = OpenStdioFile(FileName);
+	m_FileSize = GetStdioFileSize64(m_f);
 	bool Ok = ReadLineStdioFile(m_f, m_PendingLine);
 	if (!Ok)
 		Close();
@@ -51,4 +52,19 @@ bool CalReader::GetNext(PDBChain &Chain)
 	m_Lines.clear();
 	Unlock("CalReader::GetNext");
 	return true;
+	}
+
+void CalReader::GetPctDone(string &s) const
+	{
+	s.clear();
+	if (m_FileSize == UINT64_MAX || m_FileSize == 0)
+		return;
+	uint64 Pos = GetStdioFilePos64(m_f);
+	double Pct = double(Pos)*100.0/m_FileSize;
+	if (Pct < 0.1)
+		Ps(s, "%.3f", Pct);
+	else if (Pct < 1)
+		Ps(s, "%.2f", Pct);
+	else
+		Ps(s, "%.1f", Pct);
 	}

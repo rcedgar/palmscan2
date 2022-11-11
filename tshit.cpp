@@ -157,7 +157,7 @@ void TSHit::WriteTsv(FILE *f) const
 	m_Ref->GetLabel(RLabel);
 
 	double MotifRMSD = sqrt(m_MotifRMSD2);
-	double ConfScore = GetConfidenceScore(MotifRMSD);
+	double Score = GetScore();
 
 	string QASeq, QBSeq, QCSeq;
 	m_Query->GetSubSeq(m_QPosA, AL, true, QASeq);
@@ -166,7 +166,7 @@ void TSHit::WriteTsv(FILE *f) const
 
 	fprintf(f, "%s", QLabel.c_str());
 	fprintf(f, "\t%s", RLabel.c_str());
-	fprintf(f, "\t%.3f", ConfScore);
+	fprintf(f, "\t%.3f", Score);
 	fprintf(f, "\t%.3g", MotifRMSD);
 	fprintf(f, "\t%u", m_QPosA + 1);
 	fprintf(f, "\t%u", m_QPosB + 1);
@@ -219,10 +219,11 @@ void TSHit::WritePalmprintPDB(const string &FileNamePrefix) const
 	XChain.ToPDB(FileName);
 	}
 
-void TSHit::WriteSketch(FILE* f) const
+void TSHit::SetSketch()
 	{
-	if (f == 0)
-		return;
+	m_SketchPct = 0;
+	m_QSketch.clear();
+	m_RSketch.clear();
 
 	const string& QSS = m_Query->m_SS;
 	const string& RSS = m_Ref->m_SS;
@@ -255,6 +256,12 @@ void TSHit::WriteSketch(FILE* f) const
 	uint QV2L = m_QPosC - (m_QPosB + BL);
 	uint RV2L = m_RPosC - (m_RPosB + BL);
 
+	RASk[0] = ' ';
+	RASk[1] = ' ';
+
+	RCSk[CL - 2] = ' ';
+	RCSk[CL - 1] = ' ';
+
 	string QV1Sk;
 	string RV1Sk;
 	GetPalmSubSketch(QSS, m_QPosA + 1, QV1L, V_SKETCH_LENGTH, QV1Sk);
@@ -265,16 +272,49 @@ void TSHit::WriteSketch(FILE* f) const
 	GetPalmSubSketch(QSS, m_QPosB + 1, QV2L, V_SKETCH_LENGTH, QV2Sk);
 	GetPalmSubSketch(RSS, m_RPosB + 1, RV2L, V_SKETCH_LENGTH, RV2Sk);
 
-	string QSketch = QASk + "  " + QV1Sk + "  " + QBSk + "  " + QV2Sk + "  " + QCSk;
-	string RSketch = RASk + "  " + RV1Sk + "  " + RBSk + "  " + RV2Sk + "  " + RCSk;
-	string AnnotSketch;
-	MakeAnnotSketch(QSketch, RSketch, AnnotSketch);
+	m_QSketch = QASk + "  " + QV1Sk + "  " + QBSk + "  " + QV2Sk + "  " + QCSk;
+	m_RSketch = RASk + "  " + RV1Sk + "  " + RBSk + "  " + RV2Sk + "  " + RCSk;
+	m_AnnotSketch;
+	MakeAnnotSketch(m_QSketch, m_RSketch, m_AnnotSketch);
+
+	const uint ColCount = SIZE(m_QSketch);
+	asserta(SIZE(m_RSketch) == ColCount);
+	uint N = 0;
+	uint n = 0;
+	for (uint i = 0; i < ColCount; ++i)
+		{
+		char q = m_QSketch[i];
+		char r = m_RSketch[i];
+		if (q == ' ' || r == ' ')
+			continue;
+		N += 1;
+		if (q == r)
+			n += 1;
+		}
+	m_SketchPct = GetPct(n, N);
+	}
+
+void TSHit::WriteSketch(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	asserta(!m_QSketch.empty());
 
 	fprintf(f, "\n");
 	fprintf(f,
 "_____A______  _________V1_________  ______B_______  _________V2_________  ___C____\n");
 
-	fprintf(f, "%s  %s\n", QSketch.c_str(), m_Query->m_ChainLabel.c_str());
-	fprintf(f, "%s\n", AnnotSketch.c_str());
-	fprintf(f, "%s  %s\n", RSketch.c_str(), m_Ref->m_ChainLabel.c_str());
+	fprintf(f, "%s  %s\n", m_QSketch.c_str(), m_Query->m_ChainLabel.c_str());
+	fprintf(f, "%s\n", m_AnnotSketch.c_str());
+	fprintf(f, "%s  %s\n", m_RSketch.c_str(), m_Ref->m_ChainLabel.c_str());
 	}
+
+double TSHit::GetScore() const
+	{
+	asserta(!m_QSketch.empty());
+	double MotifRMSD = sqrt(m_MotifRMSD2);
+	double ConfScore = GetConfidenceScore(MotifRMSD);
+	double FinalScore = (ConfScore + m_SketchPct/100.0)/2.0;
+	return FinalScore;
+	}
+

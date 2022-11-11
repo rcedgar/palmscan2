@@ -164,7 +164,7 @@
     <ClCompile Include="xbasis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="scanpdb.cpp">
+    <ClCompile Include="search3d_pssms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="trisearcher.cpp">
@@ -215,7 +215,19 @@
     <ClCompile Include="palmsketch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="initts.cpp">
+    <ClCompile Include="search3d_ppc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="outputfiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppcaligner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="searchparams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pdb2cal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -365,6 +377,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="calreader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppcaligner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppchitmgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="outputfiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ofiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="searchparams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

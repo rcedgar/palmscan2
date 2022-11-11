@@ -7,19 +7,13 @@
 #include "omplock.h"
 
 void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
-void ReadPDBs(const vector<string> &FileNames, vector<PDBChain *> &Structures);
-void InitTS(TriSearcher& TS);
+void ReadPDBs(const string &FileName, vector<PDBChain *> &Structures);
 
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs)
 	{
 	HM.SetQuery(Q);
 
-	vector<uint> PosAs;
-	vector<uint> PosBs;
-	vector<uint> PosCs;
-	vector<double> MotifRMSD2s;
-	vector<string> RefLabels;
 	const uint RefN = SIZE(RefPDBs);
 	for (uint iR = 0; iR < RefN; ++iR)
 		{
@@ -28,6 +22,7 @@ void Search1(TriSearcher &TS, TSHitMgr &HM,
 		if (opt_self && Q.m_ChainLabel == R.m_ChainLabel)
 			continue;
 
+		Q.SetSS();
 		TS.Search(Q, R);
 		TS.WriteOutput();
 		TSHit TH;
@@ -51,9 +46,18 @@ void cmd_search3d()
 
 	Progress("Read reference structures...");
 	vector<PDBChain *> RefPDBs;
-	ReadPDBs(RefFileNames, RefPDBs);
+	ReadPDBs(RefFN, RefPDBs);
 	for (uint i = 0; i < SIZE(RefPDBs); ++i)
+		{
+		PDBChain &Ref = *RefPDBs[i];
+		if (Ref.m_MotifPosVec.size() != 3)
+			{
+			string RefLabel;
+			Ref.GetLabel(RefLabel);
+			Die("Reference missing motif spec: %s", RefLabel.c_str());
+			}
 		RefPDBs[i]->SetSS();
+		}
 	Progress(" done.\n");
 
 	const uint QueryN = SIZE(QueryFileNames);
@@ -63,12 +67,7 @@ void cmd_search3d()
 	vector<vector<PDBChain *> > QVecs(ThreadCount);
 	vector<TriSearcher> TSs(ThreadCount);
 	vector<TSHitMgr> HMs(ThreadCount);
-	for (uint i = 0; i < ThreadCount; ++i)
-		InitTS(TSs[i]);
-
-	TriSearcher::OpenOutputFiles();
-	TSHitMgr::OpenOutputFiles();
-
+	
 	uint DoneCount = 0;
 
 #pragma omp parallel for num_threads(ThreadCount)
@@ -89,11 +88,7 @@ void cmd_search3d()
 		for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 			{
 			PDBChain &Q = *QVec[ChainIndex];
-			Q.SetSS();
 			Search1(TS, HM, Q, RefPDBs);
 			}
 		}
-
-	TriSearcher::CloseOutputFiles();
-	TSHitMgr::CloseOutputFiles();
 	}

@@ -1,32 +1,19 @@
 #include "myutils.h"
 #include "rdrpsearcher.h"
+#include "outputfiles.h"
 
 static omp_lock_t g_OutputLock;
-
-FILE *g_fRep = 0;
-FILE *g_fTsv = 0;
-FILE *g_fTri = 0;
 
 void RdRpSearcher::InitOutput()
 	{
 	omp_init_lock(&g_OutputLock);
-	g_fRep = CreateStdioFile(opt_report);
-	g_fTsv = CreateStdioFile(opt_tsvout);
-	g_fTri = CreateStdioFile(opt_triout);
-	}
-
-void RdRpSearcher::CloseOutput()
-	{
-	CloseStdioFile(g_fRep);
-	CloseStdioFile(g_fTsv);
-	CloseStdioFile(g_fTri);
 	}
 
 void RdRpSearcher::WriteOutput() const
 	{
 	omp_set_lock(&g_OutputLock);
-	WriteReport(g_fRep);
-	WriteTsv(g_fTsv);
+	WriteReport(g_freport);
+	WriteTsv(g_ftsv);
 	omp_unset_lock(&g_OutputLock);
 	}
 

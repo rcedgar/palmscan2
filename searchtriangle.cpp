@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "pdbchain.h"
 #include "trisearcher.h"
+#include "searchparams.h"
 #include "abcxyz.h"
 
 #define TRACE	0
@@ -105,7 +106,7 @@ void TriSearcher::Search(const PDBChain &Query, const PDBChain &Ref)
 				if (TriRMSD2 < MaxTriRMSD2)
 					{
 					double MotifRMSD2 = GetRMSDMotifs(PosA, PosB, PosC);
-					if (MotifRMSD2 < MaxMotifRMSD2)
+					if (MotifRMSD2 < MaxMotifRMSD)
 						{
 						m_TriRMSD2s.push_back(TriRMSD2);
 						m_MotifRMSD2s.push_back(MotifRMSD2);

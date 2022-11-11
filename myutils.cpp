@@ -1963,7 +1963,7 @@ void PrintCopyright(FILE *f)
 	if (f == 0)
 		return;
 
-	fprintf(f, "(C) Copyright 2021 Robert C. Edgar\n");
+	fprintf(f, "(C) Copyright 2022 Robert C. Edgar\n");
 	fprintf(f, "\n");
 	}
 

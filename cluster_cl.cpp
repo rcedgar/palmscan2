@@ -1,5 +1,6 @@
 #include "myutils.h"
 #include "quarts.h"
+#include "outputfiles.h"
 #include <map>
 #include <list>
 #include <set>
@@ -85,8 +86,6 @@ void cmd_cluster_cl()
 	const string &DistMxFileName = opt_cluster_cl;
 	asserta(optset_threshold);
 	double Threshold = opt_threshold;
-
-	FILE *fTsv = CreateStdioFile(opt_tsvout);
 
 	string Line;
 	FILE *f = OpenStdioFile(DistMxFileName);
@@ -294,7 +293,7 @@ void cmd_cluster_cl()
 	for (auto ClusterIndex : Order)
 //	for (size_t ClusterIndex = 0; ClusterIndex < ClusterCount; ++ClusterIndex)
 		{
-		if (fTsv != 0)
+		if (g_ftsv != 0)
 			{
 			size_t ClusterSize = ClusterSizes[ClusterIndex];
 
@@ -302,18 +301,18 @@ void cmd_cluster_cl()
 			size_t Centroid = GetCentroid(ClusterIndex, DistQuarts);
 			const string &CentroidLabel = Labels[Centroid];
 
-			fprintf(fTsv, "C");
-			fprintf(fTsv, "\t%u", (uint) ClusterIndex);
-			fprintf(fTsv, "\t%u", (uint) ClusterSize);
-			fprintf(fTsv, "\t%u", (uint) Centroid);
-			fprintf(fTsv, "\t%s", CentroidLabel.c_str());
+			fprintf(g_ftsv, "C");
+			fprintf(g_ftsv, "\t%u", (uint) ClusterIndex);
+			fprintf(g_ftsv, "\t%u", (uint) ClusterSize);
+			fprintf(g_ftsv, "\t%u", (uint) Centroid);
+			fprintf(g_ftsv, "\t%s", CentroidLabel.c_str());
 
-			fprintf(fTsv, "\t%.4g", DistQuarts.Min);
-			fprintf(fTsv, "\t%.4g", DistQuarts.Avg);
-			fprintf(fTsv, "\t%.4g", DistQuarts.Med);
-			fprintf(fTsv, "\t%.4g", DistQuarts.Max);
+			fprintf(g_ftsv, "\t%.4g", DistQuarts.Min);
+			fprintf(g_ftsv, "\t%.4g", DistQuarts.Avg);
+			fprintf(g_ftsv, "\t%.4g", DistQuarts.Med);
+			fprintf(g_ftsv, "\t%.4g", DistQuarts.Max);
 
-			fprintf(fTsv, "\n");
+			fprintf(g_ftsv, "\n");
 			}
 		}
 
@@ -322,14 +321,14 @@ void cmd_cluster_cl()
 		size_t ClusterIndex = IndexToCluster[LabelIndex];
 		asserta(IndexToCluster[LabelIndex] < ClusterCount);
 		const string &Label = Labels[LabelIndex];
-		if (fTsv != 0)
+		if (g_ftsv != 0)
 			{
 			if (ClusterIndex == UINT_MAX)
-				fprintf(fTsv, "M	%s	*\n", Label.c_str());
+				fprintf(g_ftsv, "M	%s	*\n", Label.c_str());
 			else
-				fprintf(fTsv, "M	%s	%u\n", Label.c_str(), (uint) ClusterIndex);
+				fprintf(g_ftsv, "M	%s	%u\n", Label.c_str(), (uint) ClusterIndex);
 			}
 		}
 
-	CloseStdioFile(fTsv);
+	CloseStdioFile(g_ftsv);
 	}

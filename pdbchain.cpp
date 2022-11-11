@@ -97,7 +97,13 @@ void PDBChain::ToCal(const string &FileName) const
 	CloseStdioFile(f);
 	}
 
-void PDBChain::ToCal(FILE *f) const
+void PDBChain::ToCal(FILE* f) const
+	{
+	uint QL = GetSeqLength();
+	ToCalSeg(f, 0, QL);
+	}
+
+void PDBChain::ToCalSeg(FILE *f, uint Pos, uint n) const
 	{
 	const size_t L = m_Xs.size();
 	asserta(m_Ys.size() == L);
@@ -111,18 +117,27 @@ void PDBChain::ToCal(FILE *f) const
 	if (!m_MotifPosVec.empty())
 		{
 		asserta(m_MotifPosVec.size() == 3);
+
+		uint PosA = m_MotifPosVec[0];
+		uint PosB = m_MotifPosVec[1];
+		uint PosC = m_MotifPosVec[2];
+		asserta(PosA >= Pos);
+		asserta(PosC + CL <= Pos + n);
+
 		string A, B, C;
 		fprintf(f, " A:%u:%s B:%u:%s C:%u:%s",
-		  m_MotifPosVec[0] + 1, GetMotifSeq(0, A), 
-		  m_MotifPosVec[1] + 1, GetMotifSeq(1, B), 
-		  m_MotifPosVec[2] + 1, GetMotifSeq(2, C));
+		  PosA - Pos + 1, GetMotifSeqNoFail(0, A), 
+		  PosB - Pos + 1, GetMotifSeqNoFail(1, B), 
+		  PosC - Pos + 1, GetMotifSeqNoFail(2, C));
 		}
 	fputc('\n', f);
 
-	for (size_t i = 0; i < L; ++i)
+	for (size_t i = Pos; i < Pos + n; ++i)
 		{
-		fputc(m_Seq[i], f);
-		fputc('\t', f);
+		if (i < SIZE(m_Seq))
+			fputc(m_Seq[i], f);
+		else
+			fputc('*', f);
 		fprintf(f, "\t%.3f", m_Xs[i]);
 		fprintf(f, "\t%.3f", m_Ys[i]);
 		fprintf(f, "\t%.3f", m_Zs[i]);
@@ -270,6 +285,38 @@ void PDBChain::FromLines(const string &Label, char ChainChar,
 		m_Ys.push_back(Y);
 		m_Zs.push_back(Z);
 		}
+	}
+
+const char *PDBChain::GetMotifSeqNoFail(uint i, string &s) const
+	{
+	if (m_MotifPosVec.size() != 3)
+		{
+		s = "ERR1";
+		return s.c_str();
+		}
+
+	s.clear();
+	uint Pos = m_MotifPosVec[i];
+	size_t L = m_Seq.size();
+	uint ML = 0;
+	switch (i)
+		{
+	case 0:		ML = AL; break;
+	case 1:		ML = BL; break;
+	case 2:		ML = CL; break;
+	default:	asserta(false);
+		}
+	for (uint k = 0; k < ML; ++k)
+		{
+		if (Pos+k < SIZE(m_Seq))
+			{
+			char c = m_Seq[Pos+k];
+			s += c;
+			}
+		else
+			s += "*";
+		}
+	return s.c_str();
 	}
 
 const char *PDBChain::GetMotifSeq(uint i, string &s) const

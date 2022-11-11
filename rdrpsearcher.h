@@ -97,5 +97,4 @@ public:
 
 public:
 	static void InitOutput();
-	static void CloseOutput();
 	};
