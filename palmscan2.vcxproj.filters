@@ -107,7 +107,7 @@
     <ClCompile Include="linereader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="search.cpp">
+    <ClCompile Include="search_pssms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="help.cpp">
@@ -128,7 +128,7 @@
     <ClCompile Include="output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="search_pssms.cpp">
+    <ClCompile Include="test_pssms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cluster_cl.cpp">
@@ -191,7 +191,7 @@
     <ClCompile Include="tmscore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="readpdbs.cpp">
+    <ClCompile Include="readchains.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tsoutput.cpp">
@@ -209,7 +209,7 @@
     <ClCompile Include="pdbchaincal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="search3dcal.cpp">
+    <ClCompile Include="search3d_cal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="palmsketch.cpp">
@@ -228,6 +228,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pdb2cal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="remove_dupes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cal2fa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getchains.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cluster_ppc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="readppc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

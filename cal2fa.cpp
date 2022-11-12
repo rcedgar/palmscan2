@@ -4,18 +4,20 @@
 
 void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
 
-void cmd_pdb2cal()
+void cmd_cal2fa()
 	{
-	const string &FN = opt_pdb2cal;
+	const string &InputFN = opt_cal2fa;
 
 	vector<PDBChain *> Chains;
-	ReadChains(FN, Chains);
+	ReadChains(InputFN, Chains);
 
 	const uint N = SIZE(Chains);
 	for (uint i = 0; i < N; ++i)
 		{
-		ProgressStep(i, N, "Writing output");
 		const PDBChain &Chain = *Chains[i];
-		Chain.ToCal(g_fcal);
+		const string &Seq = Chain.m_Seq;
+		const string &Label = Chain.m_Label;
+		if (!Seq.empty())
+			SeqToFasta(g_ffasta, Label.c_str(), Seq.c_str(), SIZE(Seq));
 		}
 	}

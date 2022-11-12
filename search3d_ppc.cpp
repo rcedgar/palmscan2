@@ -9,8 +9,7 @@
 #include "omplock.h"
 #include "outputfiles.h"
 
-void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
-void ReadPDBs(const vector<string> &FileNames, vector<PDBChain *> &Structures);
+void ReadPpc(const string &FN, vector<PDBChain *> &Chains);
 
 uint PpcSearch1(PpcAligner &PA, PDBChain &Q, vector<PDBChain*> &RefPDBs)
 	{
@@ -22,7 +21,7 @@ uint PpcSearch1(PpcAligner &PA, PDBChain &Q, vector<PDBChain*> &RefPDBs)
 		{
 		const PDBChain &R = *RefPDBs[iR];
 
-		if (opt_self && Q.m_ChainLabel == R.m_ChainLabel)
+		if (opt_self && Q.m_Label == R.m_Label)
 			continue;
 
 		PA.SetRef(R);
@@ -30,9 +29,7 @@ uint PpcSearch1(PpcAligner &PA, PDBChain &Q, vector<PDBChain*> &RefPDBs)
 		if (MotifRMSD <= MaxMotifRMSD)
 			{
 			RMSDs.push_back(MotifRMSD);
-			string RefLabel;
-			R.GetLabel(RefLabel);
-			RefLabels.push_back(RefLabel);
+			RefLabels.push_back(R.m_Label);
 			}
 		}
 	uint HitCount = SIZE(RMSDs);
@@ -44,33 +41,52 @@ uint PpcSearch1(PpcAligner &PA, PDBChain &Q, vector<PDBChain*> &RefPDBs)
 	vector<uint> Order(HitCount);
 	QuickSortOrder(RMSDs.data(), HitCount, Order.data());
 
-	string QLabel;
-	Q.GetLabel(QLabel);
-
 	LockOutput();
 	for (uint k = 0; k < HitCount; ++k)
 		{
 		uint i = Order[k];
-		fprintf(g_ftsv, "%s", QLabel.c_str());
-		fprintf(g_ftsv, "\t%s", RefLabels[i].c_str());
-		fprintf(g_ftsv, "\t%.2f\n", RMSDs[i]);
+		if (g_ftsv != 0)
+			{
+			fprintf(g_ftsv, "%s", Q.m_Label.c_str());
+			fprintf(g_ftsv, "\t%s", RefLabels[i].c_str());
+			fprintf(g_ftsv, "\t%.2f\n", RMSDs[i]);
+			}
 		}
 	UnlockOutput();
 	return HitCount;
 	}
 
-void ReadPpc(const string &FN, vector<PDBChain *> &Chains)
+static uint g_DoneCount;
+static uint g_HitCount;
+
+static void Thread(CalReader &CR, vector<PDBChain> &Qs,
+  vector<PpcAligner> &PAs,
+  vector<PDBChain *> &RefPDBs)
 	{
-	Chains.clear();
-	CalReader CR;
-	CR.Open(FN);
+	uint ThreadIndex = GetThreadIndex();
+	PDBChain &Q = Qs[ThreadIndex];
 	for (;;)
 		{
-		PDBChain *Chain = new PDBChain;
-		bool Ok = CR.GetNext(*Chain);
+		bool Ok = CR.GetNext(Q);
 		if (!Ok)
 			return;
-		Chains.push_back(Chain);
+		Lock("Done");
+		++g_DoneCount;
+		Unlock("Done");
+		if (g_DoneCount%100 == 0)
+			{
+			Lock("Progress");
+			string sPct;
+			CR.GetPctDone(sPct);
+			Progress("%s%% done, %u / %u hits\r",
+			  sPct, g_HitCount, g_DoneCount);
+			Unlock("Progress");
+			}
+		PpcAligner &PA = PAs[ThreadIndex];
+
+		uint n = PpcSearch1(PA, Q, RefPDBs);
+		if (n > 0)
+			++g_HitCount;
 		}
 	}
 
@@ -98,39 +114,7 @@ void cmd_search3d_ppc()
 	vector<bool> ThreadDone(ThreadCount);
 
 #pragma omp parallel num_threads(ThreadCount)
-	for (;;)
-		{
-		uint ThreadIndex = GetThreadIndex();
-		PDBChain &Q = Qs[ThreadIndex];
-		bool Ok = CR.GetNext(Q);
-		if (!Ok)
-			{
-			Lock("Done");
-			if (!ThreadDone[ThreadIndex])
-				{
-				ThreadDone[ThreadIndex] = true;
-				++ThreadFinishedCount;
-				}
-			Unlock("Done");
-			if (ThreadFinishedCount == ThreadCount)
-				break;
-			}
-		Lock("Done");
-		++DoneCount;
-		Unlock("Done");
-		if (DoneCount%100 == 0)
-			{
-			Lock("Progress");
-			string sPct;
-			CR.GetPctDone(sPct);
-			Progress("%s%% done, %u / %u hits\r", sPct, HitCount, DoneCount);
-			Unlock("Progress");
-			}
-		PpcAligner &PA = PAs[ThreadIndex];
+	Thread(CR, Qs, PAs, RefPDBs);
 
-		uint n = PpcSearch1(PA, Q, RefPDBs);
-		if (n > 0)
-			++HitCount;
-		}
 	Progress("100.0% done, %u / %u hits\n", DoneCount, HitCount);
 	}

@@ -1703,6 +1703,8 @@ static bool TryStrOpt(const char *OptName, const char *Value)
 	return false;
 	}
 
+string g_ShortCmdLine;
+
 void MyCmdLine(int argc, char **argv)
 	{
 	setbuf(stdout, 0);
@@ -1731,6 +1733,12 @@ void MyCmdLine(int argc, char **argv)
 			}
 		else
 			{
+			g_ShortCmdLine = string(argv[1]);
+			if (argc > 2)
+				{
+				g_ShortCmdLine += " ";
+				g_ShortCmdLine += string(argv[2]);
+				}
 			g_Argv.push_back(Arg);
 			i += 1;
 			}

@@ -2,13 +2,14 @@
 #error "F not defined"
 #endif
 
-F(output)
-
 F(tsv)
 F(ppc)
+F(cal)
 F(ppfa)
-F(report)
-F(tri_tsv)
-F(tri_report)
+F(fasta)
+F(tsv_tri)
+F(report_tri)
+F(report_pssms)
+F(report_3d)
 
 #undef F

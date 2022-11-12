@@ -23,7 +23,7 @@ static bool omp_lock_init_done = omp_lock_init();
 static inline void Lock(const char *Msg)
 	{
 #if	TRACE_GLOBAL_LOCKS
-	Log("%s:%d %d: Global lock %p %s\n",
+	Log("%s:%d %d: Global lock %p %s request\n",
 	  __FILE__, __LINE__, omp_get_thread_num(), &g_Lock, Msg);
 #endif
 #if	TIME_LOCKS
@@ -33,6 +33,10 @@ static inline void Lock(const char *Msg)
 	IncLockTicks(t2 - t1);
 #else
 	omp_set_lock(&g_Lock);
+#endif
+#if	0 // TRACE_GLOBAL_LOCKS
+	Log("%s:%d %d: Global lock %p %s succeed\n",
+	  __FILE__, __LINE__, omp_get_thread_num(), &g_Lock, Msg);
 #endif
 	}
 

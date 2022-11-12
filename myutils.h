@@ -334,6 +334,7 @@ double GetMemUseBytes();
 void PrintCmdLine(FILE *f);
 void PrintProgramInfo(FILE *f);
 void PrintCopyright(FILE *f);
+extern string g_ShortCmdLine;
 
 const char *MemBytesToStr(double Bytes);
 static inline const char *MemBytesToStr(uint64 Bytes) { return MemBytesToStr((double) Bytes); }

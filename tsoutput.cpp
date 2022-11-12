@@ -16,7 +16,7 @@ void TriSearcher::WriteOutput()
 
 void TriSearcher::WriteTsv()
 	{
-	FILE *f = g_ftri_tsv;
+	FILE *f = g_ftsv_tri;
 	if (f == 0)
 		return;
 
@@ -28,18 +28,16 @@ void TriSearcher::WriteTsv()
 
 void TriSearcher::WriteReport()
 	{
-	if (g_freport == 0)
+	FILE *f = g_freport_tri;
+	if (f == 0)
 		return;
 	const uint TriHitCount = SIZE(m_HitOrder);
 	if (TriHitCount == 0)
 		return;
 
-	FILE *f = g_freport;
 
-	string QueryLabel;
-	string RefLabel;
-	m_Query->GetLabel(QueryLabel);
-	m_Ref->GetLabel(RefLabel);
+	const string &QueryLabel = m_Query->m_Label;
+	const string &RefLabel = m_Ref->m_Label;
 
 	const char *QLabel = QueryLabel.c_str();
 	const char *RLabel = RefLabel.c_str();

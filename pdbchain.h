@@ -3,8 +3,8 @@
 class PDBChain
 	{
 public:
-	string m_ChainLabel;
-	char m_Chain = 0;
+// Label does NOT include chain
+	string m_Label;
 	string m_Seq;
 	vector<double> m_Xs;
 	vector<double> m_Ys;
@@ -15,8 +15,7 @@ public:
 public:
 	void Clear()
 		{
-		m_ChainLabel.clear();
-		m_Chain = 0;
+		m_Label.clear();
 		m_Seq.clear();
 		m_Xs.clear();
 		m_Ys.clear();
@@ -24,10 +23,8 @@ public:
 		m_MotifPosVec.clear();
 		}
 
-	void GetLabel(string &Label) const;
 	uint GetSeqLength() const;
-	void FromLines(const string &Label, char ChainChar,
-	  const vector<string> &Lines);
+	void FromLines(const string &Label, const vector<string> &Lines);
 	void FromCalLines(const vector<string> &Lines);
 	void ParseCalLabelLine(const string &Line);
 	void ToCal(FILE *f) const;
@@ -57,8 +54,9 @@ public:
 		}
 
 public:
-	static void ReadChainsFromLines(const string &Label,
+	static void ChainsFromLines(const string &Label,
 	  const vector<string> &Lines, vector<PDBChain *> &Chains);
 	static void ReadChainsFromFile(const string &FileName,
 	  vector<PDBChain *> &Chains);
+	static void AppendChainToLabel(string &Label, char Chain);
 	};

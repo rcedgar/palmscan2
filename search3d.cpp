@@ -7,7 +7,7 @@
 #include "omplock.h"
 
 void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
-void ReadPDBs(const string &FileName, vector<PDBChain *> &Structures);
+void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
 
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs)
@@ -19,7 +19,7 @@ void Search1(TriSearcher &TS, TSHitMgr &HM,
 		{
 		const PDBChain &R = *RefPDBs[iR];
 
-		if (opt_self && Q.m_ChainLabel == R.m_ChainLabel)
+		if (opt_self && Q.m_Label == R.m_Label)
 			continue;
 
 		Q.SetSS();
@@ -46,16 +46,12 @@ void cmd_search3d()
 
 	Progress("Read reference structures...");
 	vector<PDBChain *> RefPDBs;
-	ReadPDBs(RefFN, RefPDBs);
+	ReadChains(RefFN, RefPDBs);
 	for (uint i = 0; i < SIZE(RefPDBs); ++i)
 		{
 		PDBChain &Ref = *RefPDBs[i];
 		if (Ref.m_MotifPosVec.size() != 3)
-			{
-			string RefLabel;
-			Ref.GetLabel(RefLabel);
-			Die("Reference missing motif spec: %s", RefLabel.c_str());
-			}
+			Die("Reference missing motif spec: %s", Ref.m_Label.c_str());
 		RefPDBs[i]->SetSS();
 		}
 	Progress(" done.\n");

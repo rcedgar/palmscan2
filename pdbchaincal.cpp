@@ -22,7 +22,8 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 		  StartsWith(Fields[2], "B:") &&
 		  StartsWith(Fields[3], "C:"))
 			{
-			m_ChainLabel = Fields[0].substr(1, string::npos);
+			m_Label = Fields[0].substr(1, string::npos);
+
 			PosA = (uint) atoi(Fields[1].c_str() + 2);
 			PosB = (uint) atoi(Fields[2].c_str() + 2);
 			PosC = (uint) atoi(Fields[3].c_str() + 2);
@@ -40,16 +41,7 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 			Die("Invalid .ppc label %s", Line.c_str());
 		}
 	else
-		m_ChainLabel = Line.substr(1, string::npos);
-
-	size_t n = m_ChainLabel.size();
-	m_Chain = 0;
-	if (n > 2)
-		if (m_ChainLabel[n-2] == '_' || m_ChainLabel[n-2] == '.')
-			{
-			m_Chain = m_ChainLabel[n-1];
-			m_ChainLabel = m_ChainLabel.substr(0, n-2);
-			}
+		m_Label = Line.substr(1, string::npos);
 	}
 
 void PDBChain::FromCalLines(const vector<string> &Lines)
@@ -101,17 +93,4 @@ F       40.340  3.621   14.036
 		}
 	else
 		asserta(m_MotifPosVec.empty());
-	}
-
-void cmd_calinfo()
-	{
-	const string &FileName = opt_calinfo;
-
-	CalReader CR;
-	CR.Open(FileName);
-	PDBChain Chain;
-	while (CR.GetNext(Chain))
-		{
-		Log("%s\n", Chain.m_ChainLabel.c_str());
-		}
 	}

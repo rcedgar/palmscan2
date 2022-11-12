@@ -1,69 +1,95 @@
 #include "myutils.h"
 #include "pssm.h"
 #include "rdrpsearcher.h"
-#include "seqdb.h"
+#include "seqinfo.h"
+#include "fastaseqsource.h"
+#include <time.h>
+
+static uint g_QueryCount;
+static uint g_FoundCount;
+
+void SeqToUpper(string &Seq)
+	{
+	const uint QL = SIZE(Seq);
+	for (uint i = 0; i < QL; ++i)
+		Seq[i] = toupper(Seq[i]);
+	}
 
 void cmd_search_pssms()
 	{
-	const string &QueryFileName = opt_search_pssms;
+	string QueryFileName = opt_search_pssms;
+
+	asserta(optset_model);
+	const string &ModelFileName = opt_model;
+	bool Trace = opt_trace;
+
+	if (!opt_notrunclabels)
+		opt_trunclabels = true;
 
 	RdRpModel Model;
-	Model.FromModelFile(opt_model);
+	Model.FromModelFile(ModelFileName);
 
-	RdRpSearcher RS;
-	RS.Init(Model);
-
-	SeqDB Query;
-	Query.FromFasta(QueryFileName);
-
-	float MinScore = 1.0f;
-	const uint SeqCount = Query.GetSeqCount();
-	const uint GroupCount = RS.GetGroupCount();
-	vector<RPHit> Hits;
-	for (uint SeqIndex = 0; SeqIndex < SeqCount; ++SeqIndex)
+	const uint ThreadCount = GetRequestedThreadCount();
+	vector<ObjMgr *> OMs;
+	vector<RdRpSearcher *> Mods;
+	for (int i = 0; i < int(ThreadCount); ++i)
 		{
-		const string &Label = Query.GetLabel(SeqIndex);
-		const string &Q = Query.GetSeq(SeqIndex);
-		const uint QL = SIZE(Q);
-		if (QL < 8)
-			continue;
-
-		Log("\n");
-		Log("__________________________________________________\n");
-		Log(">%s\n", Label.c_str());
-
-		RS.m_QueryLabel = Label;
-		RS.m_QuerySeq = Q;
-		RS.m_QueryLabel = Label;
-
-		for (uint MotifIndex = 0; MotifIndex < 3; ++MotifIndex)
-			{
-			for (uint GroupIndex = 0; GroupIndex < GroupCount; ++GroupIndex)
-				{
-				RS.SearchMotif(GroupIndex, MotifIndex, 0, QL-1, MinScore, Hits);
-				const uint HitCount = SIZE(Hits);
-				for (uint HitIndex = 0; HitIndex < HitCount; ++HitIndex)
-					{
-					const RPHit &Hit = Hits[HitIndex];
-					uint QLo, QHi;
-					string QRow, PRow, ARow;
-					RS.GetAln(Hit, QRow, PRow, ARow, QLo, QHi);
-
-					char MotifLetter = "ABC"[MotifIndex];
-					string GroupName;
-					RS.GetGroupName(GroupIndex, GroupName);
-
-					Log("\n");
-					Log("%s.%c", GroupName.c_str(), MotifLetter);
-					Log(" (%.1f)", Hit.m_Score);
-					Log(" %u-%u", QLo, QHi);
-					Log("\n");
-
-					Log("  %s\n", QRow.c_str());
-					Log("  %s\n", ARow.c_str());
-					Log("  %s\n", PRow.c_str());
-					}
-				}
-			}
+		ObjMgr *OM = new ObjMgr;
+		OMs.push_back(OM);
+		RdRpSearcher *RS = new RdRpSearcher;
+		RS->Init(Model);
+		Mods.push_back(RS);
 		}
+
+	FASTASeqSource *SS = new FASTASeqSource;
+	SS->Open(QueryFileName);
+
+	RdRpSearcher::InitOutput();
+	uint LastElapsedSecs = 0;
+	uint CurrElapsedSecs = 0;
+	ProgressStep(0, 1000, "Searching");
+#pragma omp parallel num_threads(ThreadCount)
+	{
+	int ThreadIndex = GetThreadIndex();
+	RdRpSearcher &RS = *Mods[ThreadIndex];
+	RS.m_Trace = Trace;
+	ObjMgr *OM = OMs[ThreadIndex];
+	for (;;)
+		{
+		SeqInfo *QSI = OM->GetSeqInfo();
+
+		if (g_QueryCount%100 == 0)
+			CurrElapsedSecs = GetElapsedSecs();
+
+		if (ThreadIndex == 0 && CurrElapsedSecs > LastElapsedSecs)
+			{
+			uint Pct10 = SS->GetPctDoneX10();
+			double HitPct = GetPct(g_FoundCount, g_QueryCount);
+			ProgressStep(Pct10, 1000, "Searching %u / %u hits (%.1f%%)",
+				g_FoundCount, g_QueryCount, HitPct);
+			LastElapsedSecs = CurrElapsedSecs;
+			}
+
+		bool Ok = SS->GetNext(QSI);
+		if (!Ok)
+			break;
+
+		const string Label = string(QSI->m_Label);
+		string Seq;
+		for (uint i = 0; i < QSI->m_L; ++i)
+			Seq += char(toupper(QSI->m_Seq[i]));
+
+		RS.Search(Label, Seq);
+		RS.WriteOutput();
+		OM->Down(QSI);
+
+		++g_QueryCount;
+		if (RS.m_TopPalmHit.m_Score > 0)
+			++g_FoundCount;
+		}
+	}
+
+	double HitPct = GetPct(g_FoundCount, g_QueryCount);
+	ProgressStep(999, 1000, "Searching %u/%u hits (%.1f%%)",
+	  g_FoundCount, g_QueryCount, HitPct);
 	}

@@ -1,8 +1,7 @@
 #include "myutils.h"
 #include "pdbchain.h"
 
-void ReadPDBs(const vector<string> &FileNames, vector<PDBChain *> &Structures);
-void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
+void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
 void GetPalmSketch(const string &ss, uint PSL, string &Sketch);
 
 static char GetSSChar(
@@ -64,22 +63,22 @@ void cmd_pdbss()
 	{
 	const string &QueryFN = opt_pdbss;
 
-	vector<string> FileNames;
-	GetFileNames(QueryFN, FileNames);
 	vector<PDBChain *> Qs;
-	ReadPDBs(FileNames, Qs);
+	ReadChains(QueryFN, Qs);
 
-	const uint N = SIZE(FileNames);
+	const uint N = SIZE(Qs);
 	for (uint i = 0; i < N; ++i)
 		{
 		PDBChain &Q = *Qs[i];
-		string ss;
 		uint QL = Q.GetSeqLength();
 		string Sketch;
 		string SS;
 		Q.GetSS(SS);
-		GetPalmSketch(ss, 50, Sketch);
-		Log("%s   %s\n", Q.m_ChainLabel.c_str(), ss.c_str());
-		Log("%s   Sketch %s\n", Q.m_ChainLabel.c_str(), Sketch.c_str());
+		Log("%s   SecStr  %s\n", Q.m_Label.c_str(), SS.c_str());
+		if (Q.m_MotifPosVec.size() == 3)
+			{
+			GetPalmSketch(SS, 50, Sketch);
+			Log("%s   Sketch  %s\n", Q.m_Label.c_str(), Sketch.c_str());
+			}
 		}
 	}

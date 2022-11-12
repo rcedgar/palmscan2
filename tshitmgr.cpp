@@ -41,8 +41,7 @@ void TSHitMgr::WriteReport(FILE *f) const
 
 	asserta(m_Query != 0);
 
-	string QLabel;
-	m_Query->GetLabel(QLabel);
+	const string &QLabel = m_Query->m_Label;
 	uint QSeqLength = m_Query->GetSeqLength();
 
 	fprintf(f, "\n");
@@ -90,8 +89,7 @@ void TSHitMgr::WriteReport(FILE *f) const
 		if (i == 0)
 			TopScore = ConfScore;
 
-		string RefLabel;
-		TH.m_Ref->GetLabel(RefLabel);
+		const string &RefLabel = TH.m_Ref->m_Label;
 
 		string ASeq, BSeq, CSeq;
 		TH.m_Query->GetSubSeq(QPosA, AL, true, ASeq);
@@ -140,7 +138,7 @@ void TSHitMgr::WriteOutput()
 	m_TopHit->WriteTsv(g_ftsv);
 	m_TopHit->WritePalmprintFasta(g_fppfa);
 	WritePPC(g_fppc);
-	WriteReport(g_freport);
+	WriteReport(g_freport_3d);
 	UnlockOutput();
 	}
 
@@ -174,7 +172,5 @@ void TSHitMgr::WritePPC(FILE* f) const
 	XChain.m_MotifPosVec.push_back(QPosB);
 	XChain.m_MotifPosVec.push_back(QPosC);
 
-	string Label;
-	m_Query->GetLabel(Label);
 	XChain.ToCalSeg(f, QPosA, PPL);
 	}

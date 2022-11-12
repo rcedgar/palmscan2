@@ -12,7 +12,7 @@ void RdRpSearcher::InitOutput()
 void RdRpSearcher::WriteOutput() const
 	{
 	omp_set_lock(&g_OutputLock);
-	WriteReport(g_freport);
+	WriteReport(g_freport_pssms);
 	WriteTsv(g_ftsv);
 	omp_unset_lock(&g_OutputLock);
 	}

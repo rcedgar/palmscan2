@@ -69,10 +69,8 @@ void TSHit::WriteAln(FILE *f) const
 	{
 	asserta(m_Query != 0 && m_Ref != 0);
 	
-	string QLabel;
-	string RLabel;
-	m_Query->GetLabel(QLabel);
-	m_Ref->GetLabel(RLabel);
+	const string &QLabel = m_Query->m_Label;
+	const string &RLabel = m_Ref->m_Label;
 
 	uint QPosA = m_QPosA;
 	uint QPosB = m_QPosB;
@@ -151,10 +149,8 @@ void TSHit::WriteTsv(FILE *f) const
 	asserta(m_Query != 0);
 	asserta(m_Ref != 0);
 
-	string QLabel;
-	string RLabel;
-	m_Query->GetLabel(QLabel);
-	m_Ref->GetLabel(RLabel);
+	const string &QLabel = m_Query->m_Label;
+	const string &RLabel = m_Ref->m_Label;
 
 	double MotifRMSD = sqrt(m_MotifRMSD2);
 	double Score = GetScore();
@@ -189,7 +185,7 @@ void TSHit::WritePalmprintFasta(FILE *f) const
 	uint PPL = PPHi - PPLo + 1;
 	asserta(PPHi > PPLo && PPHi < QL);
 	string Label;
-	m_Query->GetLabel(Label);
+	const string &QLabel = m_Query->m_Label;
 	SeqToFasta(f, Label.c_str(), Q.c_str() + PPLo, PPL);
 	}
 
@@ -212,7 +208,7 @@ void TSHit::WritePalmprintPDB(const string &FileNamePrefix) const
 	m_Query->CopyTriForm(t, R, XChain);
 
 	string Label;
-	m_Query->GetLabel(Label);
+	const string &QLabel = m_Query->m_Label;
 	string FileName = FileNamePrefix + Label;
 	if (!EndsWith(FileName, ".pdb"))
 		FileName += ".pdb";
@@ -304,9 +300,9 @@ void TSHit::WriteSketch(FILE *f) const
 	fprintf(f,
 "_____A______  _________V1_________  ______B_______  _________V2_________  ___C____\n");
 
-	fprintf(f, "%s  %s\n", m_QSketch.c_str(), m_Query->m_ChainLabel.c_str());
+	fprintf(f, "%s  %s\n", m_QSketch.c_str(), m_Query->m_Label.c_str());
 	fprintf(f, "%s\n", m_AnnotSketch.c_str());
-	fprintf(f, "%s  %s\n", m_RSketch.c_str(), m_Ref->m_ChainLabel.c_str());
+	fprintf(f, "%s  %s\n", m_RSketch.c_str(), m_Ref->m_Label.c_str());
 	}
 
 double TSHit::GetScore() const
