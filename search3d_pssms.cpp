@@ -7,8 +7,6 @@
 #include "calreader.h"
 #include "omplock.h"
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
-
 static uint g_DoneCount;
 static uint g_HitCount;
 

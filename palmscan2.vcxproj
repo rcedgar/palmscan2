@@ -281,6 +281,7 @@
     <ClCompile Include="build_rdrp_model.cpp" />
     <ClCompile Include="cal2fa.cpp" />
     <ClCompile Include="calreader.cpp" />
+    <ClCompile Include="classify.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="getchains.cpp" />
     <ClCompile Include="readppc.cpp" />
@@ -327,6 +328,7 @@
     <ClCompile Include="searchparams.cpp" />
     <ClCompile Include="search3d_ppc.cpp" />
     <ClCompile Include="searchtriangle.cpp" />
+    <ClCompile Include="split_train_test.cpp" />
     <ClCompile Include="test_pssms.cpp" />
     <ClCompile Include="seqdb.cpp" />
     <ClCompile Include="seqinfo.cpp" />
@@ -339,11 +341,13 @@
     <ClCompile Include="tmscore.cpp" />
     <ClCompile Include="tracebackbitmem.cpp" />
     <ClCompile Include="triangle.cpp" />
+    <ClCompile Include="triangles.cpp" />
     <ClCompile Include="triform.cpp" />
     <ClCompile Include="trisearcher.cpp" />
     <ClCompile Include="tshit.cpp" />
     <ClCompile Include="tshitmgr.cpp" />
     <ClCompile Include="tsoutput.cpp" />
+    <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xbasis.cpp" />
   </ItemGroup>
@@ -356,6 +360,7 @@
     <ClInclude Include="alnparams.h" />
     <ClInclude Include="alpha.h" />
     <ClInclude Include="calreader.h" />
+    <ClInclude Include="cmds.h" />
     <ClInclude Include="conncomp.h" />
     <ClInclude Include="diagbox.h" />
     <ClInclude Include="fastaseqsource.h" />

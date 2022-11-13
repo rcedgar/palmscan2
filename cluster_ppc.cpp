@@ -30,7 +30,7 @@ void cmd_cluster_ppc()
 	for (;;)
 		{
 		++ClusterCount;
-		ProgressStep(DoneCount, N+1, "%u clusters, %u members",
+		ProgressStep(DoneCount, N+2, "%u clusters, %u members",
 		  ClusterCount, MemberCount);
 		if (Pending.size() == 0)
 			break;
@@ -74,7 +74,7 @@ void cmd_cluster_ppc()
 		  q != MemberIndexes.end(); ++q)
 			Pending.erase(*q);
 		}
-	ProgressStep(N, N+1, "%u clusters, %u members",
+	ProgressStep(N+1, N+2, "%u clusters, %u members",
 		ClusterCount, MemberCount);
 	Log("%.3f RMSD, %u clusters, %u members",
 	  MaxRMSD, ClusterCount, MemberCount);

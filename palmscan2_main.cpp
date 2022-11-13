@@ -20,31 +20,23 @@ int main(int argc, char **argv)
 		asserta(g_Frame >= -3 && g_Frame <= 3 && g_Frame != 0);
 		}
 
+	extern vector<string> g_Argv;
+	uint n = SIZE(g_Argv);
+	asserta(n > 0);
+	string ShortCmdLine = g_Argv[1];
+	if (n > 2)
+		ShortCmdLine += " " + g_Argv[2];
+
 	ProgressPrefix(false);
-	Progress("%s\n", g_ShortCmdLine.c_str());
+	Progress("%s\n", ShortCmdLine.c_str());
 	ProgressPrefix(true);
 
 	OpenOutputFiles();
 	if (0)
 		;
-#define x(opt, f)	else if (optset_##opt) { void f(); f(); }
-	x(build_pssm, BuildPSM)
-	x(build_rdrp_model, BuildRdRpModel)
-	x(search_pssms, cmd_search_pssms)
-	x(cluster_cl, cmd_cluster_cl)
-	x(alignabc, cmd_alignabc)
-	x(pdbss, cmd_pdbss)
-	x(pdb2cal, cmd_pdb2cal)
-	x(search3d, cmd_search3d)
-	x(search3d_cal, cmd_search3d_cal)
-	x(search_pssms, cmd_search_pssms)
-	x(search3d_pssms, cmd_search3d_pssms)
-	x(search3d_ppc, cmd_search3d_ppc)
-	x(remove_dupes, cmd_remove_dupes)
-	x(cal2fa, cmd_cal2fa)
-	x(getchains, cmd_getchains)
-	x(cluster_ppc, cmd_cluster_ppc)
-#undef x
+#define C(x)	else if (optset_##x) { void cmd_##x(); cmd_##x(); }
+#include "cmds.h"
+
 	else
 		Die("No command specified");
 

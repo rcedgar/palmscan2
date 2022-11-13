@@ -4,7 +4,6 @@
 #include <set>
 
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
 
 void cmd_getchains()
 	{

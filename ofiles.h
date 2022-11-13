@@ -11,5 +11,6 @@ F(tsv_tri)
 F(report_tri)
 F(report_pssms)
 F(report_3d)
+F(svg)
 
 #undef F

@@ -245,6 +245,18 @@
     <ClCompile Include="readppc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="classify.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="split_train_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="validate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="triangles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -407,6 +419,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="searchparams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cmds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

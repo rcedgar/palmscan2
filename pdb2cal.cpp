@@ -2,8 +2,6 @@
 #include "pdbchain.h"
 #include "outputfiles.h"
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
-
 void cmd_pdb2cal()
 	{
 	const string &FN = opt_pdb2cal;

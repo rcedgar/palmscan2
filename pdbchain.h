@@ -60,3 +60,5 @@ public:
 	  vector<PDBChain *> &Chains);
 	static void AppendChainToLabel(string &Label, char Chain);
 	};
+
+void ReadChains(const string &FileName, vector<PDBChain *> &Structures);

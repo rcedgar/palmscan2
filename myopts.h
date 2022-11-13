@@ -2,9 +2,9 @@
 #define MY_VERSION	"1.0"
 #endif
 
-STR_OPT(search_pp)
-STR_OPT(search)
-STR_OPT(build_pssm)
+#define C(x)	STR_OPT(x)
+#include "cmds.h"
+
 STR_OPT(search_aa_top)
 STR_OPT(search_nt_top)
 STR_OPT(search_nt_all)
@@ -12,7 +12,6 @@ STR_OPT(search_nt_topx)
 STR_OPT(search_pair_nt)
 STR_OPT(search_pair_g)
 STR_OPT(search_pair_aa)
-STR_OPT(build_rdrp_model)
 STR_OPT(otumaps)
 STR_OPT(alnqc)
 STR_OPT(msaqc)
@@ -24,24 +23,6 @@ STR_OPT(qhitfastaout)
 STR_OPT(rex)
 STR_OPT(align_msas)
 STR_OPT(test_pssms)
-STR_OPT(search_pssms)
-STR_OPT(cluster_cl)
-STR_OPT(alignabc)
-STR_OPT(pdbss)
-STR_OPT(pdb2cal)
-STR_OPT(search3d)
-STR_OPT(getchains)
-
-STR_OPT(remove_dupes)
-STR_OPT(search3d_pssms)
-STR_OPT(search3d_cal)
-STR_OPT(search3d_ppc)
-STR_OPT(cluster_ppc)
-
-STR_OPT(calinfo)
-STR_OPT(cal2fa)
-
-STR_OPT(test_inv)
 
 STR_OPT(tsv_tri)
 STR_OPT(report_tri)
@@ -53,6 +34,9 @@ STR_OPT(tsv)
 STR_OPT(ppfa)
 STR_OPT(ppc)
 STR_OPT(fasta)
+
+STR_OPT(train_cal)
+STR_OPT(test_cal)
 
 STR_OPT(ref)
 STR_OPT(labels)
@@ -78,6 +62,7 @@ STR_OPT(nohit_fastaout)
 STR_OPT(pssm_alnout)
 STR_OPT(msa2)
 STR_OPT(pssmdir)
+STR_OPT(svg)
 
 STR_OPT(log)
 STR_OPT(input)
@@ -105,6 +90,7 @@ UNS_OPT(iddrop,				8,			1,			UINT_MAX)
 UNS_OPT(cluster_maxdiffs,	1,			0,			UINT_MAX)
 UNS_OPT(topn,				32,			1,			UINT_MAX)
 UNS_OPT(maxx,				10,			1,			UINT_MAX)
+UNS_OPT(refn,				10,			1,			UINT_MAX)
 
 UNS_OPT(secs,				60,			1,			UINT_MAX)
 
@@ -146,6 +132,7 @@ FLT_OPT(lopen,				10.0,		0.0,		DBL_MAX)
 FLT_OPT(lext,				1.0,		0.0,		DBL_MAX)
 FLT_OPT(mincscore,			0.0,		0.0,		DBL_MAX)
 FLT_OPT(rmsd,				0.0,		0.0,		DBL_MAX)
+FLT_OPT(train_pct,			0.0,		0.0,		DBL_MAX)
 
 FLAG_OPT(trunclabels)
 FLAG_OPT(notrunclabels)
@@ -161,6 +148,7 @@ FLAG_OPT(permuted)
 FLAG_OPT(notpermuted)
 FLAG_OPT(trace)
 FLAG_OPT(self)
+FLAG_OPT(leave_one_out)
 
 #undef FLAG_OPT
 #undef UNS_OPT

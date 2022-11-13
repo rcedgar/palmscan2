@@ -1,7 +1,6 @@
 #include "myutils.h"
 #include "pdbchain.h"
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
 void GetPalmSketch(const string &ss, uint PSL, string &Sketch);
 
 static char GetSSChar(

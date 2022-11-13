@@ -142,6 +142,55 @@ void TSHitMgr::WriteOutput()
 	UnlockOutput();
 	}
 
+void TSHitMgr::GetPPC(PDBChain &PPC) const
+	{
+	asserta(m_TopHit != 0);
+	asserta(m_Query != 0);
+
+	const PDBChain &Q = *m_Query;
+
+	uint QPosA = m_TopHit->m_QPosA;
+	uint QPosB = m_TopHit->m_QPosB;
+	uint QPosC = m_TopHit->m_QPosC;
+
+	asserta(QPosA < QPosB&& QPosB < QPosC);
+	uint PPL = QPosC + CL - QPosA;
+
+	vector<vector<double> > MotifCoords(3);
+	Q.GetPt(QPosA, MotifCoords[A]);
+	Q.GetPt(QPosB, MotifCoords[B]);
+	Q.GetPt(QPosC, MotifCoords[C]);
+
+	vector<double> t;
+	vector<vector<double> > R;
+	GetTriForm(MotifCoords, t, R);
+
+	PPC.Clear();
+	PPC.m_Label = Q.m_Label;
+	PPC.m_MotifPosVec.clear();
+	PPC.m_MotifPosVec.push_back(0);
+	PPC.m_MotifPosVec.push_back(QPosB - QPosA);
+	PPC.m_MotifPosVec.push_back(QPosC - QPosA);
+
+	const uint N = SIZE(Q.m_Xs);
+	asserta(SIZE(Q.m_Seq) == N);
+	asserta(SIZE(Q.m_Ys) == N);
+	asserta(SIZE(Q.m_Zs) == N);
+	vector<double> Pt(3);
+	vector<double> XPt(3);
+	for (uint i = 0; i < PPL; ++i)
+		{
+		char c = Q.m_Seq[QPosA + i];
+		PPC.m_Seq += c;
+
+		Q.GetPt(QPosA + i, Pt);
+		XFormPt(Pt, t, R, XPt);
+		PPC.m_Xs.push_back(XPt[X]);
+		PPC.m_Ys.push_back(XPt[Y]);
+		PPC.m_Zs.push_back(XPt[Z]);
+		}
+	}
+
 void TSHitMgr::WritePPC(FILE* f) const
 	{
 	if (f == 0)

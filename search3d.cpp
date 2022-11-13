@@ -7,7 +7,6 @@
 #include "omplock.h"
 
 void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
 
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs)

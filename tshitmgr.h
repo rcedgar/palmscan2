@@ -16,4 +16,5 @@ public:
 	void SetTopHit();
 	void WriteReport(FILE *f) const;
 	void WritePPC(FILE* f) const;
+	void GetPPC(PDBChain &ChainPPC) const;
 	};

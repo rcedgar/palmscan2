@@ -92,7 +92,7 @@ void RdRpModel::ToModelFile(const string &FileName) const
 	CloseStdioFile(f);
 	}
 
-void BuildRdRpModel()
+void cmd_build_rdrp_model()
 	{
 	const string &NamesFileName = opt_build_rdrp_model;
 	string PSSMDir = "./";

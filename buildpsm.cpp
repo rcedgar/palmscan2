@@ -1,7 +1,7 @@
 #include "myutils.h"
 #include "pssm.h"
 
-void BuildPSM()
+void cmd_build_pssm()
 	{
 	const string InputFileName = string(opt_build_pssm);
 	const string OutputFileName = string(opt_output);

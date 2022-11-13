@@ -7,8 +7,6 @@
 #include "calreader.h"
 #include "omplock.h"
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
-
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs);
 

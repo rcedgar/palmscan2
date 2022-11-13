@@ -3,8 +3,6 @@
 #include "outputfiles.h"
 #include <set>
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
-
 void cmd_remove_dupes()
 	{
 	const string &InputFN = opt_remove_dupes;
