@@ -21,5 +21,6 @@ C(classify)
 C(validate)
 C(split_train_test)
 C(triangles)
+C(checkppc)
 
 #undef C

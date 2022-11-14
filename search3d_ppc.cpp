@@ -79,7 +79,7 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 			string sPct;
 			CR.GetPctDone(sPct);
 			Progress("%s%% done, %u / %u hits\r",
-			  sPct, g_HitCount, g_DoneCount);
+			  sPct.c_str(), g_HitCount, g_DoneCount);
 			Unlock("Progress");
 			}
 		PpcAligner &PA = PAs[ThreadIndex];

@@ -281,6 +281,7 @@
     <ClCompile Include="build_rdrp_model.cpp" />
     <ClCompile Include="cal2fa.cpp" />
     <ClCompile Include="calreader.cpp" />
+    <ClCompile Include="checkppc.cpp" />
     <ClCompile Include="classify.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="getchains.cpp" />

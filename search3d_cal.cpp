@@ -36,7 +36,7 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 			string sPct;
 			CR.GetPctDone(sPct);
 			Progress("%s%% done, %u / %u hits\r",
-			  sPct, g_HitCount, g_DoneCount);
+			  sPct.c_str(), g_HitCount, g_DoneCount);
 			Unlock("Progress");
 			}
 		TriSearcher &TS = TSs[ThreadIndex];
@@ -68,15 +68,10 @@ void cmd_search3d_cal()
 	vector<vector<PDBChain *> > QVecs(ThreadCount);
 	vector<TriSearcher> TSs(ThreadCount);
 	vector<TSHitMgr> HMs(ThreadCount);
-	
-	uint ThreadFinishedCount = 0;
-	uint DoneCount = 0;
-	uint HitCount = 0;
 	vector<PDBChain> Qs(ThreadCount);
-	vector<bool> ThreadDone(ThreadCount);
 
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(CR, Qs, RefPDBs, TSs, HMs);
 
-	Progress("%u done, %u hits\n", DoneCount, HitCount);
+	Progress("%u done, %u hits\n", g_DoneCount, g_HitCount);
 	}

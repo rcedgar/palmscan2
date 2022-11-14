@@ -82,15 +82,8 @@ F       40.340  3.621   14.036
 		}
 
 	if (m_MotifPosVec.size() == 3)
-		{
-		uint QL = SIZE(m_Seq);
-		uint PosA = m_MotifPosVec[0];
-		uint PosB = m_MotifPosVec[1];
-		uint PosC = m_MotifPosVec[2];
-		asserta(PosA == 0);
-		asserta(PosB > PosA + AL && PosB + BL < PosC);
-		asserta(PosC + CL == QL);
-		}
+		asserta(CheckPPCMotifCoords());
 	else
 		asserta(m_MotifPosVec.empty());
 	}
+

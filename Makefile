@@ -21,6 +21,8 @@ HDRS = \
   alnheuristics.h \
   alnparams.h \
   alpha.h \
+  calreader.h \
+  cmds.h \
   conncomp.h \
   diagbox.h \
   fastaseqsource.h \
@@ -42,10 +44,14 @@ HDRS = \
   objmgr.h \
   objtype.h \
   objtypes.h \
+  ofiles.h \
   omplock.h \
+  outputfiles.h \
   palmhit.h \
   pathinfo.h \
   pdbchain.h \
+  ppcaligner.h \
+  ppchit.h \
   pssm.h \
   pssms.h \
   pssmsearch.h \
@@ -54,6 +60,7 @@ HDRS = \
   rdrpmodel.h \
   rdrpsearcher.h \
   rphit.h \
+  searchparams.h \
   seqdb.h \
   seqinfo.h \
   seqsource.h \
@@ -65,6 +72,7 @@ HDRS = \
   trisearcher.h \
   tshit.h \
   tshitmgr.h \
+  usage.h \
   usearch.h \
   viterbi.h \
   xdpmem.h \
@@ -82,6 +90,13 @@ OBJS = \
   $(OBJDIR)/blosum62.o \
   $(OBJDIR)/buildpsm.o \
   $(OBJDIR)/build_rdrp_model.o \
+  $(OBJDIR)/cal2fa.o \
+  $(OBJDIR)/calreader.o \
+  $(OBJDIR)/classify.o \
+  $(OBJDIR)/cluster_ppc.o \
+  $(OBJDIR)/getchains.o \
+  $(OBJDIR)/readppc.o \
+  $(OBJDIR)/remove_dupes.o \
   $(OBJDIR)/cluster_cl.o \
   $(OBJDIR)/diagbox.o \
   $(OBJDIR)/fastaseqsource.o \
@@ -102,21 +117,30 @@ OBJS = \
   $(OBJDIR)/objmgr.o \
   $(OBJDIR)/one2three.o \
   $(OBJDIR)/output.o \
+  $(OBJDIR)/outputfiles.o \
   $(OBJDIR)/palmscan2_main.o \
   $(OBJDIR)/getfilenames.o \
-  $(OBJDIR)/readpdbs.o \
+  $(OBJDIR)/palmsketch.o \
+  $(OBJDIR)/pdb2cal.o \
+  $(OBJDIR)/pdbchaincal.o \
+  $(OBJDIR)/ppcaligner.o \
+  $(OBJDIR)/readchains.o \
   $(OBJDIR)/search3d.o \
   $(OBJDIR)/pdbchain.o \
   $(OBJDIR)/psms.o \
   $(OBJDIR)/pssm.o \
   $(OBJDIR)/quarts.o \
   $(OBJDIR)/rdrpsearcher.o \
+  $(OBJDIR)/search3d_cal.o \
   $(OBJDIR)/searchaatop.o \
-  $(OBJDIR)/search.o \
-  $(OBJDIR)/searchgroup.o \
-  $(OBJDIR)/scanpdb.o \
-  $(OBJDIR)/searchtriangle.o \
   $(OBJDIR)/search_pssms.o \
+  $(OBJDIR)/searchgroup.o \
+  $(OBJDIR)/search3d_pssms.o \
+  $(OBJDIR)/searchparams.o \
+  $(OBJDIR)/search3d_ppc.o \
+  $(OBJDIR)/searchtriangle.o \
+  $(OBJDIR)/split_train_test.o \
+  $(OBJDIR)/test_pssms.o \
   $(OBJDIR)/seqdb.o \
   $(OBJDIR)/seqinfo.o \
   $(OBJDIR)/seqsource.o \
@@ -128,11 +152,13 @@ OBJS = \
   $(OBJDIR)/tmscore.o \
   $(OBJDIR)/tracebackbitmem.o \
   $(OBJDIR)/triangle.o \
+  $(OBJDIR)/triangles.o \
   $(OBJDIR)/triform.o \
   $(OBJDIR)/trisearcher.o \
   $(OBJDIR)/tshit.o \
   $(OBJDIR)/tshitmgr.o \
   $(OBJDIR)/tsoutput.o \
+  $(OBJDIR)/validate.o \
   $(OBJDIR)/viterbifastmem.o \
   $(OBJDIR)/xbasis.o \
 

@@ -198,28 +198,12 @@ void TSHitMgr::WritePPC(FILE* f) const
 	if (m_TopHit == 0)
 		return;
 
-	uint QPosA = m_TopHit->m_QPosA;
-	uint QPosB = m_TopHit->m_QPosB;
-	uint QPosC = m_TopHit->m_QPosC;
+	uint PosA = m_TopHit->m_QPosA;
+	uint PosB = m_TopHit->m_QPosB;
+	uint PosC = m_TopHit->m_QPosC;
 
-	asserta(QPosA < QPosB&& QPosB < QPosC);
-	uint PPL = QPosC + CL - QPosA + 1;
-
-	vector<vector<double> > MotifCoords(3);
-	m_Query->GetPt(QPosA, MotifCoords[A]);
-	m_Query->GetPt(QPosB, MotifCoords[B]);
-	m_Query->GetPt(QPosC, MotifCoords[C]);
-
-	vector<double> t;
-	vector<vector<double> > R;
-	GetTriForm(MotifCoords, t, R);
-
-	PDBChain XChain;
-	m_Query->CopyTriForm(t, R, XChain);
-	XChain.m_MotifPosVec.clear();
-	XChain.m_MotifPosVec.push_back(QPosA);
-	XChain.m_MotifPosVec.push_back(QPosB);
-	XChain.m_MotifPosVec.push_back(QPosC);
-
-	XChain.ToCalSeg(f, QPosA, PPL);
+	PDBChain PPC;
+	m_Query->GetPPC(PosA, PosB, PosC, PPC);
+	asserta(PPC.CheckPPCMotifCoords());
+	PPC.ToCal(f);
 	}

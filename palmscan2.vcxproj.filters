@@ -257,6 +257,9 @@
     <ClCompile Include="triangles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkppc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

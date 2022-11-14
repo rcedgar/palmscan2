@@ -35,8 +35,8 @@ public:
 	  const vector<vector<double> > &R,
 	  PDBChain &XChain) const;
 	void LogMe(bool WithCoords = false) const;
-	const char *GetMotifSeq(uint MotifIndex, string &s) const;
-	const char *GetMotifSeqNoFail(uint MotifIndex, string &s) const;
+	void GetMotifSeq(uint MotifIndex, string &s) const;
+	void GetSubSeq(uint Pos, uint n, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
 	void GetPt(uint Pos, vector<double> &Pt) const;
 	void SetPt(uint Pos, const vector<double> &Pt);
@@ -45,6 +45,7 @@ public:
 	void GetMotifCoords(vector<vector<double> > &MotifCoords) const;
 	void GetMotifDists(double &AB, double &BC, double &AC) const;
 	void GetMotifDists2(double &AB, double &BC, double &AC) const;
+	uint GetMotifPos(uint MotifIndex) const;
 	void GetSubSeq(uint StartPos, uint n,
 	  bool FailOnOverflow, string &MotifSeq) const;
 	void GetSS(string &SS) const;
@@ -52,8 +53,13 @@ public:
 		{
 		GetSS(m_SS);
 		}
+	bool CheckMotifCoords() const;
+	bool CheckPPCMotifCoords() const;
+	void GetPPC(uint PosA, uint PosB, uint PosC, PDBChain &PPC) const;
 
 public:
+	static uint GetMotifLength(uint MotifIndex);
+	static uint GetPalmPrintLength(uint PosA, uint PosC, uint L);
 	static void ChainsFromLines(const string &Label,
 	  const vector<string> &Lines, vector<PDBChain *> &Chains);
 	static void ReadChainsFromFile(const string &FileName,

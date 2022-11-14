@@ -317,37 +317,6 @@ void PSSM::LogMe() const
 			}
 		Log("\n");
 		}
-
-	//Log("\n");
-	//Log("Training scores:\n");
-	//const unsigned SeqCount = SIZE(m_Seqs);
-	//vector<float> Scores;
-	//for (unsigned SeqIndex = 0; SeqIndex < SeqCount; ++SeqIndex)
-	//	{
-	//	const char *Seq = m_Seqs[SeqIndex].c_str();
-	//	float Score = GetScore(Seq);
-	//	Scores.push_back(Score);
-	//	}
-	//vector<unsigned> Order;
-	//SortDescending(Scores, Order);
-
-	//for (unsigned i = 0; i < SeqCount; ++i)
-	//	{
-	//	unsigned SeqIndex = Order[i];
-	//	float Score = Scores[SeqIndex];
-	//	const char *Seq = m_Seqs[SeqIndex].c_str();
-	//	Log("%8.4f  %s  >%s\n", Score, Seq, m_Labels[SeqIndex].c_str());
-	//	}
-
-	//Log("\n");
-	//Log("Random scores:\n");
-	//string s;
-	//for (unsigned i = 0; i < 16; ++i)
-	//	{
-	//	const char *Seq = GetRandomSeq(s);
-	//	float Score = GetScore(Seq);
-	//	Log("%8.4f  %s\n", Score, Seq);
-	//	}
 	}
 
 const char *PSSM::CalcConsSeq(string &Seq) const

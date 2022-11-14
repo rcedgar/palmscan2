@@ -72,12 +72,29 @@ void ReadChainsCal(const string &FileName, vector<PDBChain *> &Structures)
 
 void ReadChains(const string &FileName, vector<PDBChain *> &Structures)
 	{
+	if (FileName.empty())
+		Die("Missing chains filename");
+
 	if (EndsWith(FileName, ".cal") || EndsWith(FileName, ".ppc"))
 		{
 		ReadChainsCal(FileName, Structures);
 		return;
 		}
-	vector<string> FileNames;
-	GetFileNames(FileName, FileNames);
-	ReadChains(FileNames, Structures);
+	else if (EndsWith(FileName, ".files"))
+		{
+		vector<string> FileNames;
+		GetFileNames(FileName, FileNames);
+		ReadChains(FileNames, Structures);
+		}
+	string Label;
+	GetLabelFromFileName(FileName, Label);
+
+	vector<string> Lines;
+	ReadLinesFromFile(FileName, Lines);
+
+	vector<PDBChain *> Chains;
+	PDBChain::ChainsFromLines(Label, Lines, Chains);
+	const uint NC = SIZE(Chains);
+	for (uint j = 0; j < NC; ++j)
+		Structures.push_back(Chains[j]);
 	}

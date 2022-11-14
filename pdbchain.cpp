@@ -62,11 +62,15 @@ void PDBChain::LogMe(bool WithCoords) const
 	if (!m_MotifPosVec.empty())
 		{
 		asserta(m_MotifPosVec.size() == 3);
-		string A, B, C;
+		string MotifA, MotifB, MotifC;
+		GetMotifSeq(A, MotifA);
+		GetMotifSeq(B, MotifB);
+		GetMotifSeq(C, MotifC);
+
 		Log("A:%u:%s  B:%u:%s  C:%u:%s\n",
-		  m_MotifPosVec[0]+1, GetMotifSeq(0, A),
-		  m_MotifPosVec[1]+1, GetMotifSeq(1, B),
-		  m_MotifPosVec[2]+1, GetMotifSeq(2, C));
+		  m_MotifPosVec[0]+1, MotifA.c_str(),
+		  m_MotifPosVec[1]+1, MotifB.c_str(),
+		  m_MotifPosVec[2]+1, MotifC.c_str());
 		}
 
 	if (WithCoords)
@@ -128,11 +132,15 @@ void PDBChain::ToCalSeg(FILE *f, uint Pos, uint n) const
 		asserta(PosA >= Pos);
 		asserta(PosC + CL <= Pos + n);
 
-		string A, B, C;
-		fprintf(f, " A:%u:%s B:%u:%s C:%u:%s",
-		  PosA - Pos + 1, GetMotifSeqNoFail(0, A), 
-		  PosB - Pos + 1, GetMotifSeqNoFail(1, B), 
-		  PosC - Pos + 1, GetMotifSeqNoFail(2, C));
+		string MotifA, MotifB, MotifC;
+		GetMotifSeq(A, MotifA);
+		GetMotifSeq(B, MotifB);
+		GetMotifSeq(C, MotifC);
+
+		Log("A:%u:%s  B:%u:%s  C:%u:%s\n",
+		  m_MotifPosVec[0]+1, MotifA.c_str(),
+		  m_MotifPosVec[1]+1, MotifB.c_str(),
+		  m_MotifPosVec[2]+1, MotifC.c_str());
 		}
 	fputc('\n', f);
 
@@ -164,16 +172,6 @@ void PDBChain::ToPDB(const string &FileName) const
 	const char Chain = 'A';
 
 	fprintf(f, "TITLE %s\n", m_Label.c_str());
-	if (!m_MotifPosVec.empty())
-		{
-		asserta(m_MotifPosVec.size() == 3);
-		string A, B, C;
-		fprintf(f, "REMARK PALMPRINT A:%u:%s B:%u:%s C:%u:%s\n",
-		  m_MotifPosVec[0] + 1, GetMotifSeq(0, A), 
-		  m_MotifPosVec[1] + 1, GetMotifSeq(1, B), 
-		  m_MotifPosVec[2] + 1, GetMotifSeq(2, C));
-		}
-
 	for (uint i = 0; i < L; ++i)
 		{
 		char aa = m_Seq[i];
@@ -277,60 +275,32 @@ void PDBChain::FromLines(const string &Label, const vector<string> &Lines)
 	AppendChainToLabel(m_Label, Chain);
 	}
 
-const char *PDBChain::GetMotifSeqNoFail(uint i, string &s) const
+void PDBChain::GetSubSeq(uint Pos, uint n, string &s) const
 	{
-	if (m_MotifPosVec.size() != 3)
-		{
-		s = "ERR1";
-		return s.c_str();
-		}
-
 	s.clear();
-	uint Pos = m_MotifPosVec[i];
 	size_t L = m_Seq.size();
-	uint ML = 0;
-	switch (i)
-		{
-	case 0:		ML = AL; break;
-	case 1:		ML = BL; break;
-	case 2:		ML = CL; break;
-	default:	asserta(false);
-		}
-	for (uint k = 0; k < ML; ++k)
-		{
-		if (Pos+k < SIZE(m_Seq))
-			{
-			char c = m_Seq[Pos+k];
-			s += c;
-			}
-		else
-			s += "*";
-		}
-	return s.c_str();
-	}
+	asserta(Pos + n <= L);
 
-const char *PDBChain::GetMotifSeq(uint i, string &s) const
-	{
-	asserta(m_MotifPosVec.size() == 3);
-
-	s.clear();
-	uint Pos = m_MotifPosVec[i];
-	size_t L = m_Seq.size();
-	uint ML = 0;
-	switch (i)
+	for (uint i = 0; i < n; ++i)
 		{
-	case 0:		ML = AL; break;
-	case 1:		ML = BL; break;
-	case 2:		ML = CL; break;
-	default:	asserta(false);
-		}
-	asserta(Pos + ML <= L);
-	for (uint k = 0; k < ML; ++k)
-		{
-		char c = m_Seq[Pos+k];
+		char c = m_Seq[Pos+i];
 		s += c;
 		}
-	return s.c_str();
+	}
+
+uint PDBChain::GetMotifLength(uint i)
+	{
+	asserta(i < 3);
+	static const uint Lengths[3] = { AL, BL, CL };
+	return Lengths[i];
+	}
+
+void PDBChain::GetMotifSeq(uint i, string &Seq) const
+	{
+	asserta(m_MotifPosVec.size() == 3);
+	uint Pos = GetMotifPos(i);
+	uint ML = GetMotifLength(i);
+	GetSubSeq(Pos, ML, Seq);
 	}
 
 void PDBChain::GetPt(uint Pos, vector<double> &Pt) const
@@ -441,6 +411,14 @@ void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 uint PDBChain::GetSeqLength() const
 	{
 	return SIZE(m_Seq);
+	}
+
+uint PDBChain::GetMotifPos(uint MotifIndex) const
+	{
+	asserta(MotifIndex < 3);
+	asserta(m_MotifPosVec.size() == 3);
+	uint Pos = m_MotifPosVec[MotifIndex];
+	return Pos;
 	}
 
 void PDBChain::GetSubSeq(uint MotifStartPos, uint n,
@@ -555,4 +533,126 @@ void PDBChain::AppendChainToLabel(string &Label, char Chain)
 		Label += "_";
 		Label += Chain;
 		}
+	}
+
+uint PDBChain::GetPalmPrintLength(uint PosA, uint PosC, uint L)
+	{
+	asserta(PosA < PosC);
+	asserta(PosC + CL <= L);
+
+	uint Hi = PosC + CL - 1;
+	uint PPL = Hi - PosA + 1;
+	return PPL;
+	}
+
+bool PDBChain::CheckMotifCoords() const
+	{
+	uint n = SIZE(m_MotifPosVec);
+	if (n == 0)
+		return false;
+	asserta(n == 3);
+
+	uint QL = SIZE(m_Seq);
+	uint PosA = m_MotifPosVec[A];
+	uint PosB = m_MotifPosVec[B];
+	uint PosC = m_MotifPosVec[C];
+
+	if (PosA + AL >= PosB)
+		return false;
+
+	if (PosB + BL >= PosC)
+		return false;
+
+	if (PosC + CL > QL)
+		return false;
+
+	return true;
+	}
+
+bool PDBChain::CheckPPCMotifCoords() const
+	{
+	uint n = SIZE(m_MotifPosVec);
+	if (n == 0)
+		return false;
+	asserta(n == 3);
+
+	uint QL = SIZE(m_Seq);
+	uint PosA = m_MotifPosVec[A];
+	uint PosB = m_MotifPosVec[B];
+	uint PosC = m_MotifPosVec[C];
+
+	if (PosA != 0)
+		return false;
+
+	if (PosA + AL >= PosB)
+		return false;
+
+	if (PosB + BL >= PosC)
+		return false;
+
+	if (PosC + CL != QL)
+		return false;
+
+	return true;
+	}
+
+void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
+  PDBChain &PPC) const
+	{
+	PPC.Clear();
+
+	uint L = GetSeqLength();
+	uint PPL = GetPalmPrintLength(PosA, PosC, L);
+
+	asserta(PosB > PosA + AL);
+	asserta(PosC > PosB + AL);
+	asserta(PosC + CL <= L);
+
+	uint PPC_PosA = 0;
+	uint PPC_PosB = PosB - PosA;
+	uint PPC_PosC = PosC - PosA;
+
+	PPC.m_MotifPosVec.clear();
+	PPC.m_MotifPosVec.push_back(PPC_PosA);
+	PPC.m_MotifPosVec.push_back(PPC_PosB);
+	PPC.m_MotifPosVec.push_back(PPC_PosC);
+
+	vector<vector<double> > MotifCoords(3);
+	GetPt(PosA, MotifCoords[A]);
+	GetPt(PosB, MotifCoords[B]);
+	GetPt(PosC, MotifCoords[C]);
+
+	vector<double> t;
+	vector<vector<double> > R;
+	GetTriForm(MotifCoords, t, R);
+
+	vector<double> Pt;
+	vector<double> XPt;
+	for (uint i = 0; i < PPL; ++i)
+		{
+		uint Pos = PosA + i;
+		char c = m_Seq[Pos];
+		PPC.m_Seq += c;
+
+		GetPt(Pos, Pt);
+		XFormPt(Pt, t, R, XPt);
+
+		PPC.m_Xs.push_back(XPt[X]);
+		PPC.m_Ys.push_back(XPt[Y]);
+		PPC.m_Zs.push_back(XPt[Z]);
+		}
+
+
+	string MotifA, MotifB, MotifC;
+	GetSubSeq(PosA, AL, MotifA);
+	GetSubSeq(PosB, BL, MotifB);
+	GetSubSeq(PosC, CL, MotifC);
+
+	string MotifCoordStr;
+	Ps(MotifCoordStr, "A:%u:%s B:%u:%s C:%u:%s",
+	  PPC_PosA + 1, MotifA.c_str(),
+	  PPC_PosB + 1, MotifB.c_str(),
+	  PPC_PosC + 1, MotifC.c_str());
+
+	PPC.m_Label = m_Label + " " + MotifCoordStr;
 	}

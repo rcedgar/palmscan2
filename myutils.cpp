@@ -1936,10 +1936,10 @@ void Version(FILE *f)
 
 void PrintHelp()
 	{
-	extern const char *g_helpstrs[];
-	extern int g_nhelpstrs;
-	for (int i = 0; i < g_nhelpstrs; ++i)
-		puts(g_helpstrs[i]);
+	extern const char *help_txt[];
+	extern int g_n_help_txt;
+	for (int i = 0; i < g_n_help_txt; ++i)
+		puts(help_txt[i]);
 	puts("");
 	}
 
@@ -2234,6 +2234,7 @@ unsigned GetRequestedThreadCount()
 		return N;
 	unsigned MaxN = omp_get_max_threads();
 	unsigned CoreCount = GetCPUCoreCount();
+	bool MsgDone = false;
 	if (optset_threads)
 		N = opt_threads;
 	else
@@ -2242,6 +2243,7 @@ unsigned GetRequestedThreadCount()
 			{
 			Progress("CPU has %u cores, defaulting to 10 threads\n", CoreCount);
 			N = 10;
+			MsgDone = true;
 			}
 		else
 			N = CoreCount;
@@ -2254,6 +2256,11 @@ unsigned GetRequestedThreadCount()
 	if (N == 0)
 		N = 1;
 	Done = true;
+	if (!MsgDone)
+		{
+		Progress("Running %u threads (CPU has %u cores)\n", N, CoreCount);
+		MsgDone = true;
+		}
 	return N;
 	}
 

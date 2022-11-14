@@ -36,7 +36,19 @@ void cmd_classify()
 		bool Ok = CR.GetNext(Q);
 		if (!Ok)
 			break;
+		if (RecCount%10000 == 0)
+			{
+			string sPct;
+			CR.GetPctDone(sPct);
+			Progress("%s%% done, %u / %u RdRp hits\r",
+			  sPct.c_str(), HitCount, RecCount);
+			}
 		++RecCount;
+		if (Q.m_MotifPosVec.empty())
+			{
+			Warning("Missing motif coords >%s", Q.m_Label.c_str());
+			continue;
+			}
 		PA.SetQuery(Q);
 
 		double RMSD_TopRdRp = DBL_MAX;
@@ -128,5 +140,6 @@ void cmd_classify()
 		else
 			asserta(false);
 		}
-	ProgressLog("%u / %u RdRp hits\n", HitCount, RecCount);
+	Progress("100%% done, %u / %u RdRp hits\n",
+		HitCount, RecCount);
 	}

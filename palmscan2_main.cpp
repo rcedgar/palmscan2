@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 		ShortCmdLine += " " + g_Argv[2];
 
 	ProgressPrefix(false);
-	Progress("%s\n", ShortCmdLine.c_str());
+	Progress("[%s]\n", ShortCmdLine.c_str() + 1);
 	ProgressPrefix(true);
 
 	OpenOutputFiles();

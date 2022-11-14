@@ -106,7 +106,6 @@ void TriSearcher::AlignSeg(
 #endif
 	}
 
-
 bool TriSearcher::AlignPalm(uint QueryPosA, uint QueryPosB,
   uint QueryPosC, string &Path)
 	{
@@ -143,7 +142,8 @@ bool TriSearcher::AlignPalm(uint QueryPosA, uint QueryPosB,
 	AlignSeg(V2StartQ, V2LenQ, V2StartR, V2LenR,
 	  m_TriForm_t, m_TriForm_R, V2Path);
 
-	uint PalmLenQ = QPosC + CL - QPosA;
+	int QL = m_Query->GetSeqLength();
+	uint PalmLenQ = PDBChain::GetPalmPrintLength(QPosA, QPosC, QL);
 	uint RL = SIZE(m_Ref->m_Seq);
 	AlignSeg(QPosA, PalmLenQ, 0, RL,
 	  m_TriForm_t, m_TriForm_R, Path);

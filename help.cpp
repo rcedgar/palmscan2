@@ -1,7 +1,4 @@
 
-const char *g_helpstrs[] =
-	{
-	"Help TODO"
-	};
+#include "usage.h"
 
-int g_nhelpstrs = sizeof(g_helpstrs)/sizeof(g_helpstrs[0]);
+int g_n_help_txt = sizeof(help_txt)/sizeof(help_txt[0]);
