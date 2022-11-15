@@ -153,7 +153,7 @@ void TSHit::WriteTsv(FILE *f) const
 	const string &RLabel = m_Ref->m_Label;
 
 	double MotifRMSD = sqrt(m_MotifRMSD2);
-	double Score = GetScore();
+	double Score = m_Score;
 
 	string QASeq, QBSeq, QCSeq;
 	m_Query->GetSubSeq(m_QPosA, AL, true, QASeq);
@@ -217,56 +217,49 @@ void TSHit::WritePalmprintPDB(const string &FileNamePrefix) const
 
 void TSHit::SetSketch()
 	{
+	asserta(SIZE(m_Query->m_SS) == SIZE(m_Query->m_Seq));
+
+	assert(m_Query->CheckMotifCoords());
+	assert(m_Ref->CheckPPCMotifCoords());
+
 	m_SketchPct = 0;
 	m_QSketch.clear();
 	m_RSketch.clear();
 
+	uint RPosA = m_Ref->m_MotifPosVec[A];
+	uint RPosB = m_Ref->m_MotifPosVec[B];
+	uint RPosC = m_Ref->m_MotifPosVec[C];
+
 	const string& QSS = m_Query->m_SS;
 	const string& RSS = m_Ref->m_SS;
-	//fprintf(f, "QSS %s\n", QSS.c_str());
-	//fprintf(f, "RSS %s\n", RSS.c_str());
 
 	uint QL = m_Query->GetSeqLength();
 	uint RL = m_Ref->GetSeqLength();
 
-	asserta(m_QPosA + AL < m_QPosB);
-	asserta(m_QPosB + BL < m_QPosC);
-	asserta(m_QPosC + CL <= QL);
-
-	asserta(m_RPosA + AL < m_RPosB);
-	asserta(m_RPosB + BL < m_RPosC);
-	asserta(m_RPosC + CL <= RL);
-
-	string QASk = QSS.substr(m_QPosA, AL);
-	string RASk = RSS.substr(m_RPosA, AL);
+	string QASk = QSS.substr(m_QPosA + 2, AL - 2);
+	string RASk = RSS.substr(RPosA + 2, AL - 2);
 
 	string QBSk = QSS.substr(m_QPosB, BL);
-	string RBSk = RSS.substr(m_RPosB, BL);
+	string RBSk = RSS.substr(RPosB, BL);
 
-	string QCSk = QSS.substr(m_QPosC, CL);
-	string RCSk = RSS.substr(m_RPosC, CL);
+	string QCSk = QSS.substr(m_QPosC, CL - 2);
+	string RCSk = RSS.substr(RPosC, CL - 2);
 
 	uint QV1L = m_QPosB - (m_QPosA + AL);
-	uint RV1L = m_RPosB - (m_RPosA + AL);
+	uint RV1L = RPosB - (RPosA + AL);
 
 	uint QV2L = m_QPosC - (m_QPosB + BL);
-	uint RV2L = m_RPosC - (m_RPosB + BL);
-
-	RASk[0] = ' ';
-	RASk[1] = ' ';
-
-	RCSk[CL - 2] = ' ';
-	RCSk[CL - 1] = ' ';
+	uint RV2L = RPosC - (RPosB + BL);
 
 	string QV1Sk;
 	string RV1Sk;
 	GetPalmSubSketch(QSS, m_QPosA + 1, QV1L, V_SKETCH_LENGTH, QV1Sk);
-	GetPalmSubSketch(RSS, m_RPosA + 1, RV1L, V_SKETCH_LENGTH, RV1Sk);
+	GetPalmSubSketch(RSS, RPosA + 1, RV1L, V_SKETCH_LENGTH, RV1Sk);
 
 	string QV2Sk;
 	string RV2Sk;
 	GetPalmSubSketch(QSS, m_QPosB + 1, QV2L, V_SKETCH_LENGTH, QV2Sk);
-	GetPalmSubSketch(RSS, m_RPosB + 1, RV2L, V_SKETCH_LENGTH, RV2Sk);
+	GetPalmSubSketch(RSS, RPosB + 1, RV2L, V_SKETCH_LENGTH, RV2Sk);
 
 	m_QSketch = QASk + "  " + QV1Sk + "  " + QBSk + "  " + QV2Sk + "  " + QCSk;
 	m_RSketch = RASk + "  " + RV1Sk + "  " + RBSk + "  " + RV2Sk + "  " + RCSk;
@@ -298,19 +291,47 @@ void TSHit::WriteSketch(FILE *f) const
 
 	fprintf(f, "\n");
 	fprintf(f,
-"_____A______  _________V1_________  ______B_______  _________V2_________  ___C____\n");
+"_____A____  _________V1_________  ______B_______  _________V2_________  ___C__\n");
 
 	fprintf(f, "%s  %s\n", m_QSketch.c_str(), m_Query->m_Label.c_str());
 	fprintf(f, "%s\n", m_AnnotSketch.c_str());
 	fprintf(f, "%s  %s\n", m_RSketch.c_str(), m_Ref->m_Label.c_str());
 	}
 
-double TSHit::GetScore() const
+void TSHit::SetScore()
 	{
 	asserta(!m_QSketch.empty());
 	double MotifRMSD = sqrt(m_MotifRMSD2);
 	double ConfScore = GetConfidenceScore(MotifRMSD);
-	double FinalScore = (ConfScore + m_SketchPct/100.0)/2.0;
-	return FinalScore;
+//	m_Score = (ConfScore + m_SketchPct/100.0)/2.0;
+	m_Score = ConfScore;
 	}
 
+void TSHit::WriteReport(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	const string &QLabel = m_Query->m_Label;
+	uint QL = m_Query->GetSeqLength();
+
+	fprintf(f, "\n");
+	fprintf(f, "_______________________________________________\n");
+	fprintf(f, "Query >%s (%u aa)\n", QLabel.c_str(), QL);
+
+	WriteAln(f);
+	WriteSketch(f);
+	double RMSD = sqrt(m_MotifRMSD2);
+
+	fprintf(f, "\n");
+	fprintf(f, "Score %.3f (%.2f, %.1f%%)",
+	  m_Score, RMSD, m_SketchPct);
+
+	if (m_Score >= 0.75)
+		fprintf(f, " high confidence");
+	else if (m_Score >= 0.50)
+		fprintf(f, " low confidence");
+	else
+		fprintf(f, " likely false positive");
+	fprintf(f, "\n");
+	}

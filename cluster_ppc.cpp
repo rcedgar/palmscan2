@@ -18,7 +18,7 @@ void cmd_cluster_ppc()
 
 	const uint N = SIZE(Chains);
 
-	PpcAligner PA;
+	PPCAligner PA;
 
 	list<uint> Pending;
 	for (uint i = 0; i < N; ++i)

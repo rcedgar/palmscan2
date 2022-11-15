@@ -9,3 +9,4 @@ extern uint NBCmin;
 extern uint NBCmax;
 extern uint NACmin;
 extern uint NACmax;
+extern double MinScoreClassify;

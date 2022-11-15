@@ -188,10 +188,6 @@ void TriSearcher::GetHit(uint Index, TSHit &TH) const
 	TH.m_QPosC = m_PosCs[k];
 
 	asserta(m_Ref != 0 && m_Ref->m_MotifPosVec.size() == 3);
-
-	TH.m_RPosA = m_Ref->m_MotifPosVec[A];
-	TH.m_RPosB = m_Ref->m_MotifPosVec[B];
-	TH.m_RPosC = m_Ref->m_MotifPosVec[C];
 	}
 
 bool TriSearcher::GetTopHit(TSHit &TH) const

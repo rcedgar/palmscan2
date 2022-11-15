@@ -15,6 +15,7 @@ void cmd_getchains()
 	ReadLinesFromFile(opt_labels, Labels);
 	set<string> LabelSet;
 	const uint LabelCount = SIZE(Labels);
+	vector<string> Fields;
 	for (uint i = 0; i < LabelCount; ++i)
 		{
 		const string &Label = Labels[i];

@@ -1,6 +1,6 @@
 #include "myutils.h"
 #include "pdbchain.h"
-#include "ppcaligner.h"
+#include "ppcsearcher.h"
 #include "calreader.h"
 #include "tshitmgr.h"
 #include "outputfiles.h"
@@ -66,6 +66,8 @@ static void Validate1(const vector<PDBChain *> &InputChains,
 		}
 
 	vector<PDBChain *> TestPPCs;
+	uint PPCFound = 0;
+	uint PPCFailed = 0;
 	for (uint i = 0; i < NTest; ++i)
 		{
 		ProgressStep(i, NTest, "Convert to PPC");
@@ -73,10 +75,17 @@ static void Validate1(const vector<PDBChain *> &InputChains,
 		PDBChain *TestPPC = new PDBChain;
 		bool Ok = ChainToPPC(Chain, RefChains, *TestPPC);
 		if (Ok)
+			{
 			TestPPCs.push_back(TestPPC);
+			++PPCFound;
+			}
 		else
+			{
+			++PPCFailed;
 			TestPPCs.push_back(0);
+			}
 		}
+	ProgressLog("%u PPC found, %u failed\n", PPCFound, PPCFailed);
 
 	vector<bool> TrainIsRdRpVec;
 	for (uint i = 0; i < NTrain; ++i)
@@ -94,7 +103,9 @@ static void Validate1(const vector<PDBChain *> &InputChains,
 		TestIsRdRpVec.push_back(IsRdRp);
 		}
 
-	PpcAligner PA;
+	PPCSearcher PS;
+	PS.SetRefs(RefChains);
+	PS.InitClassify();
 
 	uint RecCount = 0;
 	uint HitCount = 0;
@@ -102,7 +113,7 @@ static void Validate1(const vector<PDBChain *> &InputChains,
 	for (uint TestIndex = 0; TestIndex < NTest; ++TestIndex)
 		{
 		bool TestIsRdRp = TestIsRdRpVec[TestIndex];
-		const PDBChain *ptrPPC = TestPPCs[TestIndex];
+		PDBChain *ptrPPC = TestPPCs[TestIndex];
 		if (ptrPPC == 0)
 			{
 			if (TestIsRdRp)
@@ -112,29 +123,19 @@ static void Validate1(const vector<PDBChain *> &InputChains,
 			continue;
 			}
 
-		const PDBChain &Q = *ptrPPC;
-		PA.SetQuery(Q);
+		PDBChain &Q = *ptrPPC;
+		PS.Search(Q);
+		PS.WriteClassify(g_fclassify_tsv);
+		asserta(PS.m_Classified);
 
-		double TopRMSD = DBL_MAX;
-		bool TopIsRdRp = false;
-		for (uint TrainIndex = 0; TrainIndex < NTrain; ++TrainIndex)
-			{
-			const PDBChain &R = *TrainChains[TrainIndex];
-			PA.SetRef(R);
-			double RMSD = PA.GetMotifRMSD();
-			if (RMSD < TopRMSD)
-				{
-				TopRMSD = RMSD;
-				TopIsRdRp = TrainIsRdRpVec[TrainIndex];
-				}
-			}
-		if (TestIsRdRp && TopIsRdRp)
+		bool PredRdRp = PS.m_ClassifiedAsRdRp;
+		if (TestIsRdRp && PredRdRp)
 			++TP;
-		else if (TestIsRdRp && !TopIsRdRp)
+		else if (TestIsRdRp && !PredRdRp)
 			++FN;
-		else if (!TestIsRdRp && TopIsRdRp)
+		else if (!TestIsRdRp && PredRdRp)
 			++FP;
-		else if (!TestIsRdRp && !TopIsRdRp)
+		else if (!TestIsRdRp && !PredRdRp)
 			++TN;
 		else
 			asserta(false);
@@ -181,7 +182,7 @@ static void ValidateL1O(const vector<PDBChain *> &InputChains,
 		TestIsRdRpVec.push_back(IsRdRp);
 		}
 
-	PpcAligner PA;
+	PPCAligner PA;
 
 	uint RecCount = 0;
 	uint HitCount = 0;
@@ -257,12 +258,12 @@ void cmd_validate()
 	uint TP, FP, TN, FN;
 	if (opt_leave_one_out)
 		{
-		ProgressLog("RefN %u, leave-one-out, \n", RefN, TrainPct);
+		ProgressLog("RefN %u, leave-one-out\n", RefN, TrainPct);
 		ValidateL1O(InputChains, RefN, TP, FP, TN, FN);
 		}
 	else
 		{
-		ProgressLog("RefN %u, TrainPct %.1f%%, \n", RefN, TrainPct);
+		ProgressLog("RefN %u, TrainPct %.1f%%\n", RefN, TrainPct);
 		Validate1(InputChains, TrainPct, RefN, TP, FP, TN, FN);
 		}
 	ProgressLog("TP %u, FP %u, TN %u, FN %u\n", TP, FP, TN, FN);

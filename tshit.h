@@ -12,10 +12,6 @@ public:
 	uint m_QPosB = UINT_MAX;
 	uint m_QPosC = UINT_MAX;
 
-	uint m_RPosA = UINT_MAX;
-	uint m_RPosB = UINT_MAX;
-	uint m_RPosC = UINT_MAX;
-
 	double m_TriRMSD2 = DBL_MAX;
 	double m_MotifRMSD2 = DBL_MAX;
 
@@ -23,6 +19,7 @@ public:
 	string m_QSketch;
 	string m_RSketch;
 	string m_AnnotSketch;
+	double m_Score = 0;
 
 public:
 	void Clear()
@@ -33,10 +30,6 @@ public:
 		m_QPosB = UINT_MAX;
 		m_QPosC = UINT_MAX;
 
-		m_RPosA = UINT_MAX;
-		m_RPosB = UINT_MAX;
-		m_RPosC = UINT_MAX;
-
 		m_TriRMSD2 = DBL_MAX;
 		m_MotifRMSD2 = DBL_MAX;
 
@@ -44,13 +37,16 @@ public:
 		m_QSketch.clear();
 		m_RSketch.clear();
 		m_AnnotSketch.clear();
+
+		m_Score = 0;
 		}
 
 	void WriteAln(FILE *f) const;
 	void WriteTsv(FILE *f) const;
+	void WriteSketch(FILE* f) const;
+	void WriteReport(FILE *f) const;
 	void WritePalmprintFasta(FILE *f) const;
 	void WritePalmprintPDB(const string &FileNamePrefix) const;
 	void SetSketch();
-	void WriteSketch(FILE* f) const;
-	double GetScore() const;
+	void SetScore();
 	};

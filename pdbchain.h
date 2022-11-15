@@ -53,8 +53,8 @@ public:
 		{
 		GetSS(m_SS);
 		}
-	bool CheckMotifCoords() const;
-	bool CheckPPCMotifCoords() const;
+	bool CheckMotifCoords(bool FailOnError = true) const;
+	bool CheckPPCMotifCoords(bool FailOnError = true) const;
 	void GetPPC(uint PosA, uint PosB, uint PosC, PDBChain &PPC) const;
 
 public:

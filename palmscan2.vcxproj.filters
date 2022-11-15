@@ -260,6 +260,9 @@
     <ClCompile Include="checkppc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ppcsearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -425,6 +428,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cmds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppcsearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -23,7 +23,7 @@ void cmd_classify()
 		Log("%c  %s\n", pom(IsRdRp), Label.c_str());
 		}
 
-	PpcAligner PA;
+	PPCAligner PA;
 
 	CalReader CR;
 	CR.Open(QFN);

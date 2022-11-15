@@ -3,6 +3,7 @@
 #endif
 
 F(tsv)
+F(classify_tsv)
 F(ppc)
 F(cal)
 F(ppfa)

@@ -285,6 +285,7 @@
     <ClCompile Include="classify.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="getchains.cpp" />
+    <ClCompile Include="ppcsearcher.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
     <ClCompile Include="cluster_cl.cpp" />
@@ -384,6 +385,7 @@
     <ClInclude Include="pdbchain.h" />
     <ClInclude Include="ppcaligner.h" />
     <ClInclude Include="ppchitmgr.h" />
+    <ClInclude Include="ppcsearcher.h" />
     <ClInclude Include="pssm.h" />
     <ClInclude Include="pssms.h" />
     <ClInclude Include="pssmsearch.h" />

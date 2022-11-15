@@ -121,10 +121,15 @@ void PDBChain::ToCalSeg(FILE *f, uint Pos, uint n) const
 	asserta(m_Zs.size() == L);
 	asserta(m_Seq.size() == L);
 
-	fprintf(f, ">%s", m_Label.c_str());
-	if (!m_MotifPosVec.empty())
+	if (m_MotifPosVec.empty())
+		fprintf(f, ">%s", m_Label.c_str());
+	else
 		{
 		asserta(m_MotifPosVec.size() == 3);
+
+		vector<string> Fields;
+		Split(m_Label, Fields, ' ');
+		string NewLabel = Fields[0];
 
 		uint PosA = m_MotifPosVec[0];
 		uint PosB = m_MotifPosVec[1];
@@ -137,12 +142,12 @@ void PDBChain::ToCalSeg(FILE *f, uint Pos, uint n) const
 		GetMotifSeq(B, MotifB);
 		GetMotifSeq(C, MotifC);
 
-		Log("A:%u:%s  B:%u:%s  C:%u:%s\n",
+		fprintf(f, ">%s A:%u:%s B:%u:%s C:%u:%s\n",
+		  NewLabel.c_str(),
 		  m_MotifPosVec[0]+1, MotifA.c_str(),
 		  m_MotifPosVec[1]+1, MotifB.c_str(),
 		  m_MotifPosVec[2]+1, MotifC.c_str());
 		}
-	fputc('\n', f);
 
 	for (size_t i = Pos; i < Pos + n; ++i)
 		{
@@ -545,12 +550,15 @@ uint PDBChain::GetPalmPrintLength(uint PosA, uint PosC, uint L)
 	return PPL;
 	}
 
-bool PDBChain::CheckMotifCoords() const
+bool PDBChain::CheckMotifCoords(bool FailOnError) const
 	{
 	uint n = SIZE(m_MotifPosVec);
-	if (n == 0)
+	if (n != 3)
+		{
+		if (FailOnError)
+			Die("CheckMotifCoords(), m_MotifPosVec.size()=%d", n);
 		return false;
-	asserta(n == 3);
+		}
 
 	uint QL = SIZE(m_Seq);
 	uint PosA = m_MotifPosVec[A];
@@ -558,22 +566,38 @@ bool PDBChain::CheckMotifCoords() const
 	uint PosC = m_MotifPosVec[C];
 
 	if (PosA + AL >= PosB)
+		{
+		if (FailOnError)
+			Die("CheckMotifCoords(), PosA+AL>PosB");
 		return false;
+		}
 
 	if (PosB + BL >= PosC)
+		{
+		if (FailOnError)
+			Die("CheckMotifCoords(), PosB+BL>PosC");
 		return false;
+		}
 
 	if (PosC + CL > QL)
+		{
+		if (FailOnError)
+			Die("CheckMotifCoords(), PosC+CL > QC");
 		return false;
+		}
 
 	return true;
 	}
 
-bool PDBChain::CheckPPCMotifCoords() const
+bool PDBChain::CheckPPCMotifCoords(bool FailOnError) const
 	{
 	uint n = SIZE(m_MotifPosVec);
 	if (n == 0)
+		{
+		if (FailOnError)
+			Die("CheckPPCMotifCoords(), m_MotifPosVec empty");
 		return false;
+		}
 	asserta(n == 3);
 
 	uint QL = SIZE(m_Seq);
@@ -582,16 +606,35 @@ bool PDBChain::CheckPPCMotifCoords() const
 	uint PosC = m_MotifPosVec[C];
 
 	if (PosA != 0)
+		{
+		if (FailOnError)
+			Die("CheckPPCMotifCoords(), PosA=%u", PosA);
 		return false;
+		}
 
 	if (PosA + AL >= PosB)
+		{
+		if (FailOnError)
+			Die("CheckPPCMotifCoords(), PosA+AL>PosB");
 		return false;
+		}
 
 	if (PosB + BL >= PosC)
+		{
+		if (FailOnError)
+			Die("CheckPPCMotifCoords(), PosB+BL>PosC");
 		return false;
+		}
 
 	if (PosC + CL != QL)
+		{
+		if (FailOnError)
+			{
+			LogMe();
+			Die("CheckPPCMotifCoords(), PosC=%u +CL != QL=%u", PosC, QL);
+			}
 		return false;
+		}
 
 	return true;
 	}

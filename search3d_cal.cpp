@@ -7,6 +7,7 @@
 #include "calreader.h"
 #include "omplock.h"
 
+void ReadPpc(const string &FN, vector<PDBChain *> &Chains);
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs);
 
@@ -58,9 +59,12 @@ void cmd_search3d_cal()
 	CR.Open(QueryFN);
 
 	vector<PDBChain *> RefPDBs;
-	ReadChains(RefFN, RefPDBs);
+	ReadPpc(RefFN, RefPDBs);
 	for (uint i = 0; i < SIZE(RefPDBs); ++i)
-		RefPDBs[i]->SetSS();
+		{
+		PDBChain &R = *RefPDBs[i];
+		R.SetSS();
+		}
 
 	const uint RefN = SIZE(RefPDBs);
 

@@ -112,7 +112,7 @@ void TSHitMgr::WriteReport(FILE *f) const
 	m_TopHit->WriteSketch(f);
 	m_TopHit->WriteAln(f);
 
-	double FinalScore = m_TopHit->GetScore();
+	double FinalScore = m_TopHit->m_Score;
 
 	fprintf(f, "\n");
 	fprintf(f, "Score %.3f (%.2f, %.1f%%)", FinalScore, TopScore, SketchPct);

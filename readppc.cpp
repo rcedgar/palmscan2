@@ -15,13 +15,14 @@ void ReadPpc(const string &FN, vector<PDBChain *> &Chains)
 			{
 			string sPct;
 			CR.GetPctDone(sPct);
-			Progress("Reading %s (%s%%)\r", FN.c_str(), sPct.c_str());
+			Progress("Reading PPCs %s (%s%%)\r", FN.c_str(), sPct.c_str());
 			}
 		PDBChain *Chain = new PDBChain;
 		bool Ok = CR.GetNext(*Chain);
 		if (!Ok)
 			return;
+		Chain->CheckPPCMotifCoords();
 		Chains.push_back(Chain);
 		}
-	Progress("Reading %s (100.0%%)\n");
+	Progress("Reading PPCs %s (100.0%%)\n");
 	}

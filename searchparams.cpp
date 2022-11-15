@@ -10,3 +10,5 @@ uint NBCmin = 10;
 uint NBCmax = 80;
 uint NACmin = 80;
 uint NACmax = 200;
+
+double MinScoreClassify = 0.5;

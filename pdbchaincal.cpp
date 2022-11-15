@@ -10,6 +10,7 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 		Die("Invalid .cal/.ppc file, expected '>' in line: %s",
 		  Line.c_str());
 
+	m_Label = Line.substr(1, string::npos);
 	vector<string> Fields;
 	Split(Line, Fields, ' ');
 	uint PosA = UINT_MAX;
@@ -22,8 +23,6 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 		  StartsWith(Fields[2], "B:") &&
 		  StartsWith(Fields[3], "C:"))
 			{
-			m_Label = Fields[0].substr(1, string::npos);
-
 			PosA = (uint) atoi(Fields[1].c_str() + 2);
 			PosB = (uint) atoi(Fields[2].c_str() + 2);
 			PosC = (uint) atoi(Fields[3].c_str() + 2);
@@ -40,8 +39,6 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 		else
 			Die("Invalid .ppc label %s", Line.c_str());
 		}
-	else
-		m_Label = Line.substr(1, string::npos);
 	}
 
 void PDBChain::FromCalLines(const vector<string> &Lines)

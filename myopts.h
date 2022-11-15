@@ -5,6 +5,9 @@
 #define C(x)	STR_OPT(x)
 #include "cmds.h"
 
+#define F(x)	STR_OPT(x)
+#include "ofiles.h"
+
 STR_OPT(search_aa_top)
 STR_OPT(search_nt_top)
 STR_OPT(search_nt_all)
@@ -23,17 +26,6 @@ STR_OPT(qhitfastaout)
 STR_OPT(rex)
 STR_OPT(align_msas)
 STR_OPT(test_pssms)
-
-STR_OPT(tsv_tri)
-STR_OPT(report_tri)
-STR_OPT(report_pssms)
-STR_OPT(report_3d)
-
-STR_OPT(cal)
-STR_OPT(tsv)
-STR_OPT(ppfa)
-STR_OPT(ppc)
-STR_OPT(fasta)
 
 STR_OPT(train_cal)
 STR_OPT(test_cal)
@@ -62,7 +54,6 @@ STR_OPT(nohit_fastaout)
 STR_OPT(pssm_alnout)
 STR_OPT(msa2)
 STR_OPT(pssmdir)
-STR_OPT(svg)
 
 STR_OPT(log)
 STR_OPT(input)
@@ -88,7 +79,8 @@ UNS_OPT(hspw,				0,			1,			UINT_MAX)
 UNS_OPT(minhsp,				32,			1,			UINT_MAX)
 UNS_OPT(iddrop,				8,			1,			UINT_MAX)
 UNS_OPT(cluster_maxdiffs,	1,			0,			UINT_MAX)
-UNS_OPT(topn,				32,			1,			UINT_MAX)
+UNS_OPT(tsv_topn,			32,			1,			UINT_MAX)
+UNS_OPT(report_topn,		32,			1,			UINT_MAX)
 UNS_OPT(maxx,				10,			1,			UINT_MAX)
 UNS_OPT(refn,				10,			1,			UINT_MAX)
 

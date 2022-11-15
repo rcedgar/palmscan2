@@ -2,19 +2,19 @@
 #include "ppcaligner.h"
 #include "abcxyz.h"
 
-void PpcAligner::SetQuery(const PDBChain &Q)
+void PPCAligner::SetQuery(const PDBChain &Q)
 	{
+	Q.CheckPPCMotifCoords();
 	m_Q = &Q;
-	asserta(m_Q->m_MotifPosVec.size() == 3);
 	}
 
-void PpcAligner::SetRef(const PDBChain &R)
+void PPCAligner::SetRef(const PDBChain &R)
 	{
 	m_R = &R;
 	asserta(m_R->m_MotifPosVec.size() == 3);
 	}
 
-double PpcAligner::GetMotifRMSD()
+double PPCAligner::GetMotifRMSD()
 	{
 	uint QueryPosA = m_Q->m_MotifPosVec[A];
 	uint QueryPosB = m_Q->m_MotifPosVec[B];
@@ -33,7 +33,7 @@ double PpcAligner::GetMotifRMSD()
 	return RMSD;
 	}
 
-double PpcAligner::GetRMSD2Segment(uint QPos, uint RPos, uint n)
+double PPCAligner::GetRMSD2Segment(uint QPos, uint RPos, uint n)
 	{
 	double Sum = 0;
 	for (uint i = 0; i < n; ++i)
@@ -44,4 +44,15 @@ double PpcAligner::GetRMSD2Segment(uint QPos, uint RPos, uint n)
 		Sum += d2;
 		}
 	return Sum;
+	}
+
+double PPCAligner::Align(TSHit &Hit) const
+	{
+	asserta(m_Q != 0 && m_R != 0);
+	Hit.m_Query = m_Q;
+	Hit.m_Ref = m_R;
+	Hit.SetSketch();
+	Hit.SetScore();
+	double Score = Hit.m_Score;
+	return Score;
 	}

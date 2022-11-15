@@ -3,7 +3,7 @@
 #include "pdbchain.h"
 #include "tshit.h"
 
-class PpcAligner
+class PPCAligner
 	{
 	const PDBChain *m_Q = 0;
 	const PDBChain *m_R = 0;
@@ -12,7 +12,7 @@ class PpcAligner
 	vector<double> m_QPt;
 
 public:
-	PpcAligner()
+	PPCAligner()
 		{
 		Clear();
 		}
@@ -31,4 +31,5 @@ public:
 	void SetRef(const PDBChain &R);
 	double GetRMSD2Segment(uint QPos, uint RPos, uint n);
 	double GetMotifRMSD();
+	double Align(TSHit &Hit) const;
 	};
