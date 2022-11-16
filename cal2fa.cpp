@@ -7,7 +7,7 @@ void cmd_cal2fa()
 	const string &InputFN = opt_cal2fa;
 
 	vector<PDBChain *> Chains;
-	ReadChains(InputFN, Chains);
+	ReadChains(InputFN, Chains, false);
 
 	const uint N = SIZE(Chains);
 	for (uint i = 0; i < N; ++i)

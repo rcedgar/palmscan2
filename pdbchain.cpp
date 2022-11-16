@@ -168,6 +168,22 @@ void PDBChain::ToPDB(const string &FileName) const
 		return;
 
 	FILE *f = CreateStdioFile(FileName);
+	fprintf(f, "TITLE %s\n", m_Label.c_str());
+
+	uint AtomCount = SIZE(m_ATOMs);
+	if (AtomCount > 0)
+		{
+		for (uint i = 0; i < AtomCount; ++i)
+			{
+			const vector<string> &v = m_ATOMs[i];
+			for (uint j = 0; j < SIZE(v); ++j)
+				{
+				fputs(v[j].c_str(), f);
+				fputc('\n', f);
+				}
+			}
+		return;
+		}
 
 	const size_t L = m_Xs.size();
 	asserta(m_Ys.size() == L);
@@ -176,7 +192,6 @@ void PDBChain::ToPDB(const string &FileName) const
 
 	const char Chain = 'A';
 
-	fprintf(f, "TITLE %s\n", m_Label.c_str());
 	for (uint i = 0; i < L; ++i)
 		{
 		char aa = m_Seq[i];
@@ -208,13 +223,16 @@ void PDBChain::ToPDB(const string &FileName) const
 		}
 	}
 
-void PDBChain::FromLines(const string &Label, const vector<string> &Lines)
+void PDBChain::FromPDBLines(const string &Label,
+  const vector<string> &Lines, bool SaveAtoms)
 	{
 	Clear();
 
 	m_Label = Label;
 	const uint N = SIZE(Lines);
 	char Chain = 0;
+	uint ResidueCount = 0;
+	uint CurrentResidueNumber = 0;
 	for (uint LineNr = 0; LineNr < N; ++LineNr)
 		{
 		const string &Line = Lines[LineNr];
@@ -244,6 +262,28 @@ void PDBChain::FromLines(const string &Label, const vector<string> &Lines)
 
 		if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
 			continue;
+
+		if (SaveAtoms)
+			{
+		// 23 - 26 residue nr.
+			uint ResidueNumber = 0;
+			for (uint i = 22; i < 26; ++i)
+				{
+				char c = Line[i];
+				if (!isspace(c) && !isdigit(c))
+					Die("Invalid character in residue number field (cols 23-26): %s\n",
+					  Line.c_str());
+				if (isdigit(c))
+					ResidueNumber = ResidueNumber*10 + (c - '0');
+				}
+			if (ResidueNumber != CurrentResidueNumber)
+				{
+				CurrentResidueNumber = ResidueNumber;
+				++ResidueCount;
+				m_ATOMs.resize(ResidueCount);
+				}
+			m_ATOMs.back().push_back(Line);
+			}
 
 		string AtomName = Line.substr(12, 4);
 		StripWhiteSpace(AtomName);
@@ -447,7 +487,8 @@ void PDBChain::GetSubSeq(uint MotifStartPos, uint n,
 	}
 
 void PDBChain::ChainsFromLines(const string &Label,
-  const vector<string> &Lines, vector<PDBChain *> &Chains)
+  const vector<string> &Lines, vector<PDBChain *> &Chains,
+  bool SaveAtoms)
 	{
 	Chains.clear();
 	const uint N = SIZE(Lines);
@@ -470,7 +511,7 @@ void PDBChain::ChainsFromLines(const string &Label,
 					PDBChain *Chain = new PDBChain;
 					string ThisLabel = Label;
 					AppendChainToLabel(ThisLabel, CurrChainChar);
-					Chain->FromLines(ThisLabel, ChainLines);
+					Chain->FromPDBLines(ThisLabel, ChainLines, SaveAtoms);
 					ChainLines.clear();
 					AnyAtoms = false;
 
@@ -488,18 +529,18 @@ void PDBChain::ChainsFromLines(const string &Label,
 		PDBChain *Chain = new PDBChain;
 		string ThisLabel = Label;
 		AppendChainToLabel(ThisLabel, CurrChainChar);
-		Chain->FromLines(ThisLabel, ChainLines);
+		Chain->FromPDBLines(ThisLabel, ChainLines, SaveAtoms);
 		ChainLines.clear();
 		Chains.push_back(Chain);
 		}
 	}
 
 void PDBChain::ReadChainsFromFile(const string &FileName,
-  vector<PDBChain *> &Chains)
+  vector<PDBChain *> &Chains, bool SaveAtoms)
 	{
 	vector<string> Lines;
 	ReadLinesFromFile(FileName, Lines);
-	ChainsFromLines(FileName, Lines, Chains);
+	ChainsFromLines(FileName, Lines, Chains, SaveAtoms);
 	}
 
 void PDBChain::CopyTriForm(const vector<double> &t,
@@ -685,7 +726,6 @@ void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
 		PPC.m_Zs.push_back(XPt[Z]);
 		}
 
-
 	string MotifA, MotifB, MotifC;
 	GetSubSeq(PosA, AL, MotifA);
 	GetSubSeq(PosB, BL, MotifB);
@@ -698,4 +738,26 @@ void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
 	  PPC_PosC + 1, MotifC.c_str());
 
 	PPC.m_Label = m_Label + " " + MotifCoordStr;
+	}
+
+void PDBChain::XFormATOM(string &ATOM, const vector<double> &t,
+  const vector<vector<double> > &R) const
+	{
+	}
+
+bool PDBChain::IsPDBAtomLine(const string &Line)
+	{
+	if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
+		return true;
+	else
+		return false;
+	}
+
+char PDBChain::GetChainCharFromPDBAtomLine(const string &Line)
+	{
+	if (!IsPDBAtomLine(Line))
+		return 0;
+	if (Line.size() < 22)
+		return 0;
+	return Line[21];
 	}

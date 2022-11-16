@@ -2,7 +2,6 @@
 #include "pdbchain.h"
 #include "calreader.h"
 
-void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 
 void GetLabelFromFileName(const string &FileName, string &Label)
@@ -23,7 +22,8 @@ void GetLabelFromFileName(const string &FileName, string &Label)
 		Label = Label.substr(0, 4);
 	}
 
-void ReadChains(const vector<string> &FileNames, vector<PDBChain *> &Structures)
+void ReadChains(const vector<string> &FileNames,
+  vector<PDBChain *> &Structures, bool SaveAtoms)
 	{
 	Structures.clear();
 	const uint N = SIZE(FileNames);
@@ -39,7 +39,7 @@ void ReadChains(const vector<string> &FileNames, vector<PDBChain *> &Structures)
 		ProgressStep(i, N, "Reading chains %s", Label.c_str());
 
 		vector<PDBChain *> Chains;
-		PDBChain::ChainsFromLines(Label, Lines, Chains);
+		PDBChain::ChainsFromLines(Label, Lines, Chains, SaveAtoms);
 		const uint NC = SIZE(Chains);
 		for (uint j = 0; j < NC; ++j)
 			Structures.push_back(Chains[j]);
@@ -70,7 +70,8 @@ void ReadChainsCal(const string &FileName, vector<PDBChain *> &Structures)
 	Progress("Reading %s 100.0%% done\n", FileName.c_str());
 	}
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures)
+void ReadChains(const string &FileName, vector<PDBChain *> &Structures,
+  bool SaveAtoms)
 	{
 	if (FileName.empty())
 		Die("Missing chains filename");
@@ -83,9 +84,10 @@ void ReadChains(const string &FileName, vector<PDBChain *> &Structures)
 	else if (EndsWith(FileName, ".files"))
 		{
 		vector<string> FileNames;
-		GetFileNames(FileName, FileNames);
-		ReadChains(FileNames, Structures);
+		ReadLinesFromFile(FileName, FileNames);
+		ReadChains(FileNames, Structures, SaveAtoms);
 		}
+
 	string Label;
 	GetLabelFromFileName(FileName, Label);
 
@@ -93,7 +95,7 @@ void ReadChains(const string &FileName, vector<PDBChain *> &Structures)
 	ReadLinesFromFile(FileName, Lines);
 
 	vector<PDBChain *> Chains;
-	PDBChain::ChainsFromLines(Label, Lines, Chains);
+	PDBChain::ChainsFromLines(Label, Lines, Chains, SaveAtoms);
 	const uint NC = SIZE(Chains);
 	for (uint j = 0; j < NC; ++j)
 		Structures.push_back(Chains[j]);

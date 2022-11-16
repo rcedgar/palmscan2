@@ -29,43 +29,27 @@ static bool MatchLabelSet(const string &QueryLabel,
 	return false;
 	}
 
-void cmd_getchains()
+void cmd_chains_subsample()
 	{
-	const string &InputFileName = opt_getchains;
+	const string &InputFileName = opt_chains_subsample;
 
-	asserta(opt_labels != "");
-
-	bool MatchSubstr = false;
-	if (optset_label_substr_match)
-		MatchSubstr = true;
-
-	vector<string> Labels;
-	ReadLinesFromFile(opt_labels, Labels);
-	set<string> LabelSet;
-	const uint LabelCount = SIZE(Labels);
-	vector<string> Fields;
-	for (uint i = 0; i < LabelCount; ++i)
-		{
-		const string &Label = Labels[i];
-		LabelSet.insert(Label);
-		}
+	asserta(optset_sample_size);
+	uint SampleSize = opt_sample_size;
+	asserta(SampleSize > 0);
 
 	vector<PDBChain *> Chains;
-	ReadChains(InputFileName, Chains);
-	const uint N = SIZE(Chains);
+	ReadChains(InputFileName, Chains, false);
+	const uint N = min(SIZE(Chains), SampleSize);
+	if (N < SampleSize)
+		Warning("sample_size > input");
+	random_shuffle(Chains.begin(), Chains.end());
 
 	uint n = 0;
 	for (uint i = 0; i < N; ++i)
 		{
-		ProgressStep(i, N+1, "Searching %u / %u found", n, LabelCount);
+		ProgressStep(i, N, "Writing output");
 
 		PDBChain &Q = *Chains[i];
-		const string &Label = Q.m_Label;
-		if (MatchLabelSet(Label, LabelSet, MatchSubstr))
-			{
-			Q.ToCal(g_fcal);
-			++n;
-			}
+		Q.ToCal(g_fcal);
 		}
-	ProgressStep(N, N+1, "Searching %u / %u found", n, LabelCount);
 	}

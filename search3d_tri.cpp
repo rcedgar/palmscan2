@@ -6,7 +6,7 @@
 #include "tshitmgr.h"
 #include "omplock.h"
 
-void GetFileNames(const string &SpecFileName, vector<string> &FileNames);
+void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 
 void Search1(TriSearcher &TS, TSHitMgr &HM,
   PDBChain &Q, vector<PDBChain *> &RefPDBs)
@@ -33,17 +33,16 @@ void Search1(TriSearcher &TS, TSHitMgr &HM,
 	HM.WriteOutput();
 	}
 
-void cmd_search3d()
+void cmd_search3d_tri()
 	{
-	const string &QueryFN = opt_search3d;
+	const string &QueryFN = opt_search3d_tri;
 	const string &RefFN = opt_ref;
 
 	vector<string> QueryFileNames;
 	vector<string> RefFileNames;
-	GetFileNames(QueryFN, QueryFileNames);
-	GetFileNames(RefFN, RefFileNames);
+	ReadLinesFromFile(QueryFN, QueryFileNames);
+	ReadLinesFromFile(RefFN, RefFileNames);
 
-	Progress("Read reference structures...");
 	vector<PDBChain *> RefPDBs;
 	ReadChains(RefFN, RefPDBs);
 	for (uint i = 0; i < SIZE(RefPDBs); ++i)
@@ -53,7 +52,6 @@ void cmd_search3d()
 			Die("Reference missing motif spec: %s", Ref.m_Label.c_str());
 		RefPDBs[i]->SetSS();
 		}
-	Progress(" done.\n");
 
 	const uint QueryN = SIZE(QueryFileNames);
 	const uint RefN = SIZE(RefPDBs);
@@ -68,9 +66,10 @@ void cmd_search3d()
 #pragma omp parallel for num_threads(ThreadCount)
 	for (int iQ = 0; iQ < (int) QueryN; ++iQ)
 		{
-		Lock("iQloop");
+#pragma omp critical
+		{
 		ProgressStep(DoneCount++, QueryN, "Searching");
-		Unlock("iQloop");
+		}
 
 		uint ThreadIndex = GetThreadIndex();
 		vector<PDBChain *> &QVec = QVecs[ThreadIndex];
@@ -78,7 +77,7 @@ void cmd_search3d()
 		TSHitMgr &HM = HMs[ThreadIndex];
 
 		const string &QueryFileName = QueryFileNames[iQ];
-		PDBChain::ReadChainsFromFile(QueryFileName, QVec);
+		PDBChain::ReadChainsFromFile(QueryFileName, QVec, false);
 		uint ChainCount = SIZE(QVec);
 		for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 			{

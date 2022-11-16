@@ -25,23 +25,28 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 		bool Ok = CR.GetNext(Q);
 		if (!Ok)
 			return;
-		Lock("Done");
+#pragma omp critical
+		{
 		++g_DoneCount;
-		Unlock("Done");
+		}
 		if (g_DoneCount%100 == 0)
 			{
-			Lock("Progress");
+#pragma omp critical
+			{
 			string sPct;
 			CR.GetPctDone(sPct);
 			Progress("%s%% done, %u / %u hits\r",
 			  sPct.c_str(), g_HitCount, g_DoneCount);
-			Unlock("Progress");
+			}
 			}
 
 		bool Found = PS.Search(Q);
 		PS.WriteOutput();
 		if (Found)
+#pragma omp critical
+			{
 			++g_HitCount;
+			}
 		}
 	}
 
@@ -74,14 +79,11 @@ void cmd_search3d_ppc()
 		PS.InitClassify();
 		}
 
-	uint ThreadFinishedCount = 0;
-	uint DoneCount = 0;
-	uint HitCount = 0;
 	vector<PDBChain> Qs(ThreadCount);
 	vector<bool> ThreadDone(ThreadCount);
 
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(CR, Qs, PSs);
 
-	Progress("100.0% done, %u / %u hits\n", DoneCount, HitCount);
+	Progress("100.0%% done, %u / %u hits\n", g_HitCount, g_DoneCount);
 	}

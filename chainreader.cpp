@@ -1,0 +1,144 @@
+#include "myutils.h"
+#include "chainreader.h"
+
+void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
+
+void ChainReader::Open(const string &FileName, bool SaveAtoms)
+	{
+	Clear();
+
+	m_FileName = FileName;
+	m_SaveAtoms = SaveAtoms;
+
+	if (EndsWith(m_FileName, ".files"))
+		{
+		ReadLinesFromFile(FileName, m_FileNames);
+		ReadChains(m_FileNames, m_FilesChains, SaveAtoms);
+		m_FilesChainIndex = 0;
+		m_Type = CR_Files;
+		}
+	else if (EndsWith(m_FileName, ".cal") || EndsWith(m_FileName, ".ppc"))
+		{
+		m_Type = CR_CAL;
+		m_CR.Open(m_FileName);
+		}
+	else
+		{
+		m_Type = CR_PDB;
+		ReadLinesFromFile(FileName, m_Lines);
+		m_LineIndex = 0;
+		}
+
+	m_EndOfInput = false;
+	}
+
+bool ChainReader::GetNext(PDBChain &Chain)
+	{
+	if (m_EndOfInput)
+		return false;
+
+	bool Ok = false;
+#pragma omp critical
+	{
+	switch (m_Type)
+		{
+	case CR_None:
+		Die("ChainReader::GetNext() not open");
+	
+	case CR_CAL:
+		Ok = GetNext_CAL(Chain);
+		break;
+	
+	case CR_PDB:
+		Ok = GetNext_PDB(Chain);
+		break;
+
+	case CR_Files:
+		Ok = GetNext_Files(Chain);
+		break;
+	
+	default:
+		asserta(false);
+		}
+	}
+
+	return Ok;
+	}
+
+bool ChainReader::GetNext_CAL(PDBChain &Chain)
+	{
+	bool Ok = m_CR.GetNext(Chain);
+	if (!Ok)
+		{
+		m_EndOfInput = true;
+		return false;
+		}
+	return true;
+	}
+
+bool ChainReader::KeepPDBAtomLine(const string &Line)
+	{
+	if (strncmp(Line.c_str(), "REMARK PALMPRINT", 16) == 0)
+		return true;
+	if (strncmp(Line.c_str(), "TITLE ", 6) != 0)
+		return true;
+	if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
+		return true;
+	return false;
+	}
+
+bool ChainReader::GetNext_PDB(PDBChain &Chain)
+	{
+	string Label;
+	GetLabelFromFileName(m_FileName, Label);
+
+	if (m_LineIndex >= SIZE(m_Lines))
+		{
+		m_EndOfInput = true;
+		return false;
+		}
+
+	char CurrentChainChar = 0;
+	vector<string> Lines;
+	for (;;)
+		{
+		if (m_LineIndex >= SIZE(m_Lines))
+			break;
+		const string &Line = m_Lines[m_LineIndex++];
+		if (!KeepPDBAtomLine(Line))
+			continue;
+		char ChainChar = PDBChain::GetChainCharFromPDBAtomLine(Line);
+		if (CurrentChainChar == 0)
+			CurrentChainChar = ChainChar;
+		else
+			{
+			if (ChainChar != CurrentChainChar)
+				{
+				--m_LineIndex;
+				if (CurrentChainChar != 0 && CurrentChainChar != 'A')
+					Label += CurrentChainChar;
+				Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
+				return true;
+				}
+			}
+		}
+	if (Lines.empty())
+		{
+		m_EndOfInput = true;
+		return false;
+		}
+
+	Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
+	return true;
+	}
+
+bool ChainReader::GetNext_Files(PDBChain &Chain)
+	{
+	if (m_FilesChainIndex >= SIZE(m_FilesChains))
+		{
+		m_EndOfInput = true;
+		return false;
+		}
+	Chain = *m_FilesChains[m_FilesChainIndex++];
+	return true;
+	}

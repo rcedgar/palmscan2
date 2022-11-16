@@ -269,7 +269,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="abcxyz.cpp" />
-    <ClCompile Include="alignabc.cpp" />
     <ClCompile Include="alignpalm.cpp" />
     <ClCompile Include="align_msas.cpp" />
     <ClCompile Include="alloc.cpp" />
@@ -281,10 +280,13 @@
     <ClCompile Include="build_rdrp_model.cpp" />
     <ClCompile Include="cal2fa.cpp" />
     <ClCompile Include="calreader.cpp" />
+    <ClCompile Include="chainreader.cpp" />
+    <ClCompile Include="chains_subsample.cpp" />
     <ClCompile Include="checkppc.cpp" />
     <ClCompile Include="classify.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="getchains.cpp" />
+    <ClCompile Include="pdbinfo.cpp" />
     <ClCompile Include="ppcsearcher.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
@@ -310,13 +312,12 @@
     <ClCompile Include="output.cpp" />
     <ClCompile Include="outputfiles.cpp" />
     <ClCompile Include="palmscan2_main.cpp" />
-    <ClCompile Include="getfilenames.cpp" />
     <ClCompile Include="palmsketch.cpp" />
     <ClCompile Include="pdb2cal.cpp" />
     <ClCompile Include="pdbchaincal.cpp" />
     <ClCompile Include="ppcaligner.cpp" />
     <ClCompile Include="readchains.cpp" />
-    <ClCompile Include="search3d.cpp" />
+    <ClCompile Include="search3d_tri.cpp" />
     <ClCompile Include="pdbchain.cpp" />
     <ClCompile Include="psms.cpp" />
     <ClCompile Include="pssm.cpp" />
@@ -369,6 +370,7 @@
     <ClInclude Include="fastqrec.h" />
     <ClInclude Include="fileseqsource.h" />
     <ClInclude Include="gobuff.h" />
+    <ClInclude Include="chainreader.h" />
     <ClInclude Include="heuristics.h" />
     <ClInclude Include="linereader.h" />
     <ClInclude Include="lockobj.h" />

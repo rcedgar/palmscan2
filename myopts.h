@@ -94,6 +94,7 @@ UNS_OPT(mingap,				0,			1,			UINT_MAX)
 UNS_OPT(maxgap,				999,		1,			UINT_MAX)
 UNS_OPT(hiw,				45,			1,			UINT_MAX)
 UNS_OPT(low,				16,			1,			UINT_MAX)
+UNS_OPT(sample_size,		16,			1,			UINT_MAX)
 
 UNS_OPT(fastq_truncqual,	UINT_MAX,	0,			UINT_MAX)
 UNS_OPT(fastq_minlen,		0,			0,			UINT_MAX)
@@ -141,6 +142,7 @@ FLAG_OPT(notpermuted)
 FLAG_OPT(trace)
 FLAG_OPT(self)
 FLAG_OPT(leave_one_out)
+FLAG_OPT(label_substr_match)
 
 #undef FLAG_OPT
 #undef UNS_OPT

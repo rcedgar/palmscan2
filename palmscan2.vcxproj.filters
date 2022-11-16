@@ -140,9 +140,6 @@
     <ClCompile Include="abcxyz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="alignabc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="invertmx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -173,10 +170,7 @@
     <ClCompile Include="getss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="search3d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="getfilenames.cpp">
+    <ClCompile Include="search3d_tri.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="viterbifastmem.cpp">
@@ -261,6 +255,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppcsearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chains_subsample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pdbinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chainreader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -431,6 +434,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ppcsearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chainreader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

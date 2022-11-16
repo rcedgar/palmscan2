@@ -3,12 +3,12 @@
 class PDBChain
 	{
 public:
-// Label does NOT include chain
 	string m_Label;
 	string m_Seq;
 	vector<double> m_Xs;
 	vector<double> m_Ys;
 	vector<double> m_Zs;
+	vector<vector<string> > m_ATOMs;
 	vector<uint> m_MotifPosVec;
 	string m_SS;
 
@@ -21,10 +21,12 @@ public:
 		m_Ys.clear();
 		m_Zs.clear();
 		m_MotifPosVec.clear();
+		m_ATOMs.clear();
 		}
 
 	uint GetSeqLength() const;
-	void FromLines(const string &Label, const vector<string> &Lines);
+	void FromPDBLines(const string &Label,
+	  const vector<string> &Lines, bool SaveAtoms);
 	void FromCalLines(const vector<string> &Lines);
 	void ParseCalLabelLine(const string &Line);
 	void ToCal(FILE *f) const;
@@ -48,6 +50,8 @@ public:
 	uint GetMotifPos(uint MotifIndex) const;
 	void GetSubSeq(uint StartPos, uint n,
 	  bool FailOnOverflow, string &MotifSeq) const;
+	void XFormATOM(string &ATOM, const vector<double> &t,
+	  const vector<vector<double> > &R) const;
 	void GetSS(string &SS) const;
 	void SetSS()
 		{
@@ -61,10 +65,17 @@ public:
 	static uint GetMotifLength(uint MotifIndex);
 	static uint GetPalmPrintLength(uint PosA, uint PosC, uint L);
 	static void ChainsFromLines(const string &Label,
-	  const vector<string> &Lines, vector<PDBChain *> &Chains);
+	  const vector<string> &Lines, vector<PDBChain *> &Chains,
+	  bool SaveAstoms);
 	static void ReadChainsFromFile(const string &FileName,
-	  vector<PDBChain *> &Chains);
+	  vector<PDBChain *> &Chains, bool SaveAtoms);
 	static void AppendChainToLabel(string &Label, char Chain);
+	static char GetChainCharFromPDBAtomLine(const string &Line);
+	static bool IsPDBAtomLine(const string &Line);
 	};
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures);
+void ReadChains(const string &FileName,
+  vector<PDBChain *> &Structures, bool SaveAtoms = false);
+void ReadChains(const vector<string> &FileNames,
+  vector<PDBChain *> &Structures, bool SaveAtoms);
+void GetLabelFromFileName(const string &FileName, string &Label);

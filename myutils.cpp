@@ -217,8 +217,10 @@ FILE *OpenStdioFile(const string &FileName)
 				Die("Cannot open '%s', file too big (off_t=%u bits)",
 				  FileName.c_str(), sizeof(off_t)*8);
 			}
+		int Err = errno;
+		const char *StrErr = strerror(errno);
 		Die("Cannot open %s, errno=%d %s",
-		  FileName.c_str(), errno, strerror(errno));
+		  FileName.c_str(), Err, StrErr);
 		}
 	AllocBuffer(f);
 	FileToFileName[f] = FileName;

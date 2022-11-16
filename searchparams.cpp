@@ -12,3 +12,4 @@ uint NACmin = 80;
 uint NACmax = 200;
 
 double MinScoreClassify = 0.5;
+// double MinScoreIdentifyPalm = 0.65;
