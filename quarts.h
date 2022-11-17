@@ -34,18 +34,18 @@ struct Quarts
 		}
 	};
 
-struct QuartsFloat
+struct QuartsDouble
 	{
-	float Min;
-	float LoQ;
-	float Med;
-	float HiQ;
-	float Max;
-	float Total;
-	float Avg;
-	float StdDev;
+	double Min;
+	double LoQ;
+	double Med;
+	double HiQ;
+	double Max;
+	double Total;
+	double Avg;
+	double StdDev;
 
-	QuartsFloat()
+	QuartsDouble()
 		{
 		Min = 0;
 		LoQ = 0;
@@ -71,6 +71,6 @@ struct QuartsFloat
 	};
 
 void GetQuarts(const vector<unsigned> &v, Quarts &Q);
-void GetQuartsFloat(const vector<float> &v, QuartsFloat &Q);
+void GetQuartsDouble(const vector<double> &v, QuartsDouble &Q);
 
 #endif // quarts_h

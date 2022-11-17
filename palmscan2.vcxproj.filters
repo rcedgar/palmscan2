@@ -266,6 +266,15 @@
     <ClCompile Include="chainreader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ppc_profile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppc_score.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppcprofile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -437,6 +446,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="chainreader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppcprofileparams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,6 +5,7 @@
 F(tsv)
 F(classify_tsv)
 F(ppc)
+F(pdb)
 F(cal)
 F(ppfa)
 F(fasta)

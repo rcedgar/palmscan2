@@ -1,19 +1,31 @@
 #include "myutils.h"
 #include "pdbchain.h"
+#include "chainreader.h"
 #include "outputfiles.h"
 
 void cmd_pdb2cal()
 	{
 	const string &FN = opt_pdb2cal;
 
-	vector<PDBChain *> Chains;
-	ReadChains(FN, Chains);
+	ChainReader CR;
+	CR.Open(FN, false);
 
-	const uint N = SIZE(Chains);
-	for (uint i = 0; i < N; ++i)
+	PDBChain Chain;
+	uint Count = 0;
+	for (;;)
 		{
-		ProgressStep(i, N, "Writing output");
-		const PDBChain &Chain = *Chains[i];
+		bool Ok = CR.GetNext(Chain);
+		if (!Ok)
+			break;
+
+		if (++Count%100 == 0)
+			{
+			string sPct;
+			CR.GetStrPctDone(sPct);
+			Progress("%s%% done, %u converted >%s\r",
+			  sPct.c_str(), Count, Chain.m_Label.c_str());
+			}
 		Chain.ToCal(g_fcal);
 		}
+	Progress("100.0%% done, %u converted\n", Count);
 	}

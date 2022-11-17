@@ -30,5 +30,6 @@ public:
 
 	void Open(const string &FileName);
 	bool GetNext(PDBChain &Chain);
-	void GetPctDone(string &s) const;
+	void GetStrPctDone(string &s) const;
+	double GetPctDone() const;
 	};

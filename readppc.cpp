@@ -14,7 +14,7 @@ void ReadPpc(const string &FN, vector<PDBChain *> &Chains)
 		if (n%100 == 0)
 			{
 			string sPct;
-			CR.GetPctDone(sPct);
+			CR.GetStrPctDone(sPct);
 			Progress("Reading PPCs %s (%s%%)\r", FN.c_str(), sPct.c_str());
 			}
 		PDBChain *Chain = new PDBChain;

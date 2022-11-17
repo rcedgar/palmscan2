@@ -80,9 +80,9 @@ bool ChainReader::KeepPDBAtomLine(const string &Line)
 	{
 	if (strncmp(Line.c_str(), "REMARK PALMPRINT", 16) == 0)
 		return true;
-	if (strncmp(Line.c_str(), "TITLE ", 6) != 0)
+	if (strncmp(Line.c_str(), "TITLE ", 6) == 0)
 		return true;
-	if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
+	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
 	return false;
 	}
@@ -115,12 +115,14 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 			if (ChainChar != CurrentChainChar)
 				{
 				--m_LineIndex;
-				if (CurrentChainChar != 0 && CurrentChainChar != 'A')
+				if (CurrentChainChar != 0)
 					Label += CurrentChainChar;
-				Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
+				char ChainChar2 = Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
+				asserta(ChainChar2 == CurrentChainChar);
 				return true;
 				}
 			}
+		Lines.push_back(Line);
 		}
 	if (Lines.empty())
 		{
@@ -128,6 +130,8 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 		return false;
 		}
 
+	if (CurrentChainChar != 0)
+		Label += CurrentChainChar;
 	Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
 	return true;
 	}
@@ -141,4 +145,45 @@ bool ChainReader::GetNext_Files(PDBChain &Chain)
 		}
 	Chain = *m_FilesChains[m_FilesChainIndex++];
 	return true;
+	}
+
+double ChainReader::GetPctDone() const
+	{
+	switch (m_Type)
+		{
+	case CR_None:	return 0;
+	case CR_PDB:	return GetPctDone_PDB();
+	case CR_CAL:	return GetPctDone_CAL();
+	case CR_Files:	return GetPctDone_Files();
+		}
+	asserta(false);
+	return 0;
+	}
+
+double ChainReader::GetPctDone_CAL() const
+	{
+	return m_CR.GetPctDone();
+	}
+
+double ChainReader::GetPctDone_PDB() const
+	{
+	return 50.0;
+	}
+
+double ChainReader::GetPctDone_Files() const
+	{
+	double Pct = GetPct(m_FilesChainIndex, SIZE(m_FilesChains) + 1);
+	return Pct;
+	}
+
+void ChainReader::GetStrPctDone(string &s) const
+	{
+	s.clear();
+	double Pct = GetPctDone();
+	if (Pct < 0.1)
+		Ps(s, "%.3f", Pct);
+	else if (Pct < 1)
+		Ps(s, "%.2f", Pct);
+	else
+		Ps(s, "%.1f", Pct);
 	}

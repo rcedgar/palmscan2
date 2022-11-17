@@ -34,7 +34,7 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 #pragma omp critical
 			{
 			string sPct;
-			CR.GetPctDone(sPct);
+			CR.GetStrPctDone(sPct);
 			Progress("%s%% done, %u / %u hits\r",
 			  sPct.c_str(), g_HitCount, g_DoneCount);
 			}

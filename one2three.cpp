@@ -44,7 +44,7 @@ char GetOneFromThree(const string &AAA)
 	{
 	map<string, char>::const_iterator p = g_AAA2aa.find(AAA);
 	if (p == g_AAA2aa.end())
-		Die("Unknown three-letter code '%s'", AAA.c_str());
+		return 'X';
 	char aa = p->second;
 	return aa;
 	}

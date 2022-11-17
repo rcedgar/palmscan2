@@ -54,6 +54,7 @@ STR_OPT(nohit_fastaout)
 STR_OPT(pssm_alnout)
 STR_OPT(msa2)
 STR_OPT(pssmdir)
+STR_OPT(pdbout)
 
 STR_OPT(log)
 STR_OPT(input)
@@ -143,6 +144,7 @@ FLAG_OPT(trace)
 FLAG_OPT(self)
 FLAG_OPT(leave_one_out)
 FLAG_OPT(label_substr_match)
+FLAG_OPT(pdb_ent)
 
 #undef FLAG_OPT
 #undef UNS_OPT

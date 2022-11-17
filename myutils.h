@@ -228,6 +228,7 @@ void WriteStdioFile64(FILE *f, const void *Buffer, uint64 Bytes);
 void Ps(string &Str, const char *Format, ...);
 void Psa(string &Str, const char *Format, ...);
 void Psasc(string &Str, const char *Format, ...);
+void Pf(FILE *f, const char *Format, ...);
 
 #define MAGIC(a, b, c, d)	uint32(uint32(a)<<24 | uint32(b)<<16 | uint32(c)<<8 | (d))
 

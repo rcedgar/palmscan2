@@ -25,7 +25,7 @@ public:
 		}
 
 	uint GetSeqLength() const;
-	void FromPDBLines(const string &Label,
+	char FromPDBLines(const string &Label,
 	  const vector<string> &Lines, bool SaveAtoms);
 	void FromCalLines(const vector<string> &Lines);
 	void ParseCalLabelLine(const string &Line);
@@ -57,9 +57,9 @@ public:
 		{
 		GetSS(m_SS);
 		}
+	void GetPPC(uint PosA, uint PosB, uint PosC, PDBChain &PPC) const;
 	bool CheckMotifCoords(bool FailOnError = true) const;
 	bool CheckPPCMotifCoords(bool FailOnError = true) const;
-	void GetPPC(uint PosA, uint PosB, uint PosC, PDBChain &PPC) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);

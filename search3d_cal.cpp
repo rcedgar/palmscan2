@@ -35,7 +35,7 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 			{
 			Lock("Progress");
 			string sPct;
-			CR.GetPctDone(sPct);
+			CR.GetStrPctDone(sPct);
 			Progress("%s%% done, %u / %u hits\r",
 			  sPct.c_str(), g_HitCount, g_DoneCount);
 			Unlock("Progress");

@@ -683,10 +683,6 @@ void Log(const char *Format, ...)
 
 void Die_(const char *Format, ...)
 	{
-#if USE_OMP==1
-#pragma omp critical
-	{
-#endif
 	static bool InDie = false;
 	if (InDie)
 		exit(1);
@@ -728,9 +724,6 @@ void Die_(const char *Format, ...)
 #endif
 
 	exit(1);
-#if USE_OMP==1
-	}
-#endif
 	}
 
 void Warning_(const char *Format, ...)
@@ -2216,6 +2209,18 @@ void Ps(string &Str, const char *Format, ...)
 	va_start(ArgList, Format);
 	myvstrprintf(Str, Format, ArgList);
 	va_end(ArgList);
+	}
+
+void Pf(FILE *f, const char *Format, ...)
+	{
+	if (f == 0)
+		return;
+	va_list ArgList;
+	va_start(ArgList, Format);
+	string Tmp;
+	myvstrprintf(Tmp, Format, ArgList);
+	va_end(ArgList);
+	fprintf(f, "%s", Tmp.c_str());
 	}
 
 void Psa(string &Str, const char *Format, ...)

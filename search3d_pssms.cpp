@@ -4,13 +4,12 @@
 #include "rdrpsearcher.h"
 #include "abcxyz.h"
 #include "outputfiles.h"
-#include "calreader.h"
-#include "omplock.h"
+#include "chainreader.h"
 
 static uint g_DoneCount;
 static uint g_HitCount;
 
-static void Thread(CalReader &CR, vector<PDBChain> &Qs,  
+static void Thread(ChainReader &CR, vector<PDBChain> &Qs,  
   vector<RdRpSearcher> &RSs)
 	{
 	uint ThreadIndex = GetThreadIndex();
@@ -21,26 +20,22 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 		bool Ok = CR.GetNext(Q);
 		if (!Ok)
 			return;
-		Lock("Done");
-		++g_DoneCount;
-		Unlock("Done");
-		if (g_DoneCount%100 == 0)
+#pragma omp critical
+		{
+		if (++g_DoneCount%100 == 0)
 			{
-			Lock("Progress");
 			string sPct;
-			CR.GetPctDone(sPct);
+			CR.GetStrPctDone(sPct);
 			Progress("%s%% done, %u / %u hits\r",
 			  sPct.c_str(), g_HitCount, g_DoneCount);
-			Unlock("Progress");
 			}
+		}
 
 		const string &QSeq = Q.m_Seq;
 		const string &QLabel = Q.m_Label;
 
 		RS.Search(QLabel, QSeq);
-		LockOutput();
 		RS.WriteOutput();
-		UnlockOutput();
 
 		uint APos = RS.GetMotifPos(0);
 		uint BPos = RS.GetMotifPos(1);
@@ -57,9 +52,10 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 			continue;
 			}
 
-		Lock("Done");
+#pragma omp critical
+		{
 		++g_HitCount;
-		Unlock("Done");
+		}
 
 		Q.m_MotifPosVec.clear();
 		Q.m_MotifPosVec.push_back(APos);
@@ -68,14 +64,10 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 
 		vector<vector<double> > MotifCoords;
 		Q.GetMotifCoords(MotifCoords);
-	//		LogMx("MotifCoords", MotifCoords);
 
 		vector<double> t;
 		vector<vector<double> > R;
 		GetTriForm(MotifCoords, t, R);
-
-		//LogVec("t", t);
-		//LogMx("R", R);
 
 		const uint QL = Q.GetSeqLength();
 		vector<double> Pt;
@@ -87,9 +79,15 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 			Q.SetPt(Pos, XPt);
 			}
 		uint PPL = CPos + CL - APos;
-		LockOutput();
-		Q.ToCalSeg(g_fppc, APos, PPL);
-		UnlockOutput();
+
+#pragma omp critical
+		{
+		PDBChain Q_PPC;
+		Q.GetPPC(APos, BPos, CPos, Q_PPC);
+		Q_PPC.ToCal(g_fppc);
+		if (optset_pdbout)
+			Q_PPC.ToPDB(opt_pdbout);
+		}
 		}
 	}
 
@@ -117,8 +115,8 @@ void cmd_search3d_pssms()
 	for (uint i = 0; i < ThreadCount; ++i)
 		RSs[i].Init(Model);
 
-	CalReader CR;
-	CR.Open(QueryFN);
+	ChainReader CR;
+	CR.Open(QueryFN, false);
 
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(CR, Qs, RSs);

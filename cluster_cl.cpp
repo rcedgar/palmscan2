@@ -36,7 +36,7 @@ static size_t GetIndex(const string &Label)
 	return Index;
 	}
 
-static size_t GetCentroid(size_t ClusterIndex, QuartsFloat &DistQuarts)
+static size_t GetCentroid(size_t ClusterIndex, QuartsDouble &DistQuarts)
 	{
 	DistQuarts.Clear();
 
@@ -66,18 +66,18 @@ static size_t GetCentroid(size_t ClusterIndex, QuartsFloat &DistQuarts)
 
 	const size_t Centroid = BestIndex;
 
-	vector<float> Dists;
+	vector<double> Dists;
 	for (auto Index : Cluster)
 		{
 		if (Index != Centroid)
 			{
 			double d = DistMx[Centroid][Index];
 			if (d != DBL_MAX)
-				Dists.push_back(float(d));
+				Dists.push_back(d);
 			}
 		}
 
-	GetQuartsFloat(Dists, DistQuarts);
+	GetQuartsDouble(Dists, DistQuarts);
 	return Centroid;
 	}
 
@@ -297,7 +297,7 @@ void cmd_cluster_cl()
 			{
 			size_t ClusterSize = ClusterSizes[ClusterIndex];
 
-			QuartsFloat DistQuarts;
+			QuartsDouble DistQuarts;
 			size_t Centroid = GetCentroid(ClusterIndex, DistQuarts);
 			const string &CentroidLabel = Labels[Centroid];
 

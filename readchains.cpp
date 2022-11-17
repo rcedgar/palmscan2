@@ -4,8 +4,34 @@
 
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 
+void GetLabelFromFileNamePDBEnt(const string &FileName, string &Label)
+	{
+	vector<string> Fields;
+	Split(FileName, Fields, '/');
+	uint FieldCount = SIZE(Fields);
+	asserta(FieldCount > 0);
+	Label = Fields[FieldCount-1];
+
+	size_t n = Label.size();
+	if (n < 4)
+		return;
+
+	if (EndsWith(FileName, ".pdb") || EndsWith(FileName, ".ent"))
+		Label.resize(n-4);
+	if (Label[0] == 'p' && Label[1] == 'd' && Label[2] == 'b')
+		Label = Label.substr(3, string::npos);
+
+	for (uint i = 0; i < SIZE(Label); ++i)
+		Label[i] = toupper(Label[i]);
+	}
+
 void GetLabelFromFileName(const string &FileName, string &Label)
 	{
+	if (opt_pdb_ent)
+		{
+		GetLabelFromFileNamePDBEnt(FileName, Label);
+		return;
+		}
 	vector<string> Fields;
 	Split(FileName, Fields, '/');
 	uint FieldCount = SIZE(Fields);
@@ -62,7 +88,7 @@ void ReadChainsCal(const string &FileName, vector<PDBChain *> &Structures)
 		if (N%100 == 0)
 			{
 			string sPct;
-			CR.GetPctDone(sPct);
+			CR.GetStrPctDone(sPct);
 			Progress("Reading %s %s%% done\r",
 			  FileName.c_str(), sPct.c_str());
 			}

@@ -54,7 +54,16 @@ bool CalReader::GetNext(PDBChain &Chain)
 	return true;
 	}
 
-void CalReader::GetPctDone(string &s) const
+double CalReader::GetPctDone() const
+	{
+	if (m_FileSize == UINT64_MAX || m_FileSize == 0)
+		return 0;
+	uint64 Pos = GetStdioFilePos64(m_f);
+	double Pct = double(Pos)*100.0/m_FileSize;
+	return Pct;
+	}
+
+void CalReader::GetStrPctDone(string &s) const
 	{
 	s.clear();
 	if (m_FileSize == UINT64_MAX || m_FileSize == 0)

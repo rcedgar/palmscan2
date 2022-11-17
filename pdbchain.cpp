@@ -122,7 +122,7 @@ void PDBChain::ToCalSeg(FILE *f, uint Pos, uint n) const
 	asserta(m_Seq.size() == L);
 
 	if (m_MotifPosVec.empty())
-		fprintf(f, ">%s", m_Label.c_str());
+		fprintf(f, ">%s\n", m_Label.c_str());
 	else
 		{
 		asserta(m_MotifPosVec.size() == 3);
@@ -223,7 +223,7 @@ void PDBChain::ToPDB(const string &FileName) const
 		}
 	}
 
-void PDBChain::FromPDBLines(const string &Label,
+char PDBChain::FromPDBLines(const string &Label,
   const vector<string> &Lines, bool SaveAtoms)
 	{
 	Clear();
@@ -237,28 +237,6 @@ void PDBChain::FromPDBLines(const string &Label,
 		{
 		const string &Line = Lines[LineNr];
 		const size_t L = Line.size();
-
-		if (strncmp(Line.c_str(), "REMARK PALMPRINT", 16) == 0)
-			{
-		//                  0 1              2  3                4   5        6
-		// REMARK PALMPRINT A:1:VATDVSDHDTFW B:73:SGQGATDLMGTLLM C:130:SKSDDAML
-			vector<string> Fields;
-			Split(Line, Fields, ':');
-			if (SIZE(Fields) != 7)
-				continue;
-			uint PosA = StrToUint(Fields[1]);
-			uint PosB = StrToUint(Fields[3]);
-			uint PosC = StrToUint(Fields[5]);
-
-			asserta(PosA > 0);
-			asserta(PosB > 0);
-			asserta(PosC > 0);
-
-			m_MotifPosVec.clear();
-			m_MotifPosVec.push_back(PosA-1);
-			m_MotifPosVec.push_back(PosB-1);
-			m_MotifPosVec.push_back(PosC-1);
-			}
 
 		if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
 			continue;
@@ -293,7 +271,7 @@ void PDBChain::FromPDBLines(const string &Label,
 		char LineChain = Line[21];
 		if (Chain == 0)
 			Chain = LineChain;
-		else if (Chain != Chain)
+		else if (Chain != LineChain)
 			Die("PDBChain::FromLines() two chains %c, %c",
 			  Chain, LineChain);
 		string AAA = Line.substr(17, 3);
@@ -318,6 +296,7 @@ void PDBChain::FromPDBLines(const string &Label,
 		m_Zs.push_back(Z);
 		}
 	AppendChainToLabel(m_Label, Chain);
+	return Chain;
 	}
 
 void PDBChain::GetSubSeq(uint Pos, uint n, string &s) const
@@ -509,13 +488,11 @@ void PDBChain::ChainsFromLines(const string &Label,
 				if (AnyAtoms && !ChainLines.empty())
 					{
 					PDBChain *Chain = new PDBChain;
-					string ThisLabel = Label;
-					AppendChainToLabel(ThisLabel, CurrChainChar);
-					Chain->FromPDBLines(ThisLabel, ChainLines, SaveAtoms);
+					char ChainChar = Chain->FromPDBLines(Label, ChainLines, SaveAtoms);
+					if (ChainChar != 0)
+						Chains.push_back(Chain);
 					ChainLines.clear();
 					AnyAtoms = false;
-
-					Chains.push_back(Chain);
 					}
 				CurrChainChar = ChainChar;
 				}
@@ -524,12 +501,10 @@ void PDBChain::ChainsFromLines(const string &Label,
 			}
 		}
 
-	if (!ChainLines.empty())
+	if (!ChainLines.empty() && !AnyAtoms)
 		{
 		PDBChain *Chain = new PDBChain;
-		string ThisLabel = Label;
-		AppendChainToLabel(ThisLabel, CurrChainChar);
-		Chain->FromPDBLines(ThisLabel, ChainLines, SaveAtoms);
+		Chain->FromPDBLines(Label, ChainLines, SaveAtoms);
 		ChainLines.clear();
 		Chains.push_back(Chain);
 		}
@@ -569,7 +544,7 @@ void PDBChain::CopyTriForm(const vector<double> &t,
 
 void PDBChain::AppendChainToLabel(string &Label, char Chain)
 	{
-	if (Chain == 0 || Chain == 'A')
+	if (Chain == 0)
 		return;
 
 	string _X = "_";
@@ -738,6 +713,7 @@ void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
 	  PPC_PosC + 1, MotifC.c_str());
 
 	PPC.m_Label = m_Label + " " + MotifCoordStr;
+	PPC.CheckPPCMotifCoords(true);
 	}
 
 void PDBChain::XFormATOM(string &ATOM, const vector<double> &t,
@@ -747,7 +723,7 @@ void PDBChain::XFormATOM(string &ATOM, const vector<double> &t,
 
 bool PDBChain::IsPDBAtomLine(const string &Line)
 	{
-	if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
+	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
 	else
 		return false;

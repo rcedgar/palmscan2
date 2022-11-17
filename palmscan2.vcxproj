@@ -287,7 +287,10 @@
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="getchains.cpp" />
     <ClCompile Include="pdbinfo.cpp" />
+    <ClCompile Include="ppcprofile.cpp" />
     <ClCompile Include="ppcsearcher.cpp" />
+    <ClCompile Include="ppc_profile.cpp" />
+    <ClCompile Include="ppc_score.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
     <ClCompile Include="cluster_cl.cpp" />
@@ -387,6 +390,7 @@
     <ClInclude Include="pdbchain.h" />
     <ClInclude Include="ppcaligner.h" />
     <ClInclude Include="ppchitmgr.h" />
+    <ClInclude Include="ppcprofileparams.h" />
     <ClInclude Include="ppcsearcher.h" />
     <ClInclude Include="pssm.h" />
     <ClInclude Include="pssms.h" />

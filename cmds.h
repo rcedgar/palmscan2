@@ -23,5 +23,7 @@ C(triangles)
 C(checkppc)
 C(chains_subsample)
 C(pdbinfo)
+C(ppc_profile)
+C(ppc_score)
 
 #undef C

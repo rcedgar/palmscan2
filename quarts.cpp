@@ -30,7 +30,7 @@ void GetQuarts(const vector<unsigned> &v, Quarts &Q)
 	Q.Avg = double(Q.Total)/N;
 	}
 
-void GetQuartsFloat(const vector<float> &v, QuartsFloat &Q)
+void GetQuartsDouble(const vector<double> &v, QuartsDouble &Q)
 	{
 	const unsigned N = SIZE(v);
 	Q.Min = 0.0f;
@@ -43,22 +43,22 @@ void GetQuartsFloat(const vector<float> &v, QuartsFloat &Q)
 	if (N == 0)
 		return;
 
-	vector<float> v2 = v;
-	float *vs = v2.data();
+	vector<double> v2 = v;
+	double *vs = v2.data();
 	QuickSortInPlace(vs, N);
 
 	for (unsigned i = 0; i < N; ++i)
 		Q.Total += vs[i];
 
-	float Mean = float(Q.Total)/N;
-	float Sumd = 0.0f;
+	double Mean = double(Q.Total)/N;
+	double Sumd = 0.0f;
 	for (unsigned i = 0; i < N; ++i)
 		{
-		float x = vs[i];
-		float d = (x - Mean)*(x - Mean);
+		double x = vs[i];
+		double d = (x - Mean)*(x - Mean);
 		Sumd += d;
 		}
-	float StdDev = (float) sqrt(Sumd/N);
+	double StdDev = (double) sqrt(Sumd/N);
 
 	Q.Min = vs[0];
 	Q.LoQ = vs[N/4];

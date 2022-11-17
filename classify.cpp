@@ -39,7 +39,7 @@ void cmd_classify()
 		if (RecCount%10000 == 0)
 			{
 			string sPct;
-			CR.GetPctDone(sPct);
+			CR.GetStrPctDone(sPct);
 			Progress("%s%% done, %u / %u RdRp hits\r",
 			  sPct.c_str(), HitCount, RecCount);
 			}

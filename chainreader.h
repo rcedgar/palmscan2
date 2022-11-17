@@ -46,6 +46,11 @@ public:
 	bool GetNext_CAL(PDBChain &Chain);
 	bool GetNext_PDB(PDBChain &Chain);
 	bool GetNext_Files(PDBChain &Chain);
+	double GetPctDone() const;
+	double GetPctDone_CAL() const;
+	double GetPctDone_PDB() const;
+	double GetPctDone_Files() const;
+	void GetStrPctDone(string &s) const;
 
 public:
 	static bool KeepPDBAtomLine(const string &Line);
