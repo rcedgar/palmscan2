@@ -6,7 +6,7 @@
 class TSHit
 	{
 public:
-	const PDBChain *m_Query = 0;
+	PDBChain *m_Query = 0;
 	const PDBChain *m_Ref = 0;
 	uint m_QPosA = UINT_MAX;
 	uint m_QPosB = UINT_MAX;

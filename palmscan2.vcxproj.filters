@@ -266,13 +266,28 @@
     <ClCompile Include="chainreader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppc_profile.cpp">
+    <ClCompile Include="build_ppp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppc_score.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppcprofile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trifinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="find_tri.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="smooth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="search_ppp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -449,6 +464,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ppcprofileparams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trifinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pppfeatures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

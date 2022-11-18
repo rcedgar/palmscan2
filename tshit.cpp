@@ -217,7 +217,14 @@ void TSHit::WritePalmprintPDB(const string &FileNamePrefix) const
 
 void TSHit::SetSketch()
 	{
-	asserta(SIZE(m_Query->m_SS) == SIZE(m_Query->m_Seq));
+	//asserta(SIZE(m_Query->m_SS) == SIZE(m_Query->m_Seq));
+	m_Query->m_MotifPosVec.clear();
+	m_Query->m_MotifPosVec.push_back(m_QPosA);
+	m_Query->m_MotifPosVec.push_back(m_QPosB);
+	m_Query->m_MotifPosVec.push_back(m_QPosC);
+
+	if (m_Query->m_SS.empty())
+		m_Query->SetSS();
 
 	assert(m_Query->CheckMotifCoords());
 	assert(m_Ref->CheckPPCMotifCoords());

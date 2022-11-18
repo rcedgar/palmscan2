@@ -6,7 +6,7 @@
 
 #define TRACE	0
 
-void TriSearcher::Search(const PDBChain &Query, const PDBChain &Ref)
+void TriSearcher::Search(PDBChain &Query, const PDBChain &Ref)
 	{
 	m_Query = &Query;
 	m_Ref = &Ref;

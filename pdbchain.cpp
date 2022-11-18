@@ -327,6 +327,18 @@ void PDBChain::GetMotifSeq(uint i, string &Seq) const
 	GetSubSeq(Pos, ML, Seq);
 	}
 
+double PDBChain::GetCoord(uint Axis, uint Pos) const
+	{
+	switch (Axis)
+		{
+	case X: return m_Xs[Pos];
+	case Y: return m_Ys[Pos];
+	case Z: return m_Zs[Pos];
+		}
+	asserta(false);
+	return 0;
+	}
+
 void PDBChain::GetPt(uint Pos, vector<double> &Pt) const
 	{
 	assert(Pos < SIZE(m_Xs));
@@ -501,7 +513,7 @@ void PDBChain::ChainsFromLines(const string &Label,
 			}
 		}
 
-	if (!ChainLines.empty() && !AnyAtoms)
+	if (!ChainLines.empty() && AnyAtoms)
 		{
 		PDBChain *Chain = new PDBChain;
 		Chain->FromPDBLines(Label, ChainLines, SaveAtoms);
@@ -736,4 +748,28 @@ char PDBChain::GetChainCharFromPDBAtomLine(const string &Line)
 	if (Line.size() < 22)
 		return 0;
 	return Line[21];
+	}
+
+double PDBChain::GetSmoothedCoord(uint Axis, uint i, uint N, uint w) const
+	{
+	double SumCoord = 0;
+	double SumWeight = 0;
+	double dN = (double) N;
+	double dw = (double) w;
+	int iQL = (int) GetSeqLength();
+	double dQL = (double) iQL;
+	for (int k = -1; k <= int(w); ++k)
+		{
+		double dPos = (int(i) + k)*dQL/dN;
+		int iPos = int(dPos + 0.5);
+		if (iPos < 0 || iPos >= iQL)
+			continue;
+		double Weight = dw - fabs(dPos - iPos);
+		double Coord = GetCoord(Axis, (uint) iPos);
+		SumCoord += Weight*Coord;
+		SumWeight += Weight;
+		}
+	asserta(SumWeight > 0);
+	double SmoothedCoord = SumCoord/SumWeight;
+	return SmoothedCoord;
 	}

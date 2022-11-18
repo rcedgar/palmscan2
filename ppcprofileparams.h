@@ -14,3 +14,5 @@ extern double Mean_L_BC;
 extern double StdDev_L_BC;
 extern double Mean_d_BC;
 extern double StdDev_d_BC;
+
+extern double Sigmas;

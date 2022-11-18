@@ -40,6 +40,7 @@ public:
 	void GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetSubSeq(uint Pos, uint n, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
+	double GetCoord(uint Axis, uint Pos) const;
 	void GetPt(uint Pos, vector<double> &Pt) const;
 	void SetPt(uint Pos, const vector<double> &Pt);
 	double GetDist(uint Pos1, uint Pos2) const;
@@ -60,6 +61,7 @@ public:
 	void GetPPC(uint PosA, uint PosB, uint PosC, PDBChain &PPC) const;
 	bool CheckMotifCoords(bool FailOnError = true) const;
 	bool CheckPPCMotifCoords(bool FailOnError = true) const;
+	double GetSmoothedCoord(uint Axis, uint i, uint N, uint w) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);

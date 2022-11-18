@@ -16,6 +16,8 @@ double StdDev_L_BC = 8.9;
 double Mean_d_BC = 17.4;
 double StdDev_d_BC = 2.6;
 
+double Sigmas = 2;
+
 static double GetNormal(double Mu, double Sigma, double x)
 	{
 	static double TWOPI = (2.0*3.1415926535);
@@ -26,7 +28,7 @@ static double GetNormal(double Mu, double Sigma, double x)
 	return y;
 	}
 
-static double GetScoreNormal(double Mu, double Sigma, double x)
+double GetScoreNormal(double Mu, double Sigma, double x)
 	{
 	double f = GetNormal(Mu, Sigma, x);
 	double Max = GetNormal(Mu, Sigma, Mu);
@@ -60,14 +62,42 @@ double GetPPCProfileScore(
 	{
 	double Sum = 0.0;
 
+	uint LABC = LAB + LAC + LBC;
+	double dABC = dAB + dAC + dBC;
+
+	uint n = 0;
 #define X(x)	\
 	Sum += GetScoreNormal(Mean_L_##x, StdDev_L_##x, L##x); \
 	Sum += GetScoreNormal(Mean_d_##x, StdDev_d_##x, d##x); \
+	n += 2;
 
 	X(AB)
 	X(AC)
 	X(BC)
 
-	double Score = Sum/6;
+#undef X
+	double Score = Sum/n;
 	return Score;
+	}
+
+void cmd_ppc_profile_info()
+	{
+#define X(x)	\
+  { \
+  double MeanL = Mean_L_##x; \
+  double Meand = Mean_d_##x; \
+  double StdDevL = StdDev_L_##x; \
+  double StdDevd = StdDev_d_##x; \
+  double rL = Sigmas*StdDevL; \
+  double rd = Sigmas*StdDevd; \
+  Log("\n"); \
+  Log("L_" #x " %6.4g [+/-%6.4g]  %.4g .. %.4g\n", MeanL, StdDevL, MeanL - rL, MeanL + rL);  \
+  Log("d_" #x " %6.4g [+/-%6.4g]  %.4g .. %.4g\n", Meand, StdDevd, Meand - rd, Meand + rd);  \
+  }
+
+	X(AB)
+	X(AC)
+	X(BC)
+
+#undef X
 	}

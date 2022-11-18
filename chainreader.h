@@ -24,6 +24,7 @@ public:
 	uint m_FileIndex = UINT_MAX;
 	uint m_LineIndex = UINT_MAX;
 	uint m_FilesChainIndex = UINT_MAX;
+	double m_PctDone = 0;
 
 public:
 	void Clear()
@@ -39,6 +40,7 @@ public:
 		m_FileIndex = UINT_MAX;
 		m_LineIndex = UINT_MAX;
 		m_FilesChainIndex = UINT_MAX;
+		m_PctDone = 0;
 		}
 
 	void Open(const string &FileName, bool SaveAtoms);
@@ -46,6 +48,7 @@ public:
 	bool GetNext_CAL(PDBChain &Chain);
 	bool GetNext_PDB(PDBChain &Chain);
 	bool GetNext_Files(PDBChain &Chain);
+	uint GetMilDone();
 	double GetPctDone() const;
 	double GetPctDone_CAL() const;
 	double GetPctDone_PDB() const;

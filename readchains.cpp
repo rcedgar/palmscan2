@@ -85,7 +85,7 @@ void ReadChainsCal(const string &FileName, vector<PDBChain *> &Structures)
 			break;
 		Structures.push_back(&Q);
 		++N;
-		if (N%100 == 0)
+		if (N%1000 == 0)
 			{
 			string sPct;
 			CR.GetStrPctDone(sPct);

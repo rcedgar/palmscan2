@@ -7,7 +7,7 @@
 
 double GetConfidenceScore(double MotifRMSD);
 
-void TSHitMgr::SetQuery(const PDBChain &Query)
+void TSHitMgr::SetQuery(PDBChain &Query)
 	{
 	m_Hits.clear();
 	m_Query = &Query;

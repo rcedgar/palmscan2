@@ -331,6 +331,7 @@ bool StartsWith(const string &s, const string &t);
 bool StartsWith(const char *s, const char *t);
 static inline double GetRatio(double x, double y) { if (y == 0) { asserta(x == 0); return 0; } return x/y; }
 static inline double GetPct(double x, double y) { return 100.0*GetRatio(x, y); }
+const char *GetPctStr(double x, double y, string &s);
 double GetMemUseBytes();
 void PrintCmdLine(FILE *f);
 void PrintProgramInfo(FILE *f);

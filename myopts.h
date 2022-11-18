@@ -26,11 +26,13 @@ STR_OPT(qhitfastaout)
 STR_OPT(rex)
 STR_OPT(align_msas)
 STR_OPT(test_pssms)
+STR_OPT(ppp)
 
 STR_OPT(train_cal)
 STR_OPT(test_cal)
 
 STR_OPT(ref)
+STR_OPT(label)
 STR_OPT(labels)
 STR_OPT(fastaout)
 STR_OPT(alnout)
@@ -145,6 +147,7 @@ FLAG_OPT(self)
 FLAG_OPT(leave_one_out)
 FLAG_OPT(label_substr_match)
 FLAG_OPT(pdb_ent)
+FLAG_OPT(dgd)
 
 #undef FLAG_OPT
 #undef UNS_OPT

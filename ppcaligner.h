@@ -5,7 +5,7 @@
 
 class PPCAligner
 	{
-	const PDBChain *m_Q = 0;
+	PDBChain *m_Q = 0;
 	const PDBChain *m_R = 0;
 
 	vector<double> m_RPt;
@@ -27,7 +27,7 @@ public:
 		m_QPt.resize(3);
 		}
 
-	void SetQuery(const PDBChain &Q);
+	void SetQuery(PDBChain &Q);
 	void SetRef(const PDBChain &R);
 	double GetRMSD2Segment(uint QPos, uint RPos, uint n);
 	double GetMotifRMSD();

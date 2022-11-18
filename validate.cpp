@@ -8,7 +8,7 @@
 void SplitTrainTest(const vector<PDBChain *> &Chains, double TrainPct,
   vector<PDBChain *> &TrainChains, vector<PDBChain *> &TestChains);
 
-static bool ChainToPPC(const PDBChain &Q,
+static bool ChainToPPC(PDBChain &Q,
   const vector<PDBChain *> Refs, PDBChain &PPC)
 	{
 	PPC.Clear();
@@ -71,7 +71,7 @@ static void Validate1(const vector<PDBChain *> &InputChains,
 	for (uint i = 0; i < NTest; ++i)
 		{
 		ProgressStep(i, NTest, "Convert to PPC");
-		const PDBChain &Chain = *TestChains[i];
+		PDBChain &Chain = *TestChains[i];
 		PDBChain *TestPPC = new PDBChain;
 		bool Ok = ChainToPPC(Chain, RefChains, *TestPPC);
 		if (Ok)
@@ -165,7 +165,7 @@ static void ValidateL1O(const vector<PDBChain *> &InputChains,
 	for (uint i = 0; i < N; ++i)
 		{
 		ProgressStep(i, N, "Convert to PPC");
-		const PDBChain &Chain = *InputChains[i];
+		PDBChain &Chain = *InputChains[i];
 		PDBChain *TestPPC = new PDBChain;
 		bool Ok = ChainToPPC(Chain, RefChains, *TestPPC);
 		if (Ok)
@@ -191,7 +191,7 @@ static void ValidateL1O(const vector<PDBChain *> &InputChains,
 		{
 		ProgressStep(TestIndex, N, "Leave-one-out");
 		bool TestIsRdRp = TestIsRdRpVec[TestIndex];
-		const PDBChain *ptrPPC = TestPPCs[TestIndex];
+		PDBChain *ptrPPC = TestPPCs[TestIndex];
 		if (ptrPPC == 0)
 			{
 			if (TestIsRdRp)
@@ -201,7 +201,7 @@ static void ValidateL1O(const vector<PDBChain *> &InputChains,
 			continue;
 			}
 
-		const PDBChain &Q = *ptrPPC;
+		PDBChain &Q = *ptrPPC;
 		PA.SetQuery(Q);
 
 		double TopRMSD = DBL_MAX;

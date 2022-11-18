@@ -2,7 +2,7 @@
 #include "ppcaligner.h"
 #include "abcxyz.h"
 
-void PPCAligner::SetQuery(const PDBChain &Q)
+void PPCAligner::SetQuery(PDBChain &Q)
 	{
 	Q.CheckPPCMotifCoords();
 	m_Q = &Q;

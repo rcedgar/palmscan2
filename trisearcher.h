@@ -11,7 +11,7 @@ class TriSearcher
 	{
 public:
 
-	const PDBChain *m_Query = 0;
+	PDBChain *m_Query = 0;
 	const PDBChain *m_Ref = 0;
 	vector<uint> m_PosAs;
 	vector<uint> m_PosBs;
@@ -41,7 +41,7 @@ public:
 		}
 
 	void LogMe(FILE *f = g_fLog) const;
-	void Search(const PDBChain &Query, const PDBChain &Ref);
+	void Search(PDBChain &Query, const PDBChain &Ref);
 	void SetHitOrder();
 	double GetRMSDMotifs(uint QueryPosA, uint QueryPosB,
 	  uint QueryPosC) const;

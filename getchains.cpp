@@ -33,22 +33,28 @@ void cmd_getchains()
 	{
 	const string &InputFileName = opt_getchains;
 
-	asserta(opt_labels != "");
+	asserta(opt_labels != "" || opt_label != "");
 
 	bool MatchSubstr = false;
 	if (optset_label_substr_match)
 		MatchSubstr = true;
 
-	vector<string> Labels;
-	ReadLinesFromFile(opt_labels, Labels);
 	set<string> LabelSet;
-	const uint LabelCount = SIZE(Labels);
-	vector<string> Fields;
-	for (uint i = 0; i < LabelCount; ++i)
+
+	if (optset_labels)
 		{
-		const string &Label = Labels[i];
-		LabelSet.insert(Label);
+		vector<string> Labels;
+		ReadLinesFromFile(opt_labels, Labels);
+		vector<string> Fields;
+		for (uint i = 0; i < SIZE(Labels); ++i)
+			{
+			const string &Label = Labels[i];
+			LabelSet.insert(Label);
+			}
 		}
+	if (optset_label)
+		LabelSet.insert(opt_label);
+	const uint LabelCount = SIZE(LabelSet);
 
 	vector<PDBChain *> Chains;
 	ReadChains(InputFileName, Chains);

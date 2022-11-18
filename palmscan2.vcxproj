@@ -285,12 +285,14 @@
     <ClCompile Include="checkppc.cpp" />
     <ClCompile Include="classify.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
+    <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
     <ClCompile Include="pdbinfo.cpp" />
     <ClCompile Include="ppcprofile.cpp" />
     <ClCompile Include="ppcsearcher.cpp" />
-    <ClCompile Include="ppc_profile.cpp" />
+    <ClCompile Include="build_ppp.cpp" />
     <ClCompile Include="ppc_score.cpp" />
+    <ClCompile Include="ppp.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
     <ClCompile Include="cluster_cl.cpp" />
@@ -328,12 +330,14 @@
     <ClCompile Include="rdrpsearcher.cpp" />
     <ClCompile Include="search3d_cal.cpp" />
     <ClCompile Include="searchaatop.cpp" />
+    <ClCompile Include="search_ppp.cpp" />
     <ClCompile Include="search_pssms.cpp" />
     <ClCompile Include="searchgroup.cpp" />
     <ClCompile Include="search3d_pssms.cpp" />
     <ClCompile Include="searchparams.cpp" />
     <ClCompile Include="search3d_ppc.cpp" />
     <ClCompile Include="searchtriangle.cpp" />
+    <ClCompile Include="smooth.cpp" />
     <ClCompile Include="split_train_test.cpp" />
     <ClCompile Include="test_pssms.cpp" />
     <ClCompile Include="seqdb.cpp" />
@@ -348,6 +352,7 @@
     <ClCompile Include="tracebackbitmem.cpp" />
     <ClCompile Include="triangle.cpp" />
     <ClCompile Include="triangles.cpp" />
+    <ClCompile Include="trifinder.cpp" />
     <ClCompile Include="triform.cpp" />
     <ClCompile Include="trisearcher.cpp" />
     <ClCompile Include="tshit.cpp" />
@@ -392,6 +397,9 @@
     <ClInclude Include="ppchitmgr.h" />
     <ClInclude Include="ppcprofileparams.h" />
     <ClInclude Include="ppcsearcher.h" />
+    <ClInclude Include="ppp.h" />
+    <ClInclude Include="pf.h" />
+    <ClInclude Include="pppfeatures.h" />
     <ClInclude Include="pssm.h" />
     <ClInclude Include="pssms.h" />
     <ClInclude Include="pssmsearch.h" />
@@ -409,6 +417,7 @@
     <ClInclude Include="timers.h" />
     <ClInclude Include="timing.h" />
     <ClInclude Include="tracebit.h" />
+    <ClInclude Include="trifinder.h" />
     <ClInclude Include="trisearcher.h" />
     <ClInclude Include="tshit.h" />
     <ClInclude Include="tshitmgr.h" />

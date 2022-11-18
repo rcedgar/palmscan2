@@ -147,6 +147,24 @@ bool ChainReader::GetNext_Files(PDBChain &Chain)
 	return true;
 	}
 
+uint ChainReader::GetMilDone()
+	{
+	if (m_EndOfInput)
+		return 1000;
+	if (m_PctDone == 0)
+		{
+		m_PctDone = 0.0001;
+		return 0;
+		}
+	m_PctDone = GetPctDone();
+	uint Mil = uint(m_PctDone/1001);
+	if (Mil == 0)
+		Mil = 1;
+	if (Mil >= 1001)
+		Mil = 1000;
+	return Mil;
+	}
+
 double ChainReader::GetPctDone() const
 	{
 	switch (m_Type)

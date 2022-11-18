@@ -5,12 +5,12 @@
 class TSHitMgr
 	{
 public:
-	const PDBChain *m_Query = 0;
+	PDBChain *m_Query = 0;
 	vector<TSHit> m_Hits;
 	TSHit *m_TopHit = 0;
 
 public:
-	void SetQuery(const PDBChain &Query);
+	void SetQuery(PDBChain &Query);
 	void Add(TSHit &TH);
 	void WriteOutput();
 	void SetTopHit();

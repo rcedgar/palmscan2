@@ -23,7 +23,11 @@ C(triangles)
 C(checkppc)
 C(chains_subsample)
 C(pdbinfo)
-C(ppc_profile)
+C(build_ppp)
+C(ppc_profile_info)
 C(ppc_score)
+C(find_tri)
+C(smooth)
+C(search_ppp)
 
 #undef C

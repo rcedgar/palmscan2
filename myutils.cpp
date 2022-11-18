@@ -719,8 +719,8 @@ void Die_(const char *Format, ...)
 
 #ifdef _MSC_VER
 	if (IsDebuggerPresent())
- 		__debugbreak();
 	_CrtSetDbgFlag(0);
+ 		__debugbreak();
 #endif
 
 	exit(1);
@@ -2297,4 +2297,16 @@ void StripWhiteSpace(string &Str)
 		t += c;
 		}
 	Str = t;
+	}
+
+const char *GetPctStr(double x, double y, string &s)
+	{
+	double Pct = GetPct(x, y);
+	if (Pct < 0.1)
+		Ps(s, "%.3g%%", Pct);
+	else if (Pct < 1)
+		Ps(s, "%.2f%%", Pct);
+	else
+		Ps(s, "%.1f%%", Pct);
+	return s.c_str();
 	}

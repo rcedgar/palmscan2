@@ -51,7 +51,7 @@ void cmd_cluster_ppc()
 			{
 			uint Index = *p;
 			asserta(Index < SIZE(Chains));
-			const PDBChain &Chain = *Chains[Index];
+			PDBChain &Chain = *Chains[Index];
 			PA.SetQuery(Chain);
 			double RMSD = PA.GetMotifRMSD();
 			if (RMSD <= MaxRMSD)

@@ -34,10 +34,10 @@ static void Thread(CalReader &CR, vector<PDBChain> &Qs,
 		if (g_DoneCount%100 == 0)
 			{
 			Lock("Progress");
-			string sPct;
+			string sPct, sPct2;
 			CR.GetStrPctDone(sPct);
-			Progress("%s%% done, %u / %u hits\r",
-			  sPct.c_str(), g_HitCount, g_DoneCount);
+			Progress("%s%% done, %u / %u hits (%s)\r",
+			  sPct.c_str(), g_HitCount, g_DoneCount, GetPctStr(g_HitCount, g_DoneCount, sPct2));
 			Unlock("Progress");
 			}
 		TriSearcher &TS = TSs[ThreadIndex];
