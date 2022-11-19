@@ -322,6 +322,7 @@
     <ClCompile Include="pdbchaincal.cpp" />
     <ClCompile Include="ppcaligner.cpp" />
     <ClCompile Include="readchains.cpp" />
+    <ClCompile Include="rotate.cpp" />
     <ClCompile Include="search3d_tri.cpp" />
     <ClCompile Include="pdbchain.cpp" />
     <ClCompile Include="psms.cpp" />

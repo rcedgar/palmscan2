@@ -56,6 +56,9 @@ void ReadChains(const vector<string> &FileNames,
 	for (uint i = 0; i < N; ++i)
 		{
 		const string &FileName = FileNames[i];
+		if (EndsWith(FileName, ".gz"))
+			Die("Compressed files not supported '%s'", FileName.c_str());
+
 		string Label;
 		GetLabelFromFileName(FileName, Label);
 

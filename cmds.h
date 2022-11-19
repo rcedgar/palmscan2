@@ -29,5 +29,6 @@ C(ppc_score)
 C(find_tri)
 C(smooth)
 C(search_ppp)
+C(rotate)
 
 #undef C

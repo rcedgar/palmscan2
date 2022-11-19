@@ -134,7 +134,6 @@ void TSHit::WriteTsv(FILE *f) const
 		{
 		fprintf(f, "Query");
 		fprintf(f, "\tRef");
-		fprintf(f, "\tScore");
 		fprintf(f, "\tRMSDm");
 		fprintf(f, "\tPosA");
 		fprintf(f, "\tPosB");
@@ -162,7 +161,6 @@ void TSHit::WriteTsv(FILE *f) const
 
 	fprintf(f, "%s", QLabel.c_str());
 	fprintf(f, "\t%s", RLabel.c_str());
-	fprintf(f, "\t%.3f", Score);
 	fprintf(f, "\t%.3g", MotifRMSD);
 	fprintf(f, "\t%u", m_QPosA + 1);
 	fprintf(f, "\t%u", m_QPosB + 1);
