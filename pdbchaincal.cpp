@@ -41,6 +41,14 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 		}
 	}
 
+void PDBChain::FromCal(const string &FileName)
+	{
+	vector<string> Lines;
+	void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
+	ReadLinesFromFile(FileName, Lines);
+	FromCalLines(Lines);
+	}
+
 void PDBChain::FromCalLines(const vector<string> &Lines)
 	{
 	Clear();

@@ -31,5 +31,6 @@ public:
 	void SetRef(const PDBChain &R);
 	double GetRMSD2Segment(uint QPos, uint RPos, uint n);
 	double GetMotifRMSD();
-	double Align(TSHit &Hit) const;
+	void Align(TSHit &Hit) const;
+	double GetTMScore(const TSHit &Hit, string &Path) const;
 	};

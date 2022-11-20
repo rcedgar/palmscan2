@@ -773,3 +773,110 @@ double PDBChain::GetSmoothedCoord(uint Axis, uint i, uint N, uint w) const
 	double SmoothedCoord = SumCoord/SumWeight;
 	return SmoothedCoord;
 	}
+
+char PDBChain::GetMotifA_D() const
+	{
+	asserta(SIZE(m_MotifPosVec) == 3);
+	char D1 = m_Seq[m_MotifPosVec[A] + 3];
+	if (D1 == 'D')
+		return D1;
+	char c1 = m_Seq[m_MotifPosVec[A] + 2];
+	if (c1 == 'D')
+		return 'D';
+	char c2 = m_Seq[m_MotifPosVec[A] + 4];
+	if (c2 == 'D')
+		return 'D';
+	return D1;
+	}
+
+char PDBChain::GetMotifB_G() const
+	{
+	asserta(SIZE(m_MotifPosVec) == 3);
+	char G = m_Seq[m_MotifPosVec[B] + 0];
+	if (G == 'G')
+		return G;
+	char c1 = m_Seq[m_MotifPosVec[B] + 1];
+	if (c1 == 'G')
+		return 'G';
+	char c2 = m_Seq[m_MotifPosVec[B] + 2];
+	if (c2 == 'G')
+		return 'G';
+	return G;
+	}
+
+char PDBChain::GetMotifC_D() const
+	{
+	asserta(SIZE(m_MotifPosVec) == 3);
+	char D = m_Seq[m_MotifPosVec[C] + 2];
+	if (D == 'D')
+		return D;
+	char c1 = m_Seq[m_MotifPosVec[C] + 3];
+	if (c1 == 'D')
+		return 'D';
+	char c2 = m_Seq[m_MotifPosVec[C] + 4];
+	if (c2 == 'D')
+		return 'D';
+	return D;
+	}
+
+void PDBChain::GetSuperMotif(string &s) const
+	{
+	s.clear();
+	char D1 = GetMotifA_D();
+	char G = GetMotifB_G();
+	char D2 = GetMotifC_D();
+
+	s += D1;
+	s += G;
+	s += D2;
+	}
+
+static uint GetDiffs3(const char *s, const char *t)
+	{
+	uint n = 0;
+	for (uint i = 0; i < 3; ++i)
+		if (s[i] != t[i])
+			++n;
+	return n;
+	}
+
+void PDBChain::GetBestMatchGDD(string &BestMatch) const
+	{
+	static const char *Motifs[] =
+		{
+		"GDD",
+		"SDD",
+		"ADD",
+		"IDD",
+		"GDN",
+		};
+	static const uint N = sizeof(Motifs)/sizeof(Motifs[0]);
+
+	string CSeq;
+	GetMotifSeq(C, CSeq);
+	asserta(SIZE(CSeq) == 8);
+	BestMatch = "XXX";
+	uint BestDiffs = 3;
+	for (uint i = 0; i < 5; ++i)
+		{
+		for (int j = 0; j < N; ++j)
+			{
+			uint Diffs = GetDiffs3(CSeq.c_str() + i, Motifs[j]);
+			if (Diffs < BestDiffs)
+				{
+				BestMatch = CSeq.substr(i, 3);
+				BestDiffs = Diffs;
+				}
+			}
+		}
+	}
+
+const char *PDBChain::GetAcc(string &Acc) const
+	{
+	size_t n = m_Label.find(' ');
+	if (n > 0)
+		Acc = m_Label.substr(0, n);
+	else
+		Acc = m_Label;
+	return Acc.c_str();
+	}

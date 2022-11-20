@@ -303,15 +303,6 @@ void TSHit::WriteSketch(FILE *f) const
 	fprintf(f, "%s  %s\n", m_RSketch.c_str(), m_Ref->m_Label.c_str());
 	}
 
-void TSHit::SetScore()
-	{
-	asserta(!m_QSketch.empty());
-	double MotifRMSD = sqrt(m_MotifRMSD2);
-	double ConfScore = GetConfidenceScore(MotifRMSD);
-//	m_Score = (ConfScore + m_SketchPct/100.0)/2.0;
-	m_Score = ConfScore;
-	}
-
 void TSHit::WriteReport(FILE *f) const
 	{
 	if (f == 0)

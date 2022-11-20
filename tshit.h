@@ -48,5 +48,4 @@ public:
 	void WritePalmprintFasta(FILE *f) const;
 	void WritePalmprintPDB(const string &FileNamePrefix) const;
 	void SetSketch();
-	void SetScore();
 	};

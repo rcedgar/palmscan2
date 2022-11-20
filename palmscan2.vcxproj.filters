@@ -293,6 +293,12 @@
     <ClCompile Include="rotate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tm_ppc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppcalignertm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

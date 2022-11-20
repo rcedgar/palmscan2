@@ -15,7 +15,7 @@ class ObjMgr;
 
 class XDPMem
 	{
-private:
+public:
 	unsigned m_MaxLA;
 	unsigned m_MaxLB;
 	Mx<byte> m_TBBit;
@@ -85,8 +85,7 @@ public:
 
 	void Alloc(unsigned LA, unsigned LB)
 		{
-		if (LA > m_MaxLA || LB > m_MaxLB)
-			m_TBBit.Alloc("TBBit", LA+129, LB+129);
+		m_TBBit.Alloc("TBBit", LA+129, LB+129);
 
 		if (LA > m_MaxLA)
 			{

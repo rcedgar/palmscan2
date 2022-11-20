@@ -30,5 +30,8 @@ C(find_tri)
 C(smooth)
 C(search_ppp)
 C(rotate)
+C(tm_ppc)
+C(tm_ppc_all_vs_all)
+C(tm_search_ppc)
 
 #undef C

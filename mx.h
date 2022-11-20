@@ -103,8 +103,8 @@ template<> inline const char *TypeToStr<char>(char c)
 
 template<> inline const char *TypeToStr<byte>(byte c)
 	{
-	static char s[2];
-	s[0] = c;
+	static char s[3];
+	sprintf(s, "%02x", c);
 	return s;
 	}
 

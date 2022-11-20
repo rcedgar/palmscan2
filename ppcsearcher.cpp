@@ -75,15 +75,13 @@ bool PPCSearcher::Search(PDBChain &Q)
 		Hit.m_Ref = &R;
 		Hit.m_MotifRMSD2 = RMSD*RMSD;
 		Hit.SetSketch();
-		Hit.SetScore();
-		double Score = Hit.m_Score;
-		m_Scores.push_back(Score);
+		m_Scores.push_back(RMSD);
 		m_Hits.push_back(Hit);
 		m_RefIndexes.push_back(RefIndex);
 		}
 
 	m_HitOrder.resize(N);
-	QuickSortOrderDesc(m_Scores.data(), N, m_HitOrder.data());
+	QuickSortOrder(m_Scores.data(), N, m_HitOrder.data());
 
 	uint TopHitIndex = m_HitOrder[0];
 	asserta(TopHitIndex < SIZE(m_Hits));

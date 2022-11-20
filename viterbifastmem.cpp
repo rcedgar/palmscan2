@@ -9,9 +9,9 @@
 void TraceBackBitMem(XDPMem &Mem, unsigned LA, unsigned LB,
   char State, string &Path);
 
-static float TERM_GAP_OPEN = -5;
-static float GAP_OPEN = -20;
-static float GAP_EXT = -5;
+static const float TERM_GAP_OPEN = -0.5;
+static const float GAP_OPEN = -2;
+static const float GAP_EXT = -0.5;
 
 float ViterbiFastMem(XDPMem &Mem, float **ScoreMx,
   uint LA, uint LB, string &Path)
@@ -19,7 +19,7 @@ float ViterbiFastMem(XDPMem &Mem, float **ScoreMx,
 	if (LA*LB > 100*1000*1000)
 		Die("ViterbiFastMem, seqs too long LA=%u, LB=%u", LA, LB);
 
-	Mem.Alloc(LA, LB);
+	Mem.Alloc(LA + 16, LB + 16);
 
 	float OpenA = TERM_GAP_OPEN;
 	float ExtA = GAP_EXT;

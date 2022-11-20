@@ -46,13 +46,9 @@ double PPCAligner::GetRMSD2Segment(uint QPos, uint RPos, uint n)
 	return Sum;
 	}
 
-double PPCAligner::Align(TSHit &Hit) const
+void PPCAligner::Align(TSHit &Hit) const
 	{
 	asserta(m_Q != 0 && m_R != 0);
 	Hit.m_Query = m_Q;
 	Hit.m_Ref = m_R;
-	Hit.SetSketch();
-	Hit.SetScore();
-	double Score = Hit.m_Score;
-	return Score;
 	}

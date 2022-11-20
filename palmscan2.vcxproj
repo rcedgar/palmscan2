@@ -288,6 +288,7 @@
     <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
     <ClCompile Include="pdbinfo.cpp" />
+    <ClCompile Include="ppcalignertm.cpp" />
     <ClCompile Include="ppcprofile.cpp" />
     <ClCompile Include="ppcsearcher.cpp" />
     <ClCompile Include="build_ppp.cpp" />
@@ -350,6 +351,7 @@
     <ClCompile Include="test.cpp" />
     <ClCompile Include="timing.cpp" />
     <ClCompile Include="tmscore.cpp" />
+    <ClCompile Include="tm_ppc.cpp" />
     <ClCompile Include="tracebackbitmem.cpp" />
     <ClCompile Include="triangle.cpp" />
     <ClCompile Include="triangles.cpp" />

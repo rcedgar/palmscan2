@@ -27,6 +27,7 @@ public:
 	uint GetSeqLength() const;
 	char FromPDBLines(const string &Label,
 	  const vector<string> &Lines, bool SaveAtoms);
+	void FromCal(const string &FileName);
 	void FromCalLines(const vector<string> &Lines);
 	void ParseCalLabelLine(const string &Line);
 	void ToCal(FILE *f) const;
@@ -62,6 +63,12 @@ public:
 	bool CheckMotifCoords(bool FailOnError = true) const;
 	bool CheckPPCMotifCoords(bool FailOnError = true) const;
 	double GetSmoothedCoord(uint Axis, uint i, uint N, uint w) const;
+	void GetSuperMotif(string &s) const;
+	void GetBestMatchGDD(string &s) const;
+	char GetMotifA_D() const;
+	char GetMotifB_G() const;
+	char GetMotifC_D() const;
+	const char *GetAcc(string &Acc) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
