@@ -33,5 +33,8 @@ C(rotate)
 C(tm_ppc)
 C(tm_ppc_all_vs_all)
 C(tm_search_ppc)
+C(classifytm)
+C(tm)
+C(tm_all_vs_all)
 
 #undef C

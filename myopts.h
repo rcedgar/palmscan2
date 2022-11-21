@@ -148,6 +148,7 @@ FLAG_OPT(leave_one_out)
 FLAG_OPT(label_substr_match)
 FLAG_OPT(pdb_ent)
 FLAG_OPT(dgd)
+FLAG_OPT(top_hit_only)
 
 #undef FLAG_OPT
 #undef UNS_OPT

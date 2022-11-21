@@ -20,7 +20,7 @@ static bool omp_lock_init()
 	}
 static bool omp_lock_init_done = omp_lock_init();
 
-static inline void Lock(const char *Msg)
+static inline void Lock(const char *Msg = "")
 	{
 #if	TRACE_GLOBAL_LOCKS
 	Log("%s:%d %d: Global lock %p %s request\n",
@@ -40,7 +40,7 @@ static inline void Lock(const char *Msg)
 #endif
 	}
 
-static inline void Unlock(const char *Msg)
+static inline void Unlock(const char *Msg = "")
 	{
 #if	TRACE_GLOBAL_LOCKS
 	Log("%s:%d %d: Global unlock %p %s\n",

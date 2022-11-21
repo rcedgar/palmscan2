@@ -8,20 +8,18 @@ static const uint MAX_DP = 1024;
 
 #define TRACE	0
 
-static XDPMem g_XDPMem;
-static float **g_DPScoreMx;
+// static XDPMem g_XDPMem;
+// static float **DPScoreMx;
 
 float ViterbiFastMem(XDPMem &Mem, float **ScoreMx,
   uint LA, uint LB, string &Path);
 
-static void AllocDPScoreMx()
+float **AllocDPScoreMx()
 	{
-	if (g_DPScoreMx != 0)
-		return;
-
-	g_DPScoreMx = myalloc(float *, MAX_DP + 16);
+	float **DPScoreMx = myalloc(float *, MAX_DP + 16);
 	for (uint i = 0; i < MAX_DP + 16; ++i)
-		g_DPScoreMx[i] = myalloc(float, MAX_DP + 16);
+		DPScoreMx[i] = myalloc(float, MAX_DP + 16);
+	return DPScoreMx;
 	}
 
 // TM-align paper eq(2).
@@ -36,15 +34,16 @@ static float GetTM_Sim(double d)
 	return float(TM_sim);
 	}
 
-double AlignTmPpc(const PDBChain &Query, const PDBChain &Ref,
-  string &Path)
+double AlignTmPpc(XDPMem &Mem, float **DPScoreMx,
+  const PDBChain &Query, const PDBChain &Ref, string &Path)
 	{
 	const uint QLen = Query.GetSeqLength();
 	const uint RLen = Ref.GetSeqLength();
 	asserta(QLen > 0 && QLen < MAX_DP);
 	asserta(RLen > 0 && RLen < MAX_DP);
 
-	AllocDPScoreMx();
+	Mem.Alloc(MAX_DP + 16, MAX_DP + 16);
+//	AllocDPScoreMx();
 
 	vector<double> QPt(3);
 	vector<double> RPt(3);
@@ -57,7 +56,7 @@ double AlignTmPpc(const PDBChain &Query, const PDBChain &Ref,
 
 			float d = (float) GetDist(QPt, RPt);
 			float TM_Sim = GetTM_Sim(d);
-			g_DPScoreMx[QPos][RPos] = TM_Sim;
+			DPScoreMx[QPos][RPos] = TM_Sim;
 			}
 		}
 
@@ -75,7 +74,7 @@ double AlignTmPpc(const PDBChain &Query, const PDBChain &Ref,
 		Log("[%4u]", i);
 		for (uint j = 0; j < RLen; ++j)
 			{
-			float d = g_DPScoreMx[i][j];
+			float d = DPScoreMx[i][j];
 			Log("  %9.3g", d);
 			}
 		Log("\n");
@@ -84,7 +83,7 @@ double AlignTmPpc(const PDBChain &Query, const PDBChain &Ref,
 	}
 #endif
 
-	ViterbiFastMem(g_XDPMem, g_DPScoreMx, QLen, RLen, Path);
+	ViterbiFastMem(Mem, DPScoreMx, QLen, RLen, Path);
 	const uint ColCount = SIZE(Path);
 	uint i = 0;
 	uint j = 0;
@@ -100,7 +99,7 @@ double AlignTmPpc(const PDBChain &Query, const PDBChain &Ref,
 		char c = Path[Col];
 		if (c == 'M')
 			{
-			double Score = g_DPScoreMx[i][j];
+			double Score = DPScoreMx[i][j];
 			if (Score >= MinScore)
 				{
 				SumScore += Score;
@@ -141,7 +140,7 @@ double AlignTmPpc(const PDBChain &Query, const PDBChain &Ref,
 		char c = Path[Col];
 		if (c == 'M')
 			{
-			double Score = g_DPScoreMx[i][j];
+			double Score = DPScoreMx[i][j];
 			if (Score >= MinScore)
 				{
 				++MatchCount;
@@ -186,8 +185,11 @@ void cmd_tm_ppc()
 	Query.CheckPPCMotifCoords();
 	Ref.CheckPPCMotifCoords();
 
+	XDPMem Mem;
+	float **DPScoreMx = AllocDPScoreMx();
+
 	string Path;
-	double TM = AlignTmPpc(Query, Ref, Path);
+	double TM = AlignTmPpc(Mem, DPScoreMx, Query, Ref, Path);
 	ProgressLog("TM %6.4f  %s  %s\n",
 	  TM, Query.m_Label.c_str(), Ref.m_Label.c_str());
 	}
@@ -198,6 +200,10 @@ void cmd_tm_ppc_all_vs_all()
 	vector<PDBChain *> Chains;
 	ReadChains(InputFileName, Chains);
 	const uint N = SIZE(Chains);
+
+	XDPMem Mem;
+	float **DPScoreMx = AllocDPScoreMx();
+
 	string Path;
 	string QAccStr;
 	string RAccStr;
@@ -210,7 +216,7 @@ void cmd_tm_ppc_all_vs_all()
 			{
 			const PDBChain &R = *Chains[j];
 			const char *RAcc = R.GetAcc(RAccStr);
-			double TM = AlignTmPpc(Q, R, Path);
+			double TM = AlignTmPpc(Mem, DPScoreMx, Q, R, Path);
 			// Log("TM %6.4f  %s  %s\n", TM, QAcc, RAcc);
 			if (g_ftsv != 0)
 				{
@@ -237,6 +243,9 @@ void cmd_tm_search_ppc()
 	const uint NQ = SIZE(Qs);
 	const uint NR = SIZE(Rs);
 
+	XDPMem Mem;
+	float **DPScoreMx = AllocDPScoreMx();
+
 	string Path;
 	string QAccStr;
 	string RAccStr;
@@ -245,18 +254,40 @@ void cmd_tm_search_ppc()
 		const PDBChain &Q = *Qs[i];
 		const char *QAcc = Q.GetAcc(QAccStr);
 		ProgressStep(i, NQ, "Aligning %s", QAcc);
+		string TopRAccStr;
+		double TopTM = 0;
 		for (uint j = 0; j < NR; ++j)
 			{
 			const PDBChain &R = *Rs[j];
 			const char *RAcc = R.GetAcc(RAccStr);
-			double TM = AlignTmPpc(Q, R, Path);
-			// Log("TM %6.4f  %s  %s\n", TM, QAcc, RAcc);
+			double TM = AlignTmPpc(Mem, DPScoreMx, Q, R, Path);
+			if (opt_top_hit_only)
+				{
+				if (TM > TopTM)
+					{
+					TopTM = TM;
+					TopRAccStr = RAccStr;
+					}
+				}
+			else
+				{
+				if (g_ftsv != 0)
+					{
+					fprintf(g_ftsv, "%s", QAcc);
+					fprintf(g_ftsv, "\t%s", RAcc);
+					fprintf(g_ftsv, "\t%6.4f", TM);
+					fprintf(g_ftsv, "\n");
+					}
+				}
+			}
+
+		if (opt_top_hit_only)
+			{
 			if (g_ftsv != 0)
 				{
 				fprintf(g_ftsv, "%s", QAcc);
-				fprintf(g_ftsv, "\t%s", RAcc);
-				fprintf(g_ftsv, "\t%6.4f", TM);
-				fprintf(g_ftsv, "\t%6.4f", TM);
+				fprintf(g_ftsv, "\t%s", TopRAccStr.c_str());
+				fprintf(g_ftsv, "\t%6.4f", TopTM);
 				fprintf(g_ftsv, "\n");
 				}
 			}

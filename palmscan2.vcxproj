@@ -284,6 +284,7 @@
     <ClCompile Include="chains_subsample.cpp" />
     <ClCompile Include="checkppc.cpp" />
     <ClCompile Include="classify.cpp" />
+    <ClCompile Include="classifytm.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
@@ -350,6 +351,7 @@
     <ClCompile Include="rdrpmodel.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="timing.cpp" />
+    <ClCompile Include="tma.cpp" />
     <ClCompile Include="tmscore.cpp" />
     <ClCompile Include="tm_ppc.cpp" />
     <ClCompile Include="tracebackbitmem.cpp" />
@@ -419,6 +421,7 @@
     <ClInclude Include="sort.h" />
     <ClInclude Include="timers.h" />
     <ClInclude Include="timing.h" />
+    <ClInclude Include="tma.h" />
     <ClInclude Include="tracebit.h" />
     <ClInclude Include="trifinder.h" />
     <ClInclude Include="trisearcher.h" />
