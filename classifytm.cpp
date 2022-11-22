@@ -1,13 +1,14 @@
 #include "myutils.h"
 #include "pdbchain.h"
-//#include "ppcaligner.h"
 #include "calreader.h"
 #include "outputfiles.h"
 #include "omplock.h"
 #include "tma.h"
 
+static const double STRONG_RDRP = 0.600;
+static const double WEAK_RDRP = 0.550;
+static const double POSSIBLE_RDRP = 0.500;
 static const double WEAK_DIFF = 0.1;
-static const double MIN_TM = 0.5;
 
 static uint g_RecCount;
 static uint g_RdRpCount;
@@ -93,39 +94,6 @@ static void WriteAccAndTM(FILE *f, uint Index,
 	fprintf(f, "\t%s\t%.3f", Acc.c_str(), TM);
 	}
 
-static void WriteCat(FILE *f, bool TopIsRdRp,
-  double TopTM, double SecondTM)
-	{
-	if (f == 0)
-		return;
-
-	const char *Cat = ".";
-	if (TopTM == DBL_MAX)
-		Cat = "other.nohit";
-	else if (SecondTM == DBL_MAX)
-		{
-		if (TopIsRdRp)
-			Cat = "rdrp.no-other-hit";
-		else
-			Cat = "other.no-rdrp-hit";
-		}
-	else
-		{
-		asserta(TopTM != DBL_MAX && SecondTM != DBL_MAX);
-		bool Weak = (SecondTM - TopTM <= WEAK_DIFF);
-		if (TopIsRdRp)
-			Cat = "rdrp.top-hit";
-		else
-			{
-			if (Weak)
-				Cat = "rdrp-like";
-			else
-				Cat = "other.top-hit";
-			}
-		}
-	fprintf(f, "\t%s", Cat);
-	}
-
 static void Classify1(FILE *f, PDBChain &Q, vector<PDBChain *> &Rs,
   const vector<bool> &RefIsRdRp, TMA &T)
 	{
@@ -140,8 +108,6 @@ static void Classify1(FILE *f, PDBChain &Q, vector<PDBChain *> &Rs,
 	for (uint RefIndex = 0; RefIndex < NR; ++RefIndex)
 		{
 		const PDBChain &R = *Rs[RefIndex];
-		// PA.SetRef(R);
-		//double TM = PA.GetTMScore();
 		double TM = T.AlignChains(Q, R);
 		TMs.push_back(TM);
 		if (TM > TopTM)
@@ -214,11 +180,46 @@ static void Classify1(FILE *f, PDBChain &Q, vector<PDBChain *> &Rs,
 			RdRpScore = BoostScore(RdRpScore, 0.5);
 		}
 
+	string Cat = "other";
+	if (RdRpScore >= STRONG_RDRP)
+		Cat = "rdrp.strong";
+	else if (RdRpScore >= WEAK_RDRP)
+		Cat = "rdrp.weak";
+	else if (RdRpScore >= POSSIBLE_RDRP)
+		Cat = "rdrp.possible";
+
 	uint BPos = Q.m_MotifPosVec[1];
 	const uint PPL = Q.GetSeqLength();
 
 	Lock();
+	static bool HdrDone = false;
+	if (!HdrDone)
+		{
+		fprintf(f, "Srdrp");
+		fprintf(f, "\tClass");
+		fprintf(f, "\tTMpalm");
+		fprintf(f, "\tQuery");
+		fprintf(f, "\tA");
+		fprintf(f, "\tB");
+		fprintf(f, "\tC");
+		fprintf(f, "\tDGD");
+		fprintf(f, "\tGDD");
+		fprintf(f, "\tTopHit");
+		fprintf(f, "\tTMtop");
+		fprintf(f, "\tHit2");
+		fprintf(f, "\tTM2");
+		fprintf(f, "\tPPL");
+		fprintf(f, "\tPosB");
+		fprintf(f, "\tdAB");
+		fprintf(f, "\tdBC");
+		fprintf(f, "\tdAC");
+		fputc('\n', f);
+
+		HdrDone = true;
+		}
+
 	fprintf(f, "%.3f", RdRpScore);
+	fprintf(f, "\t%s", Cat.c_str());
 	fprintf(f, "\t%.3f", PalmScore);
 	WriteSplitLabel(f, &Q);
 	fprintf(f, "\t%s", SuperMotif.c_str());
