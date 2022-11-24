@@ -36,5 +36,6 @@ C(tm_search_ppc)
 C(classifytm)
 C(tm)
 C(tm_all_vs_all)
+C(cluster_motifs)
 
 #undef C

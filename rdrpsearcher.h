@@ -27,6 +27,11 @@ public:
 
 	bool m_Trace = false;
 
+	double m_MinScore_Core = 20.0;
+	uint m_LeftFlank_Core = 100;
+	uint m_RightFlank_Core = 100;
+	uint m_MaxMissingFlankCore = 25;
+
 public:
 	RdRpSearcher()
 		{
@@ -92,6 +97,8 @@ public:
 	void WriteOutput() const;
 	void WriteReport(FILE *f) const;
 	void WriteTsv(FILE *f) const;
+	void WriteMotifs(FILE *fABC, FILE *fCAB) const;
+	bool WriteCore(FILE *fABC, FILE *fCAB) const;
 
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;
 

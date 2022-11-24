@@ -44,9 +44,6 @@
     <ClCompile Include="sort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="blosum.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="buildpsm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -305,6 +302,12 @@
     <ClCompile Include="tma.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cluster_motifs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="blosum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -494,6 +497,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tma.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mpcluster.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

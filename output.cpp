@@ -15,6 +15,11 @@ void RdRpSearcher::WriteOutput() const
 	{
 	WriteReport(g_freport_pssms);
 	WriteTsv(g_ftsv);
+	WriteMotifs(g_fmotifs_abc, g_fmotifs_cab);
+	bool Ok = WriteCore(g_fcore_abc, g_fcore_cab);
+	if (!Ok)
+		SeqToFasta(g_fcore_notmatched, m_QueryLabel.c_str(),
+			m_QuerySeq.c_str(), SIZE(m_QuerySeq));
 	}
 	}
 
@@ -56,6 +61,88 @@ void RdRpSearcher::WriteReport(FILE *f) const
 		fprintf(f, " (%s +%.1f)", SecondGroupName.c_str(), Diff);
 		}
 	fprintf(f, "\n");
+	}
+
+void RdRpSearcher::WriteMotifs(FILE* fABC, FILE *fCAB) const
+	{
+	if (m_TopPalmHit.m_Score <= 0)
+		return;
+
+	string SeqA;
+	string SeqB;
+	string SeqC;
+	GetMotifSeq(0, SeqA);
+	GetMotifSeq(1, SeqB);
+	GetMotifSeq(2, SeqC);
+	if (SeqA == "" || SeqB == "" || SeqC == "")
+		return;
+	FILE *f = (m_TopPalmHit.m_Permuted ? fCAB : fABC);
+	if (f == 0)
+		return;
+
+	string xxx = "xxx";
+	if (optset_xxx)
+		xxx = opt_xxx;
+
+	string Motifs = SeqA + xxx + SeqB + xxx + SeqC;
+	SeqToFasta(f, m_QueryLabel.c_str(), Motifs.c_str(), SIZE(Motifs));
+	}
+
+bool RdRpSearcher::WriteCore(FILE *fABC, FILE *fCAB) const
+	{
+	if (m_TopPalmHit.m_Score < m_MinScore_Core)
+		return false;
+
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+	if (PosA == UINT_MAX || PosB == UINT_MAX || PosC == UINT_MAX)
+		return false;
+
+	uint QL = SIZE(m_QuerySeq);
+	uint LF = UINT_MAX;
+	uint RF = UINT_MAX;
+	bool Perm = m_TopPalmHit.m_Permuted;
+	if (Perm)
+		{
+		LF = PosC;
+		asserta(PosA < QL);
+		RF = QL - PosA - 1;
+		}
+	else
+		{
+		LF = PosA;
+		asserta(PosC < QL);
+		RF = QL - PosC - 1;
+		}
+	LF = min(LF, m_LeftFlank_Core);
+	RF = min(RF, m_RightFlank_Core);
+	if (m_LeftFlank_Core - LF > m_MaxMissingFlankCore)
+		return false;
+	if (m_RightFlank_Core - RF > m_MaxMissingFlankCore)
+		return false;
+
+	uint CoreLo = UINT_MAX;
+	uint CoreHi = UINT_MAX;
+	if (Perm)
+		{
+		asserta(LF <= PosC);
+		CoreLo = PosC - LF;
+		CoreHi = PosA + RF;
+		}
+	else
+		{
+		asserta(LF <= PosA);
+		CoreLo = PosA - LF;
+		CoreHi = PosC + RF;
+		}
+	asserta(CoreHi < QL);
+	uint CoreL = CoreHi - CoreLo + 1;
+
+	const char *CoreStart = m_QuerySeq.c_str() + CoreLo;
+	SeqToFasta(Perm ? fCAB : fABC,
+	  m_QueryLabel.c_str(), CoreStart, CoreL);
+	return true;
 	}
 
 void RdRpSearcher::WriteTsv(FILE *f) const

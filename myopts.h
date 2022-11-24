@@ -57,6 +57,7 @@ STR_OPT(pssm_alnout)
 STR_OPT(msa2)
 STR_OPT(pssmdir)
 STR_OPT(pdbout)
+STR_OPT(xxx)
 
 STR_OPT(log)
 STR_OPT(input)
