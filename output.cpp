@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "rdrpsearcher.h"
 #include "outputfiles.h"
+#include "abcxyz.h"
 
 static omp_lock_t g_OutputLock;
 
@@ -15,12 +16,68 @@ void RdRpSearcher::WriteOutput() const
 	{
 	WriteReport(g_freport_pssms);
 	WriteTsv(g_ftsv);
+	WritePalmprintFasta(g_ffasta);
 	WriteMotifs(g_fmotifs_abc, g_fmotifs_cab);
 	bool Ok = WriteCore(g_fcore_abc, g_fcore_cab);
 	if (!Ok)
 		SeqToFasta(g_fcore_notmatched, m_QueryLabel.c_str(),
 			m_QuerySeq.c_str(), SIZE(m_QuerySeq));
 	}
+	}
+
+void RdRpSearcher::WritePalmprintFasta(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	if (m_TopPalmHit.m_Score <= 0)
+		return;
+
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+	if (PosA == UINT_MAX || PosB == UINT_MAX || PosC == UINT_MAX)
+		return;
+
+	bool Perm = m_TopPalmHit.m_Permuted;
+
+	uint PPLo = UINT_MAX;
+	uint PPHi = 0;
+	if (Perm)
+		{
+		PPLo = PosC;
+		PPHi = PosB + BL - 1;
+		}
+	else
+		{
+		PPLo = PosA;
+		PPHi = PosC + CL - 1;
+		}
+	asserta(PPHi > PPLo);
+	const uint PPL = PPHi - PPLo + 1;
+
+	string SeqA;
+	string SeqB;
+	string SeqC;
+	GetMotifSeq(0, SeqA);
+	GetMotifSeq(1, SeqB);
+	GetMotifSeq(2, SeqC);
+	if (SeqA == "" || SeqB == "" || SeqC == "")
+		return;
+
+	uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+	string GroupName;
+	GetGroupName(GroupIndex, GroupName);
+
+	string Label = m_QueryLabel;
+	Label += " group=";
+	Label += GroupName;
+
+	Psa(Label, " A:%u:%s", PosA - PPLo + 1, SeqA.c_str());
+	Psa(Label, " B:%u:%s", PosB - PPLo + 1, SeqB.c_str());
+	Psa(Label, " C:%u:%s", PosC - PPLo + 1, SeqC.c_str());
+
+	const char *PPSeq = m_QuerySeq.c_str() + PPLo;
+	SeqToFasta(f, Label.c_str(), PPSeq, PPL);
 	}
 
 void RdRpSearcher::WriteReport(FILE *f) const

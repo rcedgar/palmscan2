@@ -23,6 +23,16 @@ char GetAnnotChar(uint Letter1, uint Letter2)
 	return ' ';
 	}
 
+void MPCluster::LogLogos(const vector<MotifProfile *> &MPs)
+	{
+	for (uint i = 0; i < SIZE(MPs); ++i)
+		{
+		string Logo;
+		MPs[i]->GetLogo(Logo);
+		Log("[%5u]  %s\n", i, Logo.c_str());
+		}
+	}
+
 float MPCluster::GetScore(const MotifProfile &MP1,
   const MotifProfile &MP2) const
 	{
@@ -77,11 +87,11 @@ void MPCluster::LogPair(const MotifProfile &MP1,
 	Log("Score = %.3f\n", Score);
 	}
 
-void MotifProfile::FromSeq(const string &Seq)
+void MotifProfile::GetLettersFromXxxSeq(const string &Seq,
+  vector<uint> &Letters)
 	{
-	Clear();
-
-	asserta(SIZE(Seq) == 12+3+14+3+8);
+	Letters.clear();
+	asserta(SIZE(Seq) == AL+3+BL+3+CL);
 
 	asserta(Seq[12] == 'x');
 	asserta(Seq[13] == 'x');
@@ -106,14 +116,75 @@ void MotifProfile::FromSeq(const string &Seq)
 		byte c = (byte) Seq[i];
 		assert(c != 0);
 		uint Letter = g_CharToLetterAmino[c];
+		Letters.push_back(Letter);
+		}
+	}
+
+void MotifProfile::GetLettersFromSeq(const string &Seq,
+  vector<uint> &Letters)
+	{
+	Letters.clear();
+	asserta(SIZE(Seq) == AL+BL+CL);
+
+	for (uint i = 0; i < MPL; ++i)
+		{
+		byte c = (byte) Seq[i];
+		assert(c != 0);
+		uint Letter = g_CharToLetterAmino[c];
+		Letters.push_back(Letter);
+		}
+	}
+
+void MotifProfile::FromXxxSeq(const string &Seq)
+	{
+	Clear();
+
+	vector<uint> Letters;
+	GetLettersFromXxxSeq(Seq, Letters);
+
+	asserta(SIZE(Letters) == MPL);
+	for (uint i = 0; i < MPL; ++i)
+		{
+		byte c = (byte) Seq[i];
+		assert(c != 0);
+		uint Letter = g_CharToLetterAmino[c];
 		if (Letter >= 20)
 			{
 			for (uint j = 0; j < 20; ++j)
-				m_FreqVec[k][j] = 1.0f/20.0f;
+				m_FreqVec[i][j] = 1.0f/20.0f;
 			continue;
 			}
-		m_FreqVec[k][Letter] = 1;
+		m_FreqVec[i][Letter] = 1;
 		}
+	}
+
+void MotifProfile::FromSeqs(const vector<string> &Seqs)
+	{
+	Clear();
+
+	const uint SeqCount = SIZE(Seqs);
+	asserta(SeqCount > 0);
+	vector<uint> Letters;
+	for (uint SeqIndex = 0; SeqIndex < SeqCount; ++SeqIndex)
+		{
+		const string &Seq = Seqs[SeqIndex];
+		GetLettersFromSeq(Seq, Letters);
+		asserta(SIZE(Letters) == MPL);
+		for (uint i = 0; i < MPL; ++i)
+			{
+			byte c = (byte) Seq[i];
+			assert(c != 0);
+			uint Letter = g_CharToLetterAmino[c];
+			if (Letter >= 20)
+				{
+				for (uint j = 0; j < 20; ++j)
+					m_FreqVec[i][j] += 1.0f/(20.0f*SeqCount);
+				continue;
+				}
+			m_FreqVec[i][Letter] += 1.0f/SeqCount;
+			}
+		}
+	ValidateFreqs();
 	}
 
 void MotifProfile::GetMaxLetter(uint i, uint &MaxLetter, float &MaxFreq) const
@@ -135,13 +206,18 @@ void MotifProfile::GetMaxLetter(uint i, uint &MaxLetter, float &MaxFreq) const
 void MotifProfile::GetLogo(string &Logo) const
 	{
 	Logo.clear();
+	double Sum = 0;
 	for (uint i = 0; i < MPL; ++i)
 		{
+		if (i == AL || i == AL+BL)
+			Logo += "  ";
 		uint Letter;
 		float Freq;
 		GetMaxLetter(i, Letter, Freq);
 		char c = (char) g_LetterToCharAmino[Letter];
-		if (Freq < 0.25)
+		if (Freq < 0.1)
+			c = 'X';
+		else if (Freq < 0.25)
 			c = '.';
 		else if (Freq < 0.5)
 			c = tolower(c);
@@ -282,10 +358,13 @@ void MPCluster::LogClusters() const
 		LogCluster(i);
 	}
 
-void MPCluster::ClusterToTsv(FILE *f, uint ClusterIndex) const
+void MPCluster::ClusterToTsv(FILE *f, uint OrderIndex) const
 	{
 	if (f == 0)
 		return;
+
+	asserta(OrderIndex < SIZE(m_ClusterSizeOrder));
+	uint ClusterIndex = m_ClusterSizeOrder[OrderIndex];
 	asserta(ClusterIndex < SIZE(m_CentroidIndexes));
 	asserta(ClusterIndex < SIZE(m_CentroidIndexToMemberIndexes));
 
@@ -296,7 +375,8 @@ void MPCluster::ClusterToTsv(FILE *f, uint ClusterIndex) const
 	const MotifProfile &CP = GetProfile(CentroidIndex);
 	string CentroidLogo;
 	CP.GetLogo(CentroidLogo);
-	fprintf(f, "C\t%u\t%s\n", Size, CentroidLogo.c_str());
+	fprintf(f, "C\t%u\t%u\t%s\n", 
+	  OrderIndex, Size, CentroidLogo.c_str());
 
 	vector<float> Scores;
 	for (uint i = 0; i < Size; ++i)
@@ -319,7 +399,8 @@ void MPCluster::ClusterToTsv(FILE *f, uint ClusterIndex) const
 		float Score = GetScore(CP, P);
 		string Logo;
 		P.GetLogo(Logo);
-		fprintf(f, "M\t%.4f\t%s\n", Score, Logo.c_str());
+		fprintf(f, "M\t%u\t%.2f\t%s\n",
+		  OrderIndex, Score, Logo.c_str());
 		}
 	}
 
@@ -330,7 +411,7 @@ void MPCluster::ClustersToTsv(FILE *f) const
 	const uint ClusterCount = SIZE(m_CentroidIndexes);
 	asserta(SIZE(m_CentroidIndexToMemberIndexes) == ClusterCount);
 	for (uint i = 0; i < ClusterCount; ++i)
-		ClusterToTsv(f, m_ClusterSizeOrder[i]);
+		ClusterToTsv(f, i);
 	}
 
 void MPCluster::FindNN(uint &Index1, uint &Index2) const
@@ -464,10 +545,9 @@ void MPCluster::NNCluster(const vector<MotifProfile *> &Input,
 		}
 	}
 
-void cmd_cluster_motifs()
+static void ClusterMotifs(const string &InputFileName,
+  const string &Strategy)
 	{
-	const string &InputFileName = opt_cluster_motifs;
-
 	SetBLOSUM62();
 
 	asserta(optset_minscore);
@@ -481,16 +561,33 @@ void cmd_cluster_motifs()
 		{
 		const string &Seq = Input.GetSeq(i);
 		MotifProfile *MP = new MotifProfile;
-		MP->FromSeq(Seq);
+		MP->FromXxxSeq(Seq);
 		MPs.push_back(MP);
 		}
 
 	MPCluster MC;
-	MC.NNCluster(MPs, MinScore);
+	if (Strategy == "greedy")
+		{
+		MC.GreedyCluster(MPs, MinScore);
+		MC.LogClusters();
+		ProgressLog("%u motifs, %u clusters\n",
+		  InputCount, SIZE(MC.m_CentroidIndexes));
+		MC.ClustersToTsv(g_ftsv);
+		}
+	else if (Strategy == "nn")
+		MC.NNCluster(MPs, MinScore);
+	else
+		Die("Invalid strategy '%s'", Strategy.c_str());
+	}
 
-	//MC.GreedyCluster(MPs, MinScore);
-	//MC.LogClusters();
-	//ProgressLog("%u motifs, %u clusters\n",
-	//  InputCount, SIZE(MC.m_CentroidIndexes));
-	//MC.ClustersToTsv(g_ftsv);
+void cmd_cluster_motifs_greedy()
+	{
+	const string &InputFileName = opt_cluster_motifs_greedy;
+	ClusterMotifs(InputFileName, "greedy");
+	}
+
+void cmd_cluster_motifs_nn()
+	{
+	const string &InputFileName = opt_cluster_motifs_nn;
+	ClusterMotifs(InputFileName, "nn");
 	}

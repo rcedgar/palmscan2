@@ -166,42 +166,6 @@ void FastqRec::ToSI(SeqInfo *SI) const
 	SI->m_L = L;
 	}
 
-FASTQ_FILTER FastqFilter(FastqRec &Rec)
-	{
-	if (optset_fastq_truncqual)
-		Rec.TruncateQual(opt_fastq_truncqual);
-
-	if (optset_fastq_stripleft)
-		Rec.StripLeft(opt_fastq_stripleft);
-
-	unsigned L = Rec.GetLength();
-	if (L == 0)
-		return FF_Short;
-
-	if (optset_fastq_minlen && L < opt_fastq_minlen)
-		return FF_Short;
-
-	if (optset_fastq_trunclen)
-		{
-		if (L < opt_fastq_trunclen)
-			return FF_Short;
-
-		Rec.TruncateLength(opt_fastq_trunclen);
-		unsigned NewL = Rec.GetLength();
-		asserta(NewL == opt_fastq_trunclen);
-		L = opt_fastq_trunclen;
-		}
-
-	if (optset_fastq_maxee)
-		{
-		double ExErr = Rec.GetExpectedErrCount(L);
-		if (ExErr > opt_fastq_maxee)
-			return FF_HighErr;
-		}
-
-	return FF_Good;
-	}
-
 void FastqRec::GetRevComp(FastqRec &RC) const
 	{
 	RC.Label = Label + string(".revcomp");

@@ -285,6 +285,7 @@
     <ClCompile Include="checkppc.cpp" />
     <ClCompile Include="classify.cpp" />
     <ClCompile Include="classifytm.cpp" />
+    <ClCompile Include="clusters2model.cpp" />
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="find_tri.cpp" />

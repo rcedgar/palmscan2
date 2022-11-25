@@ -98,6 +98,7 @@ public:
 	void WriteReport(FILE *f) const;
 	void WriteTsv(FILE *f) const;
 	void WriteMotifs(FILE *fABC, FILE *fCAB) const;
+	void WritePalmprintFasta(FILE *f) const;
 	bool WriteCore(FILE *fABC, FILE *fCAB) const;
 
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;

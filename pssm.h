@@ -69,7 +69,7 @@ public:
 		return (m_IsNucleo ? g_CharToLetterNucleo : g_CharToLetterAmino);
 		}
 
-	void FromSeqs(const vector<string> &Labels, const vector<string> &Seqs);
+	void FromSeqs(const vector<string> &Seqs);
 	void LogMe() const;
 	const vector<float> &GetFreqs(unsigned ColIndex) const;
 	const char *GetRandomSeq(string &s) const;

@@ -62,7 +62,6 @@ public:
 	void ToModelFile(const string &FileName) const;
 
 	uint GetPSSMLength(uint GroupIndex, uint MotifIndex) const;
-
 	};
 
 extern vector<string> g_ModelStrings;

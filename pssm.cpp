@@ -24,7 +24,7 @@ void PSSM::SetIsNucleo(const vector<string> &Seqs)
 	m_IsNucleo = (GetPct(NucleoCharCount, CharCount) > 80.0);
 	}
 
-void PSSM::FromSeqs(const vector<string> &Labels, const vector<string> &Seqs)
+void PSSM::FromSeqs(const vector<string> &Seqs)
 	{
 	//m_Labels = Labels;
 	//m_Seqs = Seqs;
@@ -33,7 +33,7 @@ void PSSM::FromSeqs(const vector<string> &Labels, const vector<string> &Seqs)
 	m_ColCount = SIZE(Seqs[0]);
 	for (unsigned SeqIndex = 1; SeqCount < SeqCount; ++SeqIndex)
 		asserta(SIZE(Seqs[SeqIndex]) == m_ColCount);
-	SetIsNucleo(Seqs);
+//	SetIsNucleo(Seqs);
 	SetCounts(Seqs);
 	SetFreqs();
 	SetPseudoFreqs();
@@ -46,7 +46,7 @@ void PSSM::FromFasta(const string &FileName)
 	{
 	SeqDB DB;
 	DB.FromFasta(FileName);
-	FromSeqs(DB.m_Labels, DB.m_Seqs);
+	FromSeqs(DB.m_Seqs);
 	}
 
 void PSSM::SetCounts(const vector<string> &Seqs)
@@ -252,8 +252,10 @@ void PSSM::LogMe() const
 	unsigned ColCount = GetColCount();
 	unsigned AlphaSize = GetAlphaSize();
 	const char *LetterToChar = GetLetterToChar();
+	string ConsSeq;
+	CalcConsSeq(ConsSeq);
 
-	Log("%u cols, alpha %s\n", ColCount, m_IsNucleo ? "nt" : "aa");
+	Log("%u cols  %s\n", ColCount, ConsSeq.c_str());
 
 	if (!m_RawFreqs.empty())
 		{

@@ -65,7 +65,8 @@ void RdRpModel::FromModelFile(const string &FileName)
 
 void RdRpModel::ToModelFile(const string &FileName) const
 	{
-	asserta(FileName != "");
+	if (FileName == "")
+		return;
 
 	uint GroupCount = GetGroupCount();
 

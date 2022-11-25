@@ -8,6 +8,7 @@ const uint MPL = AL + BL + CL;
 class MotifProfile
 	{
 public:
+	string m_Seq;
 	vector<vector<float> > m_FreqVec;
 
 public:
@@ -34,6 +35,7 @@ public:
 
 	void Clear()
 		{
+		m_Seq.clear();
 		asserta(m_FreqVec.size() == MPL);
 		for (uint i = 0; i < MPL; ++i)
 			{
@@ -42,7 +44,8 @@ public:
 			}
 		}
 
-	void FromSeq(const string &Seq);
+	void FromXxxSeq(const string &Seq);
+	void FromSeqs(const vector<string> &Seqs);
 
 	void LogMe() const;
 
@@ -66,6 +69,12 @@ public:
 
 	void GetLogo(string &Logo) const;
 	void GetMaxLetter(uint i, uint &Letter, float &Freq) const;
+
+public:
+	static void GetLettersFromXxxSeq(const string &Seq,
+	  vector<uint> &Letters);
+	static void GetLettersFromSeq(const string &Seq,
+	  vector<uint> &Letters);
 	};
 
 // Motif profile clustering
@@ -130,4 +139,11 @@ public:
 	void LogCluster(uint i) const;
 	void ClustersToTsv(FILE *f) const;
 	void ClusterToTsv(FILE *f, uint ClusterIndex) const;
+
+public:
+	static void ReadMPs(const string &FileName,
+	  vector<MotifProfile *> &MPs);
+	static void ReadSeqsVec(const string &TsvFileName,
+	  vector<vector<string> > &SeqsVec);
+	static void LogLogos(const vector<MotifProfile *> &MPs);
 	};
