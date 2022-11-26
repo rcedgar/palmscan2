@@ -8,7 +8,6 @@ const uint MPL = AL + BL + CL;
 class MotifProfile
 	{
 public:
-	string m_Seq;
 	vector<vector<float> > m_FreqVec;
 
 public:
@@ -35,7 +34,6 @@ public:
 
 	void Clear()
 		{
-		m_Seq.clear();
 		asserta(m_FreqVec.size() == MPL);
 		for (uint i = 0; i < MPL; ++i)
 			{
@@ -44,7 +42,7 @@ public:
 			}
 		}
 
-	void FromXxxSeq(const string &Seq);
+	void FromSeq(const string &Seq);
 	void FromSeqs(const vector<string> &Seqs);
 
 	void LogMe() const;
@@ -67,12 +65,11 @@ public:
 		return i - (AL + BL);
 		}
 
+	void GetConsSeq(string &Logo) const;
 	void GetLogo(string &Logo) const;
 	void GetMaxLetter(uint i, uint &Letter, float &Freq) const;
 
 public:
-	static void GetLettersFromXxxSeq(const string &Seq,
-	  vector<uint> &Letters);
 	static void GetLettersFromSeq(const string &Seq,
 	  vector<uint> &Letters);
 	};
@@ -87,6 +84,8 @@ public:
 
 // Greedy cluster
 	float m_MinScore = FLT_MAX;
+	uint m_Sample1 = 64;
+	uint m_Sample2 = 64;
 	vector<MotifProfile *> m_Centroids;
 	vector<uint> m_CentroidIndexes;
 	vector<vector<uint> > m_CentroidIndexToMemberIndexes;
@@ -124,6 +123,10 @@ public:
 
 	void GreedyCluster(const vector<MotifProfile *> &Input,
 	  float MinScore);
+	uint GetNextGreedyCentroid() const;
+	void GetRandomPending(uint n, vector<uint> &v) const;
+	uint GetBestCentroid(const vector<uint> &v) const;
+	void GetMembers(uint CentroidIndex, vector<uint> &Members) const;
 	float GetScore(const MotifProfile &MP1,
 	  const MotifProfile &MP2) const;
 	float GetScoreNNPair(uint i1, uint i2) const;

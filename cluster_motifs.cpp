@@ -87,39 +87,6 @@ void MPCluster::LogPair(const MotifProfile &MP1,
 	Log("Score = %.3f\n", Score);
 	}
 
-void MotifProfile::GetLettersFromXxxSeq(const string &Seq,
-  vector<uint> &Letters)
-	{
-	Letters.clear();
-	asserta(SIZE(Seq) == AL+3+BL+3+CL);
-
-	asserta(Seq[12] == 'x');
-	asserta(Seq[13] == 'x');
-	asserta(Seq[14] == 'x');
-
-	asserta(Seq[14+14+1] == 'x');
-	asserta(Seq[14+14+1] == 'x');
-	asserta(Seq[14+14+2] == 'x');
-
-	const uint PosVec[MPL] =
-		{
-		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-		// 12, 13, 14,
-		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-		// 29, 30, 31
-		32, 33, 34, 35, 36, 37, 38, 39
-		};
-
-	for (uint k = 0; k < MPL; ++k)
-		{
-		uint i = PosVec[k];
-		byte c = (byte) Seq[i];
-		assert(c != 0);
-		uint Letter = g_CharToLetterAmino[c];
-		Letters.push_back(Letter);
-		}
-	}
-
 void MotifProfile::GetLettersFromSeq(const string &Seq,
   vector<uint> &Letters)
 	{
@@ -135,12 +102,12 @@ void MotifProfile::GetLettersFromSeq(const string &Seq,
 		}
 	}
 
-void MotifProfile::FromXxxSeq(const string &Seq)
+void MotifProfile::FromSeq(const string &Seq)
 	{
 	Clear();
 
 	vector<uint> Letters;
-	GetLettersFromXxxSeq(Seq, Letters);
+	GetLettersFromSeq(Seq, Letters);
 
 	asserta(SIZE(Letters) == MPL);
 	for (uint i = 0; i < MPL; ++i)
@@ -200,6 +167,24 @@ void MotifProfile::GetMaxLetter(uint i, uint &MaxLetter, float &MaxFreq) const
 			MaxFreq = fs[j];
 			MaxLetter = j;
 			}
+		}
+	}
+
+void MotifProfile::GetConsSeq(string &ConsSeq) const
+	{
+	ConsSeq.clear();
+	double Sum = 0;
+	for (uint i = 0; i < MPL; ++i)
+		{
+		uint Letter;
+		float Freq;
+		GetMaxLetter(i, Letter, Freq);
+		char c = (char) g_LetterToCharAmino[Letter];
+		if (Freq < 0.1)
+			c = 'X';
+		else if (Freq < 0.25)
+			c = tolower(c);
+		ConsSeq.push_back(c);
 		}
 	}
 
@@ -268,7 +253,8 @@ void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
 		{
 		ProgressStep(DoneCount, InputCount + 1, "Clustering");
 		uint SizeStart = SIZE(m_PendingIndexes);
-		uint CentroidIndex = *m_PendingIndexes.begin();
+//		uint CentroidIndex = *m_PendingIndexes.begin();
+		uint CentroidIndex = GetNextGreedyCentroid();
 		++DoneCount;
 		m_PendingIndexes.erase(CentroidIndex);
 		m_CentroidIndexes.push_back(CentroidIndex);
@@ -282,7 +268,7 @@ void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
 			uint Index = *p;
 			MotifProfile &P = GetProfile(Index);
 			float Score = GetScore(CP, P);
-			if (Score >= MinScore)
+			if (Score >= m_MinScore)
 				{
 				++DoneCount;
 				MemberIndexes.push_back(Index);
@@ -373,10 +359,10 @@ void MPCluster::ClusterToTsv(FILE *f, uint OrderIndex) const
 	const uint Size = SIZE(MemberIndexes);
 
 	const MotifProfile &CP = GetProfile(CentroidIndex);
-	string CentroidLogo;
-	CP.GetLogo(CentroidLogo);
+	string CentroidSeq;
+	CP.GetConsSeq(CentroidSeq);
 	fprintf(f, "C\t%u\t%u\t%s\n", 
-	  OrderIndex, Size, CentroidLogo.c_str());
+	  OrderIndex, Size, CentroidSeq.c_str());
 
 	vector<float> Scores;
 	for (uint i = 0; i < Size; ++i)
@@ -397,10 +383,10 @@ void MPCluster::ClusterToTsv(FILE *f, uint OrderIndex) const
 			continue;
 		const MotifProfile &P = GetProfile(Index);
 		float Score = GetScore(CP, P);
-		string Logo;
-		P.GetLogo(Logo);
+		string ConsSeq;
+		P.GetConsSeq(ConsSeq);
 		fprintf(f, "M\t%u\t%.2f\t%s\n",
-		  OrderIndex, Score, Logo.c_str());
+		  OrderIndex, Score, ConsSeq.c_str());
 		}
 	}
 
@@ -410,8 +396,18 @@ void MPCluster::ClustersToTsv(FILE *f) const
 		return;
 	const uint ClusterCount = SIZE(m_CentroidIndexes);
 	asserta(SIZE(m_CentroidIndexToMemberIndexes) == ClusterCount);
-	for (uint i = 0; i < ClusterCount; ++i)
-		ClusterToTsv(f, i);
+	uint SumSize = 0;
+	for (uint OrderIndex = 0; OrderIndex < ClusterCount; ++OrderIndex)
+		{
+		asserta(OrderIndex < SIZE(m_ClusterSizeOrder));
+		uint ClusterIndex = m_ClusterSizeOrder[OrderIndex];
+		const vector<uint> &MemberIndexes = m_CentroidIndexToMemberIndexes[ClusterIndex];
+		const uint Size = SIZE(MemberIndexes);
+		SumSize += Size;
+		Log("Cluster %5u  total  %7u\n", OrderIndex, SumSize);
+
+		ClusterToTsv(f, OrderIndex);
+		}
 	}
 
 void MPCluster::FindNN(uint &Index1, uint &Index2) const
@@ -544,6 +540,82 @@ void MPCluster::NNCluster(const vector<MotifProfile *> &Input,
 		Join(Index1, Index2);
 		}
 	}
+void MPCluster::GetMembers(uint Centroid, vector<uint> &Members) const
+	{
+	Members.clear();
+	MotifProfile &CP = GetProfile(Centroid);
+	for (set<uint>::const_iterator p = m_PendingIndexes.begin();
+		p != m_PendingIndexes.end(); ++p)
+		{
+		uint Index = *p;
+		MotifProfile &P = GetProfile(Index);
+		float Score = GetScore(CP, P);
+		if (Score >= m_MinScore)
+			Members.push_back(Index);
+		}
+	}
+
+void MPCluster::GetRandomPending(uint n, vector<uint> &v) const
+	{
+	uint M = SIZE(m_PendingIndexes);
+	uint k = M/n;
+	if (k <= 3)
+		{
+		for (set<uint>::const_iterator p = m_PendingIndexes.begin();
+		  p != m_PendingIndexes.end(); ++p)
+			{
+			v.push_back(*p);
+			if (SIZE(v) == n)
+				break;
+			}
+		return;
+		}
+
+	for (set<uint>::const_iterator p = m_PendingIndexes.begin();
+		p != m_PendingIndexes.end(); ++p)
+		{
+		if (randu32()%k == 0)
+			v.push_back(*p);
+		if (SIZE(v) == n)
+			break;
+		}
+	if (v.empty())
+		v.push_back(*m_PendingIndexes.begin());
+	}
+
+uint MPCluster::GetBestCentroid(const vector<uint> &v) const
+	{
+	asserta(!v.empty());
+	uint BestSize = 0;
+	uint BestCentroid = v[0];
+	vector<uint> Members;
+	for (uint i = 0; i < SIZE(v); ++i)
+		{
+		GetMembers(v[i], Members);
+		uint Size = SIZE(Members);
+		if (Size > BestSize)
+			{
+			BestSize = Size;
+			BestCentroid = v[i];
+			}
+		}
+	return BestCentroid;
+	}
+
+uint MPCluster::GetNextGreedyCentroid() const
+	{
+	asserta(!m_PendingIndexes.empty());
+	vector<uint> v;
+	GetRandomPending(m_Sample1, v);
+	asserta(!v.empty());
+	uint Centroid = GetBestCentroid(v);
+	vector<uint> Members;
+	GetMembers(Centroid, Members);
+	random_shuffle(Members.begin(), Members.end());
+	Members.resize(m_Sample2);
+	uint BestCentroid = GetBestCentroid(Members);
+	return BestCentroid;
+	}
 
 static void ClusterMotifs(const string &InputFileName,
   const string &Strategy)
@@ -561,7 +633,7 @@ static void ClusterMotifs(const string &InputFileName,
 		{
 		const string &Seq = Input.GetSeq(i);
 		MotifProfile *MP = new MotifProfile;
-		MP->FromXxxSeq(Seq);
+		MP->FromSeq(Seq);
 		MPs.push_back(MP);
 		}
 
@@ -591,3 +663,4 @@ void cmd_cluster_motifs_nn()
 	const string &InputFileName = opt_cluster_motifs_nn;
 	ClusterMotifs(InputFileName, "nn");
 	}
+

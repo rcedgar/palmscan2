@@ -16,7 +16,9 @@ void RdRpSearcher::WriteOutput() const
 	{
 	WriteReport(g_freport_pssms);
 	WriteTsv(g_ftsv);
-	WritePalmprintFasta(g_ffasta);
+	WritePalmprintFasta(g_ffasta_abc, g_ffasta_cab);
+	WriteFlankFasta(g_fleft_abc, g_fleft_cab, true);
+	WriteFlankFasta(g_fright_abc, g_fright_cab, false);
 	WriteMotifs(g_fmotifs_abc, g_fmotifs_cab);
 	bool Ok = WriteCore(g_fcore_abc, g_fcore_cab);
 	if (!Ok)
@@ -25,10 +27,8 @@ void RdRpSearcher::WriteOutput() const
 	}
 	}
 
-void RdRpSearcher::WritePalmprintFasta(FILE *f) const
+void RdRpSearcher::WritePalmprintFasta(FILE *fABC, FILE *fCAB) const
 	{
-	if (f == 0)
-		return;
 	if (m_TopPalmHit.m_Score <= 0)
 		return;
 
@@ -77,7 +77,7 @@ void RdRpSearcher::WritePalmprintFasta(FILE *f) const
 	Psa(Label, " C:%u:%s", PosC - PPLo + 1, SeqC.c_str());
 
 	const char *PPSeq = m_QuerySeq.c_str() + PPLo;
-	SeqToFasta(f, Label.c_str(), PPSeq, PPL);
+	SeqToFasta(Perm ? fCAB : fABC, Label.c_str(), PPSeq, PPL);
 	}
 
 void RdRpSearcher::WriteReport(FILE *f) const
@@ -137,12 +137,65 @@ void RdRpSearcher::WriteMotifs(FILE* fABC, FILE *fCAB) const
 	if (f == 0)
 		return;
 
-	string xxx = "xxx";
+	string xxx = "";
 	if (optset_xxx)
 		xxx = opt_xxx;
 
 	string Motifs = SeqA + xxx + SeqB + xxx + SeqC;
 	SeqToFasta(f, m_QueryLabel.c_str(), Motifs.c_str(), SIZE(Motifs));
+	}
+
+void RdRpSearcher::WriteFlankFasta(FILE *fABC, FILE *fCAB, bool Left) const
+	{
+	if (m_TopPalmHit.m_Score < m_MinScore_Core)
+		return;
+
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+	if (PosA == UINT_MAX || PosB == UINT_MAX || PosC == UINT_MAX)
+		return;
+
+	uint QL = SIZE(m_QuerySeq);
+	bool Perm = m_TopPalmHit.m_Permuted;
+	uint FlankLo = UINT_MAX;
+	uint FlankHi = UINT_MAX;
+	uint FlankLen = UINT_MAX;
+	if (Left)
+		{
+		uint FlankHi1 = (Perm ? PosC : PosA);
+		if (FlankHi1 <= 1)
+			return;
+		FlankHi = FlankHi1 - 1;
+		FlankLo = 0;
+		FlankLen = FlankHi - FlankLo + 1;
+		FlankLen = min(FlankLen, m_LeftFlank_Core);
+		FlankLo = FlankHi + 1 - FlankLen;
+		}
+	else
+		{
+		FlankLo = (Perm ? PosB + BL : PosC + CL);
+		if (FlankLo >= QL - 1)
+			return;
+		FlankLen = QL - FlankLo;
+		FlankLen = min(FlankLen, m_RightFlank_Core);
+		FlankHi = FlankLo + FlankLen - 1;
+		asserta(FlankHi < QL);
+		}
+
+	if (FlankLen < m_MinFlankLen)
+		return;
+
+	uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+	string GroupName;
+	GetGroupName(GroupIndex, GroupName);
+
+	string Label = m_QueryLabel;
+	Label += " group=";
+	Label += GroupName;
+
+	const char *Start = m_QuerySeq.c_str() + FlankLo;
+	SeqToFasta(Perm ? fCAB : fABC, Label.c_str(), Start, FlankLen);
 	}
 
 bool RdRpSearcher::WriteCore(FILE *fABC, FILE *fCAB) const
@@ -174,9 +227,9 @@ bool RdRpSearcher::WriteCore(FILE *fABC, FILE *fCAB) const
 		}
 	LF = min(LF, m_LeftFlank_Core);
 	RF = min(RF, m_RightFlank_Core);
-	if (m_LeftFlank_Core - LF > m_MaxMissingFlankCore)
+	if (LF < m_MinFlankLen)
 		return false;
-	if (m_RightFlank_Core - RF > m_MaxMissingFlankCore)
+	if (RF < m_MinFlankLen)
 		return false;
 
 	uint CoreLo = UINT_MAX;

@@ -109,6 +109,7 @@ void cmd_clusters2model()
 	uint N = ClusterCount;
 	if (optset_topn)
 		N = min(ClusterCount, opt_topn);
+
 	RdRpModel RM;
 	for (uint ClusterIndex = 0; ClusterIndex < N; ++ClusterIndex)
 		{

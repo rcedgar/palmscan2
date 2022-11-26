@@ -30,7 +30,7 @@ public:
 	double m_MinScore_Core = 20.0;
 	uint m_LeftFlank_Core = 100;
 	uint m_RightFlank_Core = 100;
-	uint m_MaxMissingFlankCore = 25;
+	uint m_MinFlankLen = 50;
 
 public:
 	RdRpSearcher()
@@ -98,7 +98,8 @@ public:
 	void WriteReport(FILE *f) const;
 	void WriteTsv(FILE *f) const;
 	void WriteMotifs(FILE *fABC, FILE *fCAB) const;
-	void WritePalmprintFasta(FILE *f) const;
+	void WritePalmprintFasta(FILE *fABC, FILE *fCAB) const;
+	void WriteFlankFasta(FILE *fABC, FILE *fCAB, bool Left) const;
 	bool WriteCore(FILE *fABC, FILE *fCAB) const;
 
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;
