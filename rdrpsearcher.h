@@ -28,9 +28,9 @@ public:
 	bool m_Trace = false;
 
 	double m_MinScore_Core = 20.0;
-	uint m_LeftFlank_Core = 100;
-	uint m_RightFlank_Core = 100;
-	uint m_MinFlankLen = 50;
+	uint m_LeftFlank_Core = 150;
+	uint m_RightFlank_Core = 150;
+	uint m_MinFlankLen = 75;
 
 public:
 	RdRpSearcher()
