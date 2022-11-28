@@ -252,10 +252,10 @@ void PSSM::LogMe() const
 	unsigned ColCount = GetColCount();
 	unsigned AlphaSize = GetAlphaSize();
 	const char *LetterToChar = GetLetterToChar();
-	string ConsSeq;
-	CalcConsSeq(ConsSeq);
+	//string ConsSeq;
+	//CalcConsSeq(ConsSeq);
 
-	Log("%u cols  %s\n", ColCount, ConsSeq.c_str());
+	Log("%u cols  %s\n", ColCount, m_ConsSeq.c_str());
 
 	if (!m_RawFreqs.empty())
 		{

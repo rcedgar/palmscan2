@@ -3,6 +3,8 @@
 #include "outputfiles.h"
 #include "abcxyz.h"
 
+extern vector<string> g_ExcludeNames;
+
 static omp_lock_t g_OutputLock;
 
 void RdRpSearcher::InitOutput()
@@ -12,14 +14,32 @@ void RdRpSearcher::InitOutput()
 
 void RdRpSearcher::WriteOutput() const
 	{
+	if (!g_ExcludeNames.empty())
+		{
+		if (m_TopPalmHit.m_Score > 0)
+			{
+			uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+			string GroupName;
+			GetGroupName(GroupIndex, GroupName);
+			for (uint i = 0; i < SIZE(g_ExcludeNames); ++i)
+				{
+				if (GroupName == g_ExcludeNames[i])
+					return;
+				}
+			}
+		}
+
 #pragma omp critical
 	{
 	WriteReport(g_freport_pssms);
 	WriteTsv(g_ftsv);
 	WritePalmprintFasta(g_ffasta_abc, g_ffasta_cab);
+	WritePalmprintFasta(g_ffasta, g_ffasta);
 	WriteFlankFasta(g_fleft_abc, g_fleft_cab, true);
 	WriteFlankFasta(g_fright_abc, g_fright_cab, false);
+	WriteMotifs(g_fmotifs, g_fmotifs);
 	WriteMotifs(g_fmotifs_abc, g_fmotifs_cab);
+	WriteCore(g_fcore, g_fcore);
 	bool Ok = WriteCore(g_fcore_abc, g_fcore_cab);
 	if (!Ok)
 		SeqToFasta(g_fcore_notmatched, m_QueryLabel.c_str(),

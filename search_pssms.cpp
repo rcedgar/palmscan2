@@ -8,6 +8,8 @@
 static uint g_QueryCount;
 static uint g_FoundCount;
 
+vector<string> g_ExcludeNames;
+
 void SeqToUpper(string &Seq)
 	{
 	const uint QL = SIZE(Seq);
@@ -25,6 +27,15 @@ void cmd_search_pssms()
 
 	if (!opt_notrunclabels)
 		opt_trunclabels = true;
+
+	if (optset_exclude)
+		{
+		string NamesStr = string(opt_exclude);
+		Split(NamesStr, g_ExcludeNames, '+');
+		const uint N = SIZE(g_ExcludeNames);
+		for (uint i = 0; i < N; ++i)
+			ProgressLog("  Exclude %s\n", g_ExcludeNames[i].c_str());
+		}
 
 	RdRpModel Model;
 	Model.FromModelFile(ModelFileName);

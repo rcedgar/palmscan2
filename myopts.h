@@ -59,6 +59,7 @@ STR_OPT(pssmdir)
 STR_OPT(pdbout)
 STR_OPT(xxx)
 STR_OPT(centroids)
+STR_OPT(exclude)
 
 STR_OPT(log)
 STR_OPT(input)
