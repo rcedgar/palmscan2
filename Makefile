@@ -22,6 +22,7 @@ HDRS = \
   alnparams.h \
   alpha.h \
   calreader.h \
+  chainreader.h \
   cmds.h \
   conncomp.h \
   diagbox.h \
@@ -35,6 +36,7 @@ HDRS = \
   linereader.h \
   lockobj.h \
   lockobjs.h \
+  mpcluster.h \
   msaqc.h \
   msaqc2.h \
   mx.h \
@@ -50,8 +52,13 @@ HDRS = \
   palmhit.h \
   pathinfo.h \
   pdbchain.h \
+  pf.h \
   ppcaligner.h \
   ppchit.h \
+  ppcprofileparams.h \
+  ppcsearcher.h \
+  ppp.h \
+  pppfeatures.h \
   pssm.h \
   pssms.h \
   pssmsearch.h \
@@ -68,7 +75,9 @@ HDRS = \
   sort.h \
   timers.h \
   timing.h \
+  tma.h \
   tracebit.h \
+  trifinder.h \
   trisearcher.h \
   tshit.h \
   tshitmgr.h \
@@ -80,7 +89,6 @@ HDRS = \
 
 OBJS = \
   $(OBJDIR)/abcxyz.o \
-  $(OBJDIR)/alignabc.o \
   $(OBJDIR)/alignpalm.o \
   $(OBJDIR)/align_msas.o \
   $(OBJDIR)/alloc.o \
@@ -92,9 +100,24 @@ OBJS = \
   $(OBJDIR)/build_rdrp_model.o \
   $(OBJDIR)/cal2fa.o \
   $(OBJDIR)/calreader.o \
+  $(OBJDIR)/chainreader.o \
+  $(OBJDIR)/chains_subsample.o \
+  $(OBJDIR)/checkppc.o \
   $(OBJDIR)/classify.o \
+  $(OBJDIR)/classifytm.o \
+  $(OBJDIR)/clusters2model.o \
+  $(OBJDIR)/cluster_motifs.o \
   $(OBJDIR)/cluster_ppc.o \
+  $(OBJDIR)/find_tri.o \
   $(OBJDIR)/getchains.o \
+  $(OBJDIR)/cfilter.o \
+  $(OBJDIR)/pdbinfo.o \
+  $(OBJDIR)/ppcalignertm.o \
+  $(OBJDIR)/ppcprofile.o \
+  $(OBJDIR)/ppcsearcher.o \
+  $(OBJDIR)/build_ppp.o \
+  $(OBJDIR)/ppc_score.o \
+  $(OBJDIR)/ppp.o \
   $(OBJDIR)/readppc.o \
   $(OBJDIR)/remove_dupes.o \
   $(OBJDIR)/cluster_cl.o \
@@ -119,13 +142,13 @@ OBJS = \
   $(OBJDIR)/output.o \
   $(OBJDIR)/outputfiles.o \
   $(OBJDIR)/palmscan2_main.o \
-  $(OBJDIR)/getfilenames.o \
   $(OBJDIR)/palmsketch.o \
   $(OBJDIR)/pdb2cal.o \
   $(OBJDIR)/pdbchaincal.o \
   $(OBJDIR)/ppcaligner.o \
   $(OBJDIR)/readchains.o \
-  $(OBJDIR)/search3d.o \
+  $(OBJDIR)/rotate.o \
+  $(OBJDIR)/search3d_tri.o \
   $(OBJDIR)/pdbchain.o \
   $(OBJDIR)/psms.o \
   $(OBJDIR)/pssm.o \
@@ -133,12 +156,14 @@ OBJS = \
   $(OBJDIR)/rdrpsearcher.o \
   $(OBJDIR)/search3d_cal.o \
   $(OBJDIR)/searchaatop.o \
+  $(OBJDIR)/search_ppp.o \
   $(OBJDIR)/search_pssms.o \
   $(OBJDIR)/searchgroup.o \
   $(OBJDIR)/search3d_pssms.o \
   $(OBJDIR)/searchparams.o \
   $(OBJDIR)/search3d_ppc.o \
   $(OBJDIR)/searchtriangle.o \
+  $(OBJDIR)/smooth.o \
   $(OBJDIR)/split_train_test.o \
   $(OBJDIR)/test_pssms.o \
   $(OBJDIR)/seqdb.o \
@@ -149,10 +174,13 @@ OBJS = \
   $(OBJDIR)/rdrpmodel.o \
   $(OBJDIR)/test.o \
   $(OBJDIR)/timing.o \
+  $(OBJDIR)/tma.o \
   $(OBJDIR)/tmscore.o \
+  $(OBJDIR)/tm_ppc.o \
   $(OBJDIR)/tracebackbitmem.o \
   $(OBJDIR)/triangle.o \
   $(OBJDIR)/triangles.o \
+  $(OBJDIR)/trifinder.o \
   $(OBJDIR)/triform.o \
   $(OBJDIR)/trisearcher.o \
   $(OBJDIR)/tshit.o \

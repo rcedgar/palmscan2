@@ -32,6 +32,12 @@ public:
 	uint m_RightFlank_Core = 150;
 	uint m_MinFlankLen = 75;
 
+	double m_MinScore_CFiler = 5.0;
+	uint m_LeftFlankCFilter = 150;
+	uint m_RightFlankCFilter = 300;
+
+	vector<RPHit> m_CFilterHits;
+
 public:
 	RdRpSearcher()
 		{
@@ -47,6 +53,7 @@ public:
 		{
 		m_QueryLabel.clear();
 		m_QuerySeq.clear();
+		m_CFilterHits.clear();
 		m_TopPalmHit.Clear();
 		m_SecondPalmHit.Clear();
 		}
@@ -55,6 +62,7 @@ public:
 		{
 		m_QueryLabel.clear();
 		m_QuerySeq.clear();
+		m_CFilterHits.clear();
 		m_TopPalmHit.Clear();
 		m_SecondPalmHit.Clear();
 		}
@@ -101,6 +109,12 @@ public:
 	void WritePalmprintFasta(FILE *fABC, FILE *fCAB) const;
 	void WriteFlankFasta(FILE *fABC, FILE *fCAB, bool Left) const;
 	bool WriteCore(FILE *fABC, FILE *fCAB) const;
+
+	void CFilter(const string &QueryLabel, const string &QuerySeq);
+	void CFilterGroup(uint GroupIndex);
+	void MergeCFilterHits(const vector<RPHit> &Hits);
+	bool WriteCFilterOutput() const;
+	void WriteCFilterHit(const RPHit &Hit) const;
 
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;
 

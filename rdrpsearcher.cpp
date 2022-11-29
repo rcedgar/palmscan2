@@ -97,6 +97,18 @@ void RdRpSearcher::Search(const string &QueryLabel, const string &QuerySeq)
 		SearchGroup(GroupIndex);
 	}
 
+void RdRpSearcher::CFilter(const string &QueryLabel, const string &QuerySeq)
+	{
+	ClearSearch();
+
+	m_QueryLabel = QueryLabel;
+	m_QuerySeq = QuerySeq;
+
+	const uint GroupCount = GetGroupCount();
+	for (uint GroupIndex = 0; GroupIndex < GroupCount; ++GroupIndex)
+		CFilterGroup(GroupIndex);
+	}
+
 void RdRpSearcher::GetMotifPositions(uint &APos, uint &BPos, uint &CPos) const
 	{
 	Die("TODO");

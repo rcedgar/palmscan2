@@ -290,6 +290,7 @@
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
+    <ClCompile Include="cfilter.cpp" />
     <ClCompile Include="pdbinfo.cpp" />
     <ClCompile Include="ppcalignertm.cpp" />
     <ClCompile Include="ppcprofile.cpp" />

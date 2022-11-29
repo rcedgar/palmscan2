@@ -110,6 +110,16 @@ void RdRpSearcher::SearchMotif_TopHitOnly(uint GroupIndex, uint MotifIndex,
 		}
 	}
 
+void RdRpSearcher::CFilterGroup(uint GroupIndex)
+	{
+	uint QL = SIZE(m_QuerySeq);
+	if (QL == 0)
+		return;
+	vector<RPHit> Hits;
+	SearchMotif(GroupIndex, MOTIF_C, 0, QL-1, m_MinCScore, Hits);
+	MergeCFilterHits(Hits);
+	}
+
 void RdRpSearcher::SearchGroup(uint GroupIndex)
 	{
 	uint QL = SIZE(m_QuerySeq);

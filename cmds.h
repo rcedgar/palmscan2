@@ -39,5 +39,6 @@ C(tm_all_vs_all)
 C(cluster_motifs_greedy)
 C(cluster_motifs_nn)
 C(clusters2model)
+C(cfilter)
 
 #undef C

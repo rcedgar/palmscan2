@@ -305,6 +305,9 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 		fprintf(f, "\n");
 		}
 
+	if (m_TopPalmHit.m_Score <= 0)
+		return;
+
 	string QueryLabel = m_QueryLabel;
 	float Score = 0;
 	string GroupName = ".";

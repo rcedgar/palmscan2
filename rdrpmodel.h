@@ -57,7 +57,6 @@ public:
 
 	void FromPSSMs(const string &PSSMDir,
 	  const vector<string> &GroupNames);
-	void FromStrings(const vector<string> &Strings) { asserta(false); }
 	void FromModelFile(const string &FileName);
 	void ToModelFile(const string &FileName) const;
 

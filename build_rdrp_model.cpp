@@ -55,6 +55,7 @@ void RdRpModel::FromModelFile(const string &FileName)
 			Die("Bad PSSM prefix line '%s'", Line.c_str());
 
 		m_PSSMs[PSSMIndex].FromFile(f);
+		m_PSSMs[PSSMIndex].m_GroupName = GroupName;
 		}
 	ReadLineStdioFile(f, Line);
 	if (Line != ".")

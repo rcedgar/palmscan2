@@ -12,6 +12,7 @@ public:
 	unsigned m_ColCount;
 	vector<vector<float> > m_Scores;
 	string m_ConsSeq;
+	string m_GroupName;
 
 	float m_PseudoWeight;
 	vector<vector<unsigned> > m_Counts;
@@ -35,6 +36,7 @@ public:
 		m_Counts.clear();
 		m_RawFreqs.clear();
 		m_PseudoFreqs.clear();
+		m_GroupName.clear();
 		}
 
 	void FromFasta(const string &FileName);

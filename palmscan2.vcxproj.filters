@@ -311,6 +311,9 @@
     <ClCompile Include="clusters2model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cfilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

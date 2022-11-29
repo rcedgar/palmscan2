@@ -1635,7 +1635,7 @@ int TMA::TMalign_main(double** xa, double** ya,
 			}
 		}
 
-#endif 0
+#endif // 0
 	/************************************************************/
 	/*    get initial alignment based on local superposition    */
 	/************************************************************/
