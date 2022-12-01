@@ -343,6 +343,7 @@
     <ClCompile Include="searchparams.cpp" />
     <ClCompile Include="search3d_ppc.cpp" />
     <ClCompile Include="searchtriangle.cpp" />
+    <ClCompile Include="segs.cpp" />
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="split_train_test.cpp" />
     <ClCompile Include="test_pssms.cpp" />
@@ -391,6 +392,7 @@
     <ClInclude Include="linereader.h" />
     <ClInclude Include="lockobj.h" />
     <ClInclude Include="lockobjs.h" />
+    <ClInclude Include="motifprofile.h" />
     <ClInclude Include="mpcluster.h" />
     <ClInclude Include="msaqc.h" />
     <ClInclude Include="msaqc2.h" />
@@ -418,6 +420,8 @@
     <ClInclude Include="rdrpsearcher.h" />
     <ClInclude Include="rphit.h" />
     <ClInclude Include="searchparams.h" />
+    <ClInclude Include="segfiles.h" />
+    <ClInclude Include="segs.h" />
     <ClInclude Include="seqdb.h" />
     <ClInclude Include="seqsource.h" />
     <ClInclude Include="sfasta.h" />

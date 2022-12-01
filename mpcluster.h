@@ -2,76 +2,13 @@
 
 #include <set>
 #include "abcxyz.h"
+#include "seqdb.h"
+#include "motifprofile.h"
 
-const uint MPL = AL + BL + CL;
-
-class MotifProfile
+enum
 	{
-public:
-	vector<vector<float> > m_FreqVec;
-
-public:
-	MotifProfile()
-		{
-		m_FreqVec.resize(MPL);
-		for (uint i = 0; i < MPL; ++i)
-			m_FreqVec[i].resize(20, 0.0);
-		}
-
-	void ValidateFreqs() const
-		{
-		asserta(m_FreqVec.size() == MPL);
-		for (uint i = 0; i < MPL; ++i)
-			{
-			const vector<float> &v = m_FreqVec[i];
-			asserta(v.size() == 20);
-			double Sum = 0;
-			for (uint j = 0; j < 20; ++j)
-				Sum += v[j];
-			asserta(feq(Sum, 1.0));
-			}
-		}
-
-	void Clear()
-		{
-		asserta(m_FreqVec.size() == MPL);
-		for (uint i = 0; i < MPL; ++i)
-			{
-			for (uint j = 0; j < 20; ++j)
-				m_FreqVec[i][j] = 0;
-			}
-		}
-
-	void FromSeq(const string &Seq);
-	void FromSeqs(const vector<string> &Seqs);
-
-	void LogMe() const;
-
-	char PosToMotif(uint i) const
-		{
-		if (i <= AL)
-			return 'A';
-		if (i <= AL + BL)
-			return 'B';
-		return 'C';
-		}
-
-	uint PosToOffset(uint i) const
-		{
-		if (i < AL)
-			return i;
-		if (i < AL + BL)
-			return i - AL;
-		return i - (AL + BL);
-		}
-
-	void GetConsSeq(string &Logo) const;
-	void GetLogo(string &Logo) const;
-	void GetMaxLetter(uint i, uint &Letter, float &Freq) const;
-
-public:
-	static void GetLettersFromSeq(const string &Seq,
-	  vector<uint> &Letters);
+#define S(x)	SEG_##x,
+#include "segs.h"
 	};
 
 // Motif profile clustering
@@ -86,7 +23,7 @@ public:
 	float m_MinScore = FLT_MAX;
 	uint m_Sample1 = 64;
 	uint m_Sample2 = 64;
-	vector<MotifProfile *> m_Centroids;
+	uint m_TopN = UINT_MAX;
 	vector<uint> m_CentroidIndexes;
 	vector<vector<uint> > m_CentroidIndexToMemberIndexes;
 	vector<uint> m_ClusterSizeOrder;
@@ -99,10 +36,20 @@ public:
 	vector<uint> m_Sizes;
 
 public:
+	static SeqDB m_FLSeqDB;
+	static SeqDB m_MotifSeqDB;
+	static vector<uint> m_PosAs;
+	static vector<uint> m_PosBs;
+	static vector<uint> m_PosCs;
+
+	static uint m_LeftFlank_Core;	// see also RdRpSearcher
+	static uint m_RightFlank_Core;	// see also RdRpSearcher
+
+
+public:
 	void Clear()
 		{
 		m_Input = 0;
-		m_Centroids.clear();
 		m_MinScore = FLT_MAX;
 		m_PendingIndexes.clear();
 		m_CentroidIndexes.clear();
@@ -140,8 +87,9 @@ public:
 		}
 	void LogClusters() const;
 	void LogCluster(uint i) const;
-	void ClustersToTsv(FILE *f) const;
-	void ClusterToTsv(FILE *f, uint ClusterIndex) const;
+	void WriteOutput() const;
+	void WriteCluster(uint ClusterOrderIndex) const;
+	void WriteFasta(const MotifProfile &MP) const;
 
 public:
 	static void ReadMPs(const string &FileName,
@@ -149,4 +97,6 @@ public:
 	static void ReadSeqsVec(const string &TsvFileName,
 	  vector<vector<string> > &SeqsVec);
 	static void LogLogos(const vector<MotifProfile *> &MPs);
+	static void TrimLeft(string &Left);
+	static void TrimRight(string &Right);
 	};

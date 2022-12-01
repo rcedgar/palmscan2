@@ -3,13 +3,31 @@
 #include "abcxyz.h"
 #include "mx.h"
 #include "alpha.h"
+#include "rdrpsearcher.h"
 #include "mpcluster.h"
 #include "outputfiles.h"
 #include "sort.h"
-
-extern float **g_SubstMx;
+#include "segfiles.h"
 
 void SetBLOSUM62();
+
+extern float **g_SubstMx;
+uint MPCluster::m_LeftFlank_Core = 150;		// see also RdRpSearcher
+uint MPCluster::m_RightFlank_Core = 150;	// see also RdRpSearcher
+
+void MPCluster::TrimLeft(string &Left)
+	{
+	uint n = SIZE(Left);
+	if (n > m_LeftFlank_Core)
+		Left = Left.substr(n-m_LeftFlank_Core, m_LeftFlank_Core);
+	}
+
+void MPCluster::TrimRight(string &Right)
+	{
+	uint n = SIZE(Right);
+	if (n > m_RightFlank_Core)
+		Right.resize(m_RightFlank_Core);
+	}
 
 char GetAnnotChar(uint Letter1, uint Letter2)
 	{
@@ -102,9 +120,14 @@ void MotifProfile::GetLettersFromSeq(const string &Seq,
 		}
 	}
 
-void MotifProfile::FromSeq(const string &Seq)
+void MotifProfile::FromSeq(uint SeqIndex, uint PosA, uint PosB, uint PosC,
+  const string &Seq)
 	{
 	Clear();
+	m_InputSeqIndex = SeqIndex;
+	m_PosA = PosA;
+	m_PosB = PosB;
+	m_PosC = PosC;
 
 	vector<uint> Letters;
 	GetLettersFromSeq(Seq, Letters);
@@ -128,6 +151,7 @@ void MotifProfile::FromSeq(const string &Seq)
 void MotifProfile::FromSeqs(const vector<string> &Seqs)
 	{
 	Clear();
+	m_InputSeqIndex = UINT_MAX;
 
 	const uint SeqCount = SIZE(Seqs);
 	asserta(SeqCount > 0);
@@ -285,6 +309,11 @@ void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
 			}
 		uint SizeEnd = SIZE(m_PendingIndexes);
 		asserta(SizeEnd < SizeStart);
+		uint ClusterCount = SIZE(m_CentroidIndexes);
+		asserta(SIZE(m_CentroidIndexToMemberIndexes) == ClusterCount);
+		if (ClusterCount == m_TopN)
+			break;
+		asserta(m_TopN == UINT_MAX || ClusterCount < m_TopN);
 		}
 	ProgressStep(InputCount, InputCount + 1, "Clustering");
 
@@ -309,7 +338,7 @@ void MPCluster::LogCluster(uint ClusterIndex) const
 	const MotifProfile &CP = GetProfile(CentroidIndex);
 	string Logo;
 	CP.GetLogo(Logo);
-	Log("[Centroid]  %s\n", Logo.c_str());
+	//Log("[Centroid]  %s\n", Logo.c_str());
 	vector<float> Scores;
 	for (uint i = 0; i < Size; ++i)
 		{
@@ -330,7 +359,7 @@ void MPCluster::LogCluster(uint ClusterIndex) const
 		const MotifProfile &P = GetProfile(Index);
 		float Score = GetScore(CP, P);
 		P.GetLogo(Logo);
-		Log("[%8.4f]  %s\n", Score, Logo.c_str());
+//		Log("[%8.4f]  %s\n", Score, Logo.c_str());
 		}
 	}
 
@@ -344,11 +373,241 @@ void MPCluster::LogClusters() const
 		LogCluster(i);
 	}
 
-void MPCluster::ClusterToTsv(FILE *f, uint OrderIndex) const
+void MPCluster::WriteFasta(const MotifProfile &MP) const
 	{
-	if (f == 0)
-		return;
+	uint SeqIndex = MP.m_InputSeqIndex;
+	asserta(SeqIndex != UINT_MAX);
 
+	const string &Label = m_FLSeqDB.GetLabel(SeqIndex);
+	const string &Seq = m_FLSeqDB.GetSeq(SeqIndex);
+	uint L = SIZE(Seq);
+
+	uint PosA = MP.m_PosA;
+	uint PosB = MP.m_PosB;
+	uint PosC = MP.m_PosC;
+
+	asserta(PosA + AL <= L);
+	asserta(PosB + BL <= L);
+	asserta(PosC + CL <= L);
+
+	string SeqA = Seq.substr(PosA, AL);
+	string SeqB = Seq.substr(PosB, BL);
+	string SeqC = Seq.substr(PosC, CL);
+
+	string OutLabel = Label;
+	Psa(OutLabel, " A:%u:%s", PosA + 1, SeqA.c_str());
+	Psa(OutLabel, " B:%u:%s", PosB + 1, SeqB.c_str());
+	Psa(OutLabel, " C:%u:%s", PosC + 1, SeqC.c_str());
+
+	string Sep;
+	if (optset_sep)
+		Sep = string(opt_sep);
+
+	bool Perm = (PosC < PosA);
+	string Left, V1, V2, Right;
+	string OutSeq;
+	if (Perm)
+		{
+		if (PosC > 0)
+			Left = Seq.substr(0, PosC);
+
+		uint V1Lo = PosC + CL;
+		uint V1Hi = PosA - 1;
+		if (V1Lo < V1Hi)
+			{
+			uint V1L = V1Hi - V1Lo + 1;
+			V1 = Seq.substr(V1Lo, V1L);
+			}
+
+		uint V2Lo = PosA + AL;
+		uint V2Hi = PosB - 1;
+		if (V2Lo < V2Hi)
+			{
+			uint V2L = V2Hi - V2Lo + 1;
+			V2 = Seq.substr(V2Lo, V2L);
+			}
+
+		if (PosB+BL < L)
+			Right = Seq.substr(PosB+BL, string::npos);
+
+		string CheckSeq = Left + SeqC + V1 + SeqA + V2 + SeqB + Right;
+		if (CheckSeq != Seq)
+			{
+			Log("\n");
+			Log("%s\n", CheckSeq.c_str());
+			Log("%s\n", Seq.c_str());
+			Die("Seq2!=Seq");
+			}
+
+		TrimLeft(Left);
+		TrimRight(Right);
+		if (Sep == "1")
+			{
+			OutSeq = Left;
+
+			OutSeq += "5";
+			OutSeq += SeqC;
+			OutSeq += "6";
+
+			OutSeq += V1;
+
+			OutSeq += "1";
+			OutSeq += SeqA;
+			OutSeq += "2";
+
+			OutSeq += V2;
+
+			OutSeq += "3";
+			OutSeq += SeqB;
+			OutSeq += "4";
+
+			OutSeq += Right;
+			}
+		else
+			{
+			OutSeq = Left;
+
+			OutSeq += Sep;
+			OutSeq += SeqC;
+			OutSeq += Sep;
+
+			OutSeq += V1;
+
+			OutSeq += Sep;
+			OutSeq += SeqA;
+			OutSeq += Sep;
+
+			OutSeq += V2;
+
+			OutSeq += Sep;
+			OutSeq += SeqB;
+			OutSeq += Sep;
+
+			OutSeq += Right;
+			}
+		SeqToFasta(g_fcluster_fasta, OutLabel.c_str(), OutSeq.c_str(), SIZE(OutSeq));
+		SeqToFasta(g_fcluster_fasta_cab, OutLabel.c_str(), OutSeq.c_str(), SIZE(OutSeq));
+
+		string PP = SeqC + V1 + SeqA + V2 + SeqB;
+		SeqToFasta(g_fCAB_PP, Label.c_str(), PP.c_str());
+
+		SeqToFasta(g_fCAB_A, Label.c_str(), SeqA.c_str());
+		SeqToFasta(g_fCAB_B, Label.c_str(), SeqB.c_str());
+		SeqToFasta(g_fCAB_C, Label.c_str(), SeqC.c_str());
+
+		if (!V1.empty())
+			SeqToFasta(g_fCAB_V1, Label.c_str(), V1.c_str());
+		if (!V2.empty())
+			SeqToFasta(g_fCAB_V2, Label.c_str(), V2.c_str());
+
+		if (!Left.empty())
+			SeqToFasta(g_fCAB_Left, Label.c_str(), Left.c_str());
+		if (!Right.empty())
+			SeqToFasta(g_fCAB_Right, Label.c_str(), Right.c_str());
+		}
+	else
+		{
+		if (PosA > 0)
+			Left = Seq.substr(0, PosA);
+
+		uint V1Lo = PosA + AL;
+		uint V1Hi = PosB - 1;
+		if (V1Lo < V1Hi)
+			{
+			uint V1L = V1Hi - V1Lo + 1;
+			V1 = Seq.substr(V1Lo, V1L);
+			}
+
+		uint V2Lo = PosB + BL;
+		uint V2Hi = PosC - 1;
+		if (V2Lo < V2Hi)
+			{
+			uint V2L = V2Hi - V2Lo + 1;
+			V2 = Seq.substr(V2Lo, V2L);
+			}
+
+		if (PosC+CL < L)
+			Right = Seq.substr(PosC+CL, string::npos);
+
+		string CheckSeq = Left + SeqA + V1 + SeqB + V2 + SeqC + Right;
+		if (CheckSeq != Seq)
+			{
+			Log("\n");
+			Log("%s\n", CheckSeq.c_str());
+			Log("%s\n", Seq.c_str());
+			Die("CheckSeq!=Seq");
+			}
+
+		TrimLeft(Left);
+		TrimRight(Right);
+		if (Sep == "1")
+			{
+			OutSeq = Left;
+
+			OutSeq += "1";
+			OutSeq += SeqA;
+			OutSeq += "2";
+
+			OutSeq += V1;
+
+			OutSeq += "3";
+			OutSeq += SeqB;
+			OutSeq += "4";
+
+			OutSeq += V2;
+
+			OutSeq += "5";
+			OutSeq += SeqC;
+			OutSeq += "6";
+
+			OutSeq += Right;
+			}
+		else
+			{
+			OutSeq = Left;
+
+			OutSeq += Sep;
+			OutSeq += SeqA;
+			OutSeq += Sep;
+
+			OutSeq += V1;
+
+			OutSeq += Sep;
+			OutSeq += SeqB;
+			OutSeq += Sep;
+
+			OutSeq += V2;
+
+			OutSeq += Sep;
+			OutSeq += SeqC;
+			OutSeq += Sep;
+
+			OutSeq += Right;
+			}
+		SeqToFasta(g_fcluster_fasta, OutLabel.c_str(), OutSeq.c_str(), SIZE(OutSeq));
+		SeqToFasta(g_fcluster_fasta_abc, OutLabel.c_str(), OutSeq.c_str(), SIZE(OutSeq));
+
+		string PP = SeqA + V1 + SeqB + V2 + SeqC;
+		SeqToFasta(g_fABC_PP, Label.c_str(), PP.c_str());
+
+		SeqToFasta(g_fABC_A, Label.c_str(), SeqA.c_str());
+		SeqToFasta(g_fABC_B, Label.c_str(), SeqB.c_str());
+		SeqToFasta(g_fABC_C, Label.c_str(), SeqC.c_str());
+
+		if (!V1.empty())
+			SeqToFasta(g_fABC_V1, Label.c_str(), V1.c_str());
+		if (!V2.empty())
+			SeqToFasta(g_fABC_V2, Label.c_str(), V2.c_str());
+
+		if (!Left.empty())
+			SeqToFasta(g_fABC_Left, Label.c_str(), Left.c_str());
+		if (!Right.empty())
+			SeqToFasta(g_fABC_Right, Label.c_str(), Right.c_str());
+		}
+	}
+
+void MPCluster::WriteCluster(uint OrderIndex) const
+	{
 	asserta(OrderIndex < SIZE(m_ClusterSizeOrder));
 	uint ClusterIndex = m_ClusterSizeOrder[OrderIndex];
 	asserta(ClusterIndex < SIZE(m_CentroidIndexes));
@@ -361,8 +620,11 @@ void MPCluster::ClusterToTsv(FILE *f, uint OrderIndex) const
 	const MotifProfile &CP = GetProfile(CentroidIndex);
 	string CentroidSeq;
 	CP.GetConsSeq(CentroidSeq);
-	fprintf(f, "C\t%u\t%u\t%s\n", 
-	  OrderIndex, Size, CentroidSeq.c_str());
+	const char *ABC = (CP.m_PosA > CP.m_PosC ? "CAB" : "ABC");
+		
+	Pf(g_fcluster_tsv, "C\t%u\t%u\t%s\t%s\n", 
+	  OrderIndex, Size, CentroidSeq.c_str(), ABC);
+	WriteFasta(CP);
 
 	vector<float> Scores;
 	for (uint i = 0; i < Size; ++i)
@@ -385,15 +647,15 @@ void MPCluster::ClusterToTsv(FILE *f, uint OrderIndex) const
 		float Score = GetScore(CP, P);
 		string ConsSeq;
 		P.GetConsSeq(ConsSeq);
-		fprintf(f, "M\t%u\t%.2f\t%s\n",
-		  OrderIndex, Score, ConsSeq.c_str());
+		const char *ABC = (P.m_PosA > P.m_PosC ? "CAB" : "ABC");
+		Pf(g_fcluster_tsv, "M\t%u\t%.2f\t%s\t%s\n",
+		  OrderIndex, Score, ConsSeq.c_str(), ABC);
+		WriteFasta(P);
 		}
 	}
 
-void MPCluster::ClustersToTsv(FILE *f) const
+void MPCluster::WriteOutput() const
 	{
-	if (f == 0)
-		return;
 	const uint ClusterCount = SIZE(m_CentroidIndexes);
 	asserta(SIZE(m_CentroidIndexToMemberIndexes) == ClusterCount);
 	uint SumSize = 0;
@@ -406,7 +668,7 @@ void MPCluster::ClustersToTsv(FILE *f) const
 		SumSize += Size;
 		Log("Cluster %5u  total  %7u\n", OrderIndex, SumSize);
 
-		ClusterToTsv(f, OrderIndex);
+		WriteCluster(OrderIndex);
 		}
 	}
 
@@ -617,39 +879,92 @@ uint MPCluster::GetNextGreedyCentroid() const
 	return BestCentroid;
 	}
 
+SeqDB MPCluster::m_FLSeqDB;
+SeqDB MPCluster::m_MotifSeqDB;
+vector<uint> MPCluster::m_PosAs;
+vector<uint> MPCluster::m_PosBs;
+vector<uint> MPCluster::m_PosCs;
+
+static void OnPalmHit(const RdRpSearcher &RS)
+	{
+	float Score = RS.m_TopPalmHit.m_Score;
+	asserta(Score >= opt_min_palm_score);
+
+	uint PosA = RS.GetMotifPos(0);
+	uint PosB = RS.GetMotifPos(1);
+	uint PosC = RS.GetMotifPos(2);
+	asserta(PosA != UINT_MAX && PosB != UINT_MAX && PosC != UINT_MAX);
+
+	string SeqA;
+	string SeqB;
+	string SeqC;
+	RS.GetMotifSeq(0, SeqA);
+	RS.GetMotifSeq(1, SeqB);
+	RS.GetMotifSeq(2, SeqC);
+
+	string Motifs = SeqA + SeqB + SeqC;
+	asserta(Motifs.size() == 34);
+
+	MPCluster::m_FLSeqDB.AddSeq(RS.m_QueryLabel, RS.m_QuerySeq);
+	MPCluster::m_MotifSeqDB.AddSeq(RS.m_QueryLabel, Motifs);
+	MPCluster::m_PosAs.push_back(PosA);
+	MPCluster::m_PosBs.push_back(PosB);
+	MPCluster::m_PosCs.push_back(PosC);
+	}
+
 static void ClusterMotifs(const string &InputFileName,
   const string &Strategy)
 	{
+	OpenSegFiles();
+
 	SetBLOSUM62();
 
-	asserta(optset_minscore);
-	const float MinScore = (float) opt_minscore;
+	asserta(optset_motif_cluster_minscore);
+	const float MinScore = (float) opt_motif_cluster_minscore;
 
-	SeqDB Input;
-	Input.FromFasta(InputFileName);
-	const uint InputCount = Input.GetSeqCount();
+	SearchPSSMs(InputFileName, OnPalmHit);
+
+	const uint InputCount = MPCluster::m_MotifSeqDB.GetSeqCount();
+	asserta(MPCluster::m_FLSeqDB.GetSeqCount() == InputCount);
+	asserta(SIZE(MPCluster::m_PosAs) == InputCount);
+	asserta(SIZE(MPCluster::m_PosBs) == InputCount);
+	asserta(SIZE(MPCluster::m_PosCs) == InputCount);
+	ProgressLog("%u palm hits\n", InputCount);
+
 	vector<MotifProfile *> MPs;
-	for (uint i = 0; i < InputCount; ++i)
+	for (uint SeqIndex = 0; SeqIndex < InputCount; ++SeqIndex)
 		{
-		const string &Seq = Input.GetSeq(i);
+		ProgressStep(SeqIndex, InputCount, "Build motif db");
+
+		const string &Motifs = MPCluster::m_MotifSeqDB.GetSeq(SeqIndex);
+		uint PosA = MPCluster::m_PosAs[SeqIndex];
+		uint PosB = MPCluster::m_PosBs[SeqIndex];
+		uint PosC = MPCluster::m_PosCs[SeqIndex];
+
 		MotifProfile *MP = new MotifProfile;
-		MP->FromSeq(Seq);
+		MP->FromSeq(SeqIndex, PosA, PosB, PosC, Motifs);
 		MPs.push_back(MP);
 		}
 
 	MPCluster MC;
 	if (Strategy == "greedy")
 		{
+		if (optset_topn)
+			MC.m_TopN = opt_topn;
+		else
+			MC.m_TopN = UINT_MAX;
 		MC.GreedyCluster(MPs, MinScore);
 		MC.LogClusters();
 		ProgressLog("%u motifs, %u clusters\n",
 		  InputCount, SIZE(MC.m_CentroidIndexes));
-		MC.ClustersToTsv(g_ftsv);
+		MC.WriteOutput();
 		}
 	else if (Strategy == "nn")
 		MC.NNCluster(MPs, MinScore);
 	else
 		Die("Invalid strategy '%s'", Strategy.c_str());
+
+	CloseSegFiles();
 	}
 
 void cmd_cluster_motifs_greedy()
@@ -663,4 +978,3 @@ void cmd_cluster_motifs_nn()
 	const string &InputFileName = opt_cluster_motifs_nn;
 	ClusterMotifs(InputFileName, "nn");
 	}
-

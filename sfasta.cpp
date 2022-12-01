@@ -25,6 +25,11 @@ void SeqToFasta(FILE *f, const char *Label, const char *Seq, unsigned L)
 		}
 	}
 
+void SeqToFasta(FILE *f, const string &Label, const string &Seq)
+	{
+	SeqToFasta(f, Label.c_str(), Seq.c_str(), SIZE(Seq));
+	}
+
 bool FastaFileIsNucleo(FILE *f)
 	{
 	unsigned SampleSize = 1024;

@@ -28,8 +28,8 @@ public:
 	bool m_Trace = false;
 
 	double m_MinScore_Core = 20.0;
-	uint m_LeftFlank_Core = 150;
-	uint m_RightFlank_Core = 150;
+	uint m_LeftFlank_Core = 150;	// see also MPCluster
+	uint m_RightFlank_Core = 150;	// see also MPCluster
 	uint m_MinFlankLen = 75;
 
 	double m_MinScore_CFiler = 5.0;
@@ -121,3 +121,6 @@ public:
 public:
 	static void InitOutput();
 	};
+
+typedef void (*fn_OnPalmHit)(const RdRpSearcher &RS);
+void SearchPSSMs(const string &QueryFileName, fn_OnPalmHit OnHit);

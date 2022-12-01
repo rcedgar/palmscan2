@@ -30,13 +30,14 @@ void SeqToUpper(string &Seq)
 		Seq[i] = toupper(Seq[i]);
 	}
 
-void cmd_search_pssms()
+void SearchPSSMs(const string &QueryFileName, fn_OnPalmHit OnHit)
 	{
-	string QueryFileName = opt_search_pssms;
-
 	asserta(optset_model);
 	const string &ModelFileName = opt_model;
 	bool Trace = opt_trace;
+	double MinPalmScore = 10.0;
+	if (optset_min_palm_score)
+		MinPalmScore = opt_min_palm_score;
 
 	if (!opt_notrunclabels)
 		opt_trunclabels = true;
@@ -102,12 +103,18 @@ void cmd_search_pssms()
 
 		RS.Search(Label, Seq);
 		RS.WriteOutput();
+		bool IsHit = (RS.m_TopPalmHit.m_Score >= MinPalmScore);
+		if (IsHit)
+#pragma omp critical
+			{
+			if (OnHit != 0)
+				(*OnHit)(RS);
+			++g_FoundCount;
+			}
 		OM->Down(QSI);
 
 		Lock();
 		++g_QueryCount;
-		if (RS.m_TopPalmHit.m_Score > 0)
-			++g_FoundCount;
 		Unlock();
 		}
 	}
@@ -115,4 +122,10 @@ void cmd_search_pssms()
 	double HitPct = GetPct(g_FoundCount, g_QueryCount);
 	ProgressStep(999, 1000, "Searching %u/%u hits (%.1f%%)",
 	  g_FoundCount, g_QueryCount, HitPct);
+	}
+
+void cmd_search_pssms()
+	{
+	const string &QueryFileName = opt_search_pssms;
+	SearchPSSMs(QueryFileName, 0);
 	}

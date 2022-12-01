@@ -386,6 +386,7 @@ void LogAllocs();
 unsigned GetRequestedThreadCount();
 
 void SeqToFasta(FILE *f, const char *Label, const char *Seq, unsigned L);
+void SeqToFasta(FILE *f, const string &Label, const string &Seq);
 void RevCompSeq(string &Seq);
 void StripWhiteSpace(string &Str);
 char GetOneFromThree(const string &AAA);

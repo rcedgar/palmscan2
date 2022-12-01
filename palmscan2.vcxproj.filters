@@ -314,6 +314,9 @@
     <ClCompile Include="cfilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="segs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -506,6 +509,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mpcluster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="motifprofile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="segs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="segfiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

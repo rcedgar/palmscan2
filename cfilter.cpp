@@ -164,7 +164,7 @@ void cmd_cfilter()
 
 		Lock();
 		++g_QueryCount;
-		if (HasHit > 0)
+		if (HasHit)
 			++g_FoundCount;
 		Unlock();
 		}
