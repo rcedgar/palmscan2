@@ -46,6 +46,8 @@ public:
 			m_MaxX = opt_maxx;
 		if (optset_mincscore)
 			m_MinCScore = (float) opt_mincscore;
+		if (optset_minflanklen)
+			m_MinFlankLen = opt_minflanklen;
 		asserta(m_MinCScore > 0);
 		}
 

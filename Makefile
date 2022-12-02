@@ -36,6 +36,7 @@ HDRS = \
   linereader.h \
   lockobj.h \
   lockobjs.h \
+  motifprofile.h \
   mpcluster.h \
   msaqc.h \
   msaqc2.h \
@@ -68,6 +69,8 @@ HDRS = \
   rdrpsearcher.h \
   rphit.h \
   searchparams.h \
+  segfiles.h \
+  segs.h \
   seqdb.h \
   seqinfo.h \
   seqsource.h \
@@ -163,6 +166,7 @@ OBJS = \
   $(OBJDIR)/searchparams.o \
   $(OBJDIR)/search3d_ppc.o \
   $(OBJDIR)/searchtriangle.o \
+  $(OBJDIR)/segs.o \
   $(OBJDIR)/smooth.o \
   $(OBJDIR)/split_train_test.o \
   $(OBJDIR)/test_pssms.o \

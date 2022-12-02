@@ -91,6 +91,7 @@ UNS_OPT(tsv_topn,			32,			1,			UINT_MAX)
 UNS_OPT(report_topn,		32,			1,			UINT_MAX)
 UNS_OPT(maxx,				10,			1,			UINT_MAX)
 UNS_OPT(refn,				10,			1,			UINT_MAX)
+UNS_OPT(minflanklen,		10,			1,			UINT_MAX)
 
 UNS_OPT(secs,				60,			1,			UINT_MAX)
 
