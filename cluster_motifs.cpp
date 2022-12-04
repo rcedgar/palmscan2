@@ -273,6 +273,7 @@ void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
 
 	uint DoneCount = 0;
 	vector<uint> ClusterSizes;
+	uint Counter = 0;
 	while (m_PendingIndexes.size() > 0)
 		{
 		ProgressStep(DoneCount, InputCount + 1, "Clustering");
@@ -289,6 +290,10 @@ void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
 		for (set<uint>::const_iterator p = m_PendingIndexes.begin();
 		  p != m_PendingIndexes.end(); ++p)
 			{
+			++Counter;
+			if (Counter%1000 == 0)
+				ProgressStep(DoneCount, InputCount + 1, "Clustering");
+
 			uint Index = *p;
 			MotifProfile &P = GetProfile(Index);
 			float Score = GetScore(CP, P);
