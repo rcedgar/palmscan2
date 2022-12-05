@@ -983,3 +983,47 @@ void cmd_cluster_motifs_nn()
 	const string &InputFileName = opt_cluster_motifs_nn;
 	ClusterMotifs(InputFileName, "nn");
 	}
+
+void cmd_cluster_motifs_greedy3()
+	{
+	const string &InputFileName = opt_cluster_motifs_greedy3;
+	OpenSegFiles();
+
+	SetBLOSUM62();
+
+	asserta(optset_motif_cluster_minscore);
+	const float MinScore = (float) opt_motif_cluster_minscore;
+
+	MPCluster::m_MotifSeqDB.FromFasta(InputFileName);
+
+	const uint InputCount = MPCluster::m_MotifSeqDB.GetSeqCount();
+	ProgressLog("%u input motifs\n", InputCount);
+
+	vector<MotifProfile *> MPs;
+	for (uint SeqIndex = 0; SeqIndex < InputCount; ++SeqIndex)
+		{
+		ProgressStep(SeqIndex, InputCount, "Build motif db");
+
+		const string &Motifs = MPCluster::m_MotifSeqDB.GetSeq(SeqIndex);
+		uint PosA = 0;
+		uint PosB = AL;
+		uint PosC = AL+BL;
+
+		MotifProfile *MP = new MotifProfile;
+		MP->FromSeq(SeqIndex, PosA, PosB, PosC, Motifs);
+		MPs.push_back(MP);
+		}
+
+	MPCluster MC;
+	if (optset_topn)
+		MC.m_TopN = opt_topn;
+	else
+		MC.m_TopN = UINT_MAX;
+	MC.GreedyCluster(MPs, MinScore);
+	MC.LogClusters();
+	ProgressLog("%u motifs, %u clusters\n",
+		InputCount, SIZE(MC.m_CentroidIndexes));
+	MC.WriteOutput();
+
+	CloseSegFiles();
+	}
