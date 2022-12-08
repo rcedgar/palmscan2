@@ -972,18 +972,21 @@ static void ClusterMotifs(const string &InputFileName,
 	CloseSegFiles();
 	}
 
+// Input is scanned by PSSMs
 void cmd_cluster_motifs_greedy()
 	{
 	const string &InputFileName = opt_cluster_motifs_greedy;
 	ClusterMotifs(InputFileName, "greedy");
 	}
 
+// Input is scanned by PSSMs
 void cmd_cluster_motifs_nn()
 	{
 	const string &InputFileName = opt_cluster_motifs_nn;
 	ClusterMotifs(InputFileName, "nn");
 	}
 
+// Input is 34aa ABC sequences
 void cmd_cluster_motifs_greedy3()
 	{
 	const string &InputFileName = opt_cluster_motifs_greedy3;
@@ -1005,6 +1008,11 @@ void cmd_cluster_motifs_greedy3()
 		ProgressStep(SeqIndex, InputCount, "Build motif db");
 
 		const string &Motifs = MPCluster::m_MotifSeqDB.GetSeq(SeqIndex);
+		uint L = SIZE(Motifs);
+		if (L != AL+BL+CL)
+			Die("Sequence length %u != 32 >%s",
+			  L, MPCluster::m_MotifSeqDB.GetLabel(SeqIndex).c_str());
+
 		uint PosA = 0;
 		uint PosB = AL;
 		uint PosC = AL+BL;
