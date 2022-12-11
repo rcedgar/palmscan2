@@ -95,6 +95,7 @@ void RdRpSearcher::WritePalmprintFasta(FILE *fABC, FILE *fCAB) const
 	Psa(Label, " A:%u:%s", PosA - PPLo + 1, SeqA.c_str());
 	Psa(Label, " B:%u:%s", PosB - PPLo + 1, SeqB.c_str());
 	Psa(Label, " C:%u:%s", PosC - PPLo + 1, SeqC.c_str());
+	Psa(Label, " PSSM:%s", GroupName.c_str());
 
 	const char *PPSeq = m_QuerySeq.c_str() + PPLo;
 	SeqToFasta(Perm ? fCAB : fABC, Label.c_str(), PPSeq, PPL);
@@ -269,9 +270,26 @@ bool RdRpSearcher::WriteCore(FILE *fABC, FILE *fCAB) const
 	asserta(CoreHi < QL);
 	uint CoreL = CoreHi - CoreLo + 1;
 
+	string SeqA;
+	string SeqB;
+	string SeqC;
+	GetMotifSeq(0, SeqA);
+	GetMotifSeq(1, SeqB);
+	GetMotifSeq(2, SeqC);
+
+	uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+	string GroupName;
+	GetGroupName(GroupIndex, GroupName);
+
+	string NewLabel = m_QueryLabel;
+	Psa(NewLabel, " A:%u:%s", PosA+1, SeqA.c_str());
+	Psa(NewLabel, " B:%u:%s", PosB+1, SeqB.c_str());
+	Psa(NewLabel, " C:%u:%s", PosC+1, SeqC.c_str());
+	Psa(NewLabel, " PSSM:%s", GroupName.c_str());
+
 	const char *CoreStart = m_QuerySeq.c_str() + CoreLo;
 	SeqToFasta(Perm ? fCAB : fABC,
-	  m_QueryLabel.c_str(), CoreStart, CoreL);
+	  NewLabel.c_str(), CoreStart, CoreL);
 	return true;
 	}
 

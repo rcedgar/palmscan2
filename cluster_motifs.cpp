@@ -380,6 +380,9 @@ void MPCluster::LogClusters() const
 
 void MPCluster::WriteFasta(const MotifProfile &MP) const
 	{
+	if (m_FLSeqDB.GetSeqCount() == 0)
+		return;
+
 	uint SeqIndex = MP.m_InputSeqIndex;
 	asserta(SeqIndex != UINT_MAX);
 

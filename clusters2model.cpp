@@ -12,16 +12,16 @@ void MPCluster::ReadSeqsVec(const string &TsvFileName,
 	string Line;
 	vector<string> Fields;
 /***
-C       0       11477   ICTDFSKFDQHFSGSGGTNADETLAHCLGDDGVL
-M       0       5.15    VCTDFSSFDQHFSGSGGTNCDETIAHCLGDDGIL
-M       0       4.91    VCTDFSRFEPHFSGSGGTNADETLVHCLGDDGII
-M       0       4.82    VCTDFSRFDQHFSGSGETNADESLAHCNGDDGIL
+C       0       11477   ICTDFSKFDQHFSGSGGTNADETLAHCLGDDGVL	ABC
+M       0       5.15    VCTDFSSFDQHFSGSGGTNCDETIAHCLGDDGIL	ABC
+M       0       4.91    VCTDFSRFEPHFSGSGGTNADETLVHCLGDDGII	ABC
+M       0       4.82    VCTDFSRFDQHFSGSGETNADESLAHCNGDDGIL	ABC
 ***/
 	vector<string> MemberSeqs;
 	while (ReadLineStdioFile(f, Line))
 		{
 		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) == 4);
+		asserta(SIZE(Fields) == 5);
 		const string &Type = Fields[0];
 		const string &Seq = Fields[3];
 		if (Type == "C")
