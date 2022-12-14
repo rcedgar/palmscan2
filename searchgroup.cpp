@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "rdrpsearcher.h"
 #include "sort.h"
+#include "abcxyz.h"
 
 void RdRpSearcher::SearchMotif(uint GroupIndex, uint MotifIndex,
   uint QLo, uint QHi, float MinScore, vector<RPHit> &Hits)
@@ -123,7 +124,7 @@ void RdRpSearcher::CFilterGroup(uint GroupIndex)
 void RdRpSearcher::SearchGroup(uint GroupIndex)
 	{
 	uint QL = SIZE(m_QuerySeq);
-	if (QL == 0)
+	if (QL < AL+BL+CL+10)
 		return;
 	vector<RPHit> Hits_C;
 	SearchMotif(GroupIndex, MOTIF_C, 0, QL-1, m_MinCScore, Hits_C);
