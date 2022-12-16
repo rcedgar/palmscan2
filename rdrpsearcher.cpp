@@ -258,3 +258,26 @@ void RdRpSearcher::GetAlnRows(vector<string> &Rows) const
 	GetSpan(QLo, QHi);
 	Psa(QLine, "  [%u]", QHi - QLo + 1);
 	}
+
+bool RdRpSearcher::IsHit() const
+	{
+	if (m_TopPalmHit.m_Score <= opt_minscore)
+		return false;
+
+	extern vector<string> g_ExcludeNames;
+	if (!g_ExcludeNames.empty())
+		{
+		if (m_TopPalmHit.m_Score > 0)
+			{
+			uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+			string GroupName;
+			GetGroupName(GroupIndex, GroupName);
+			for (uint i = 0; i < SIZE(g_ExcludeNames); ++i)
+				{
+				if (GroupName == g_ExcludeNames[i])
+					return false;
+				}
+			}
+		}
+	return true;
+	}

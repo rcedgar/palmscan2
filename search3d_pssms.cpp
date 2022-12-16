@@ -101,7 +101,7 @@ void cmd_search3d_pssms()
 	RdRpModel Model;
 	Model.FromModelFile(ModelFileName);
 
-	RdRpSearcher::InitOutput();
+	//RdRpSearcher::InitOutput();
 	uint ThreadCount = GetRequestedThreadCount();
 
 	vector<vector<PDBChain *> > QVecs(ThreadCount);
@@ -116,6 +116,7 @@ void cmd_search3d_pssms()
 		RSs[i].Init(Model);
 
 	ChainReader CR;
+	CR.m_SaveAtoms = true;
 	CR.Open(QueryFN, false);
 
 #pragma omp parallel num_threads(ThreadCount)

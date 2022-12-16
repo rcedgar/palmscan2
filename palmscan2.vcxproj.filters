@@ -71,9 +71,6 @@
     <ClCompile Include="logaln.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="getseg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fastqrec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -317,6 +314,18 @@
     <ClCompile Include="segs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pdb_pp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppfeatures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="denovosearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="matchmotifss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -518,6 +527,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="segfiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="denovosearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -22,7 +22,8 @@ static char GetSSChar(
 		return 's';
 
 // Turn
-	if (dis15 < 8.0)
+//	if (dis15 < 8.0)
+	if (dis15 < 8.2)
 		return 't';
 
 // Default to loop, no well-defined ss

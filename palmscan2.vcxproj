@@ -291,12 +291,15 @@
     <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
     <ClCompile Include="cfilter.cpp" />
+    <ClCompile Include="matchmotifss.cpp" />
     <ClCompile Include="pdbinfo.cpp" />
+    <ClCompile Include="pdb_pp.cpp" />
     <ClCompile Include="ppcalignertm.cpp" />
     <ClCompile Include="ppcprofile.cpp" />
     <ClCompile Include="ppcsearcher.cpp" />
     <ClCompile Include="build_ppp.cpp" />
     <ClCompile Include="ppc_score.cpp" />
+    <ClCompile Include="ppfeatures.cpp" />
     <ClCompile Include="ppp.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
@@ -305,7 +308,6 @@
     <ClCompile Include="fastaseqsource.cpp" />
     <ClCompile Include="fastqrec.cpp" />
     <ClCompile Include="fileseqsource.cpp" />
-    <ClCompile Include="getseg.cpp" />
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="invertmx.cpp" />
@@ -367,6 +369,7 @@
     <ClCompile Include="tshit.cpp" />
     <ClCompile Include="tshitmgr.cpp" />
     <ClCompile Include="tsoutput.cpp" />
+    <ClCompile Include="denovosearcher.cpp" />
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xbasis.cpp" />
@@ -435,6 +438,7 @@
     <ClInclude Include="trisearcher.h" />
     <ClInclude Include="tshit.h" />
     <ClInclude Include="tshitmgr.h" />
+    <ClInclude Include="denovosearcher.h" />
     <ClInclude Include="usearch.h" />
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />

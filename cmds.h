@@ -41,5 +41,7 @@ C(cluster_motifs_greedy3)
 C(cluster_motifs_nn)
 C(clusters2model)
 C(cfilter)
+C(pdb_pp)
+C(ppfeatures)
 
 #undef C

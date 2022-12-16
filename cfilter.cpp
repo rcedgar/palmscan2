@@ -120,7 +120,7 @@ void cmd_cfilter()
 	FASTASeqSource *SS = new FASTASeqSource;
 	SS->Open(QueryFileName);
 
-	RdRpSearcher::InitOutput();
+	//RdRpSearcher::InitOutput();
 	uint LastElapsedSecs = 0;
 	uint CurrElapsedSecs = 0;
 	ProgressStep(0, 1000, "Searching");

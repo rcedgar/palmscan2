@@ -30,6 +30,7 @@ public:
 	void FromCal(const string &FileName);
 	void FromCalLines(const vector<string> &Lines);
 	void ParseCalLabelLine(const string &Line);
+	void RenumberResidues(uint Start);
 	void ToCal(FILE *f) const;
 	void ToCalSeg(FILE *f, uint Pos, uint n) const;
 	void ToCal(const string &FileName) const;
@@ -52,8 +53,8 @@ public:
 	uint GetMotifPos(uint MotifIndex) const;
 	void GetSubSeq(uint StartPos, uint n,
 	  bool FailOnOverflow, string &MotifSeq) const;
-	void XFormATOM(string &ATOM, const vector<double> &t,
-	  const vector<vector<double> > &R) const;
+	//void XFormATOM(string &ATOM, const vector<double> &t,
+	//  const vector<vector<double> > &R) const;
 	void GetSS(string &SS) const;
 	void SetSS()
 		{
@@ -81,8 +82,12 @@ public:
 	static void AppendChainToLabel(string &Label, char Chain);
 	static char GetChainCharFromPDBAtomLine(const string &Line);
 	static bool IsPDBAtomLine(const string &Line);
+	static uint GetResidueNrFromATOMLine(const string &Line);
+	static void SetResidueNrInATOMLine(const string &InputLine,
+	  uint ResidueNr, string &OutputLine);
 	};
 
+void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 void ReadChains(const string &FileName,
   vector<PDBChain *> &Structures, bool SaveAtoms = false);
 void ReadChains(const vector<string> &FileNames,

@@ -94,6 +94,7 @@ UNS_OPT(refn,				10,			1,			UINT_MAX)
 UNS_OPT(minflanklen,		10,			1,			UINT_MAX)
 
 UNS_OPT(secs,				60,			1,			UINT_MAX)
+UNS_OPT(flanks,				60,			1,			UINT_MAX)
 
 UNS_OPT(maxseqlength,		500000000,		1,			UINT_MAX)
 UNS_OPT(sfasta_buff_bytes,	512*1024*1024,1024,		UINT_MAX)
@@ -106,7 +107,7 @@ UNS_OPT(low,				16,			1,			UINT_MAX)
 UNS_OPT(sample_size,		16,			1,			UINT_MAX)
 UNS_OPT(topn,				16,			1,			UINT_MAX)
 
-FLT_OPT(minscore,			0.0,		-9e9,		+9e9)
+FLT_OPT(minscore,			10.0,		-9e9,		+9e9)
 FLT_OPT(motif_cluster_minscore,			0.0,		-9e9,		+9e9)
 FLT_OPT(minscore1,			0.0,		-9e9,		+9e9)
 FLT_OPT(minscore2,			0.0,		-9e9,		+9e9)

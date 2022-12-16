@@ -223,6 +223,67 @@ void PDBChain::ToPDB(const string &FileName) const
 		}
 	}
 
+void PDBChain::RenumberResidues(uint Start)
+	{
+	uint N = SIZE(m_ATOMs);
+	asserta(N > 0);
+	uint CurrInputResidueNr = UINT_MAX;
+	vector<vector<string> > OutputAtoms;
+	for (uint OutputResidueIndex = 0; OutputResidueIndex < N;
+	  ++OutputResidueIndex)
+		{
+		const vector<string> &InputLines = m_ATOMs[OutputResidueIndex];
+		vector<string> OutputLines;
+		const uint M = SIZE(InputLines);
+		asserta(M > 0);
+		for (uint j = 0; j < M; ++j)
+			{
+			const string &InputLine = InputLines[j];
+			uint InputResidueNr = GetResidueNrFromATOMLine(InputLine);
+			string OutputLine;
+			SetResidueNrInATOMLine(InputLine,
+			  Start+OutputResidueIndex+1, OutputLine);
+			OutputLines.push_back(OutputLine);
+			}
+		OutputAtoms.push_back(OutputLines);
+		}
+	m_ATOMs = OutputAtoms;
+	}
+
+// Residue nr in Cols 23-26 (1-based)
+uint PDBChain::GetResidueNrFromATOMLine(const string &Line)
+	{
+	asserta(SIZE(Line) > 60);
+	string s;
+	s += Line[22];
+	s += Line[23];
+	s += Line[24];
+	s += Line[25];
+	StripWhiteSpace(s);
+	uint Nr = StrToUint(s);
+	return Nr;
+	}
+
+// Residue nr in Cols 23-26 (1-based)
+void PDBChain::SetResidueNrInATOMLine(const string &InputLine,
+  uint ResidueNr, string &OutputLine)
+	{
+	string s;
+	Ps(s, "%4u", ResidueNr);
+	uint n = SIZE(s);
+	if (n != 4)
+		Die("Residue number %d overflow (max 9999)", ResidueNr);
+	OutputLine.clear();
+	uint N = SIZE(InputLine);
+	for (uint i = 0; i < 23; ++i)
+		OutputLine += InputLine[i];
+	for (uint i = 0; i < 4; ++i)
+		OutputLine += s[i];
+	for (uint i = 23+4; i < N; ++i)
+		OutputLine += InputLine[i];
+	asserta(SIZE(OutputLine) == SIZE(InputLine));
+	}
+
 char PDBChain::FromPDBLines(const string &Label,
   const vector<string> &Lines, bool SaveAtoms)
 	{
@@ -728,10 +789,10 @@ void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
 	PPC.CheckPPCMotifCoords(true);
 	}
 
-void PDBChain::XFormATOM(string &ATOM, const vector<double> &t,
-  const vector<vector<double> > &R) const
-	{
-	}
+//void PDBChain::XFormATOM(string &ATOM, const vector<double> &t,
+//  const vector<vector<double> > &R) const
+//	{
+//	}
 
 bool PDBChain::IsPDBAtomLine(const string &Line)
 	{

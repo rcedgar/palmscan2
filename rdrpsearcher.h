@@ -82,6 +82,7 @@ public:
 		}
 
 public:
+	bool IsHit() const;
 	void Init(const RdRpModel &Model);
 	void Search(const string &QueryLabel, const string &QuerySeq);
 	void SearchGroup(uint GroupIndex);
@@ -121,7 +122,7 @@ public:
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;
 
 public:
-	static void InitOutput();
+	//static void InitOutput();
 	};
 
 typedef void (*fn_OnPalmHit)(const RdRpSearcher &RS);
