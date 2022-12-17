@@ -42,6 +42,8 @@ C(cluster_motifs_nn)
 C(clusters2model)
 C(cfilter)
 C(pdb_pp)
-C(ppfeatures)
+C(ppcontactmap)
+C(ppsp_train)
+C(ppsp_search)
 
 #undef C

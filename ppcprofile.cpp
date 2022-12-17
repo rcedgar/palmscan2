@@ -18,7 +18,7 @@ double StdDev_d_BC = 2.6;
 
 double Sigmas = 2;
 
-static double GetNormal(double Mu, double Sigma, double x)
+double GetNormal(double Mu, double Sigma, double x)
 	{
 	static double TWOPI = (2.0*3.1415926535);
 	static double FACTOR = 1.0/sqrt(TWOPI);

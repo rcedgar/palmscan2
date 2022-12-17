@@ -433,6 +433,21 @@ void PDBChain::GetXYZ(uint Pos, double &x, double &y, double &z) const
 	z = m_Zs[Pos];
 	}
 
+void PDBChain::GetDistMx(uint Pos, uint L,
+  vector<vector<double> > &Mx) const
+	{
+	Mx.resize(L);
+	for (uint i = 0; i < L; ++i)
+		{
+		Mx[i].resize(L);
+		for (uint j = 0; j < L; ++j)
+			{
+			double d = GetDist(Pos+i, Pos+j);
+			Mx[i][j] = d;
+			}
+		}
+	}
+
 double PDBChain::GetDist(uint Pos1, uint Pos2) const
 	{
 	double x1, y1, z1;

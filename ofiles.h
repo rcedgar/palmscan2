@@ -5,6 +5,7 @@
 F(tsv)
 F(classify_tsv)
 F(cluster_tsv)
+F(ppcontactmap_tsv)
 F(ppc)
 F(pdb)
 F(cal)

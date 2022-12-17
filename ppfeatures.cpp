@@ -6,6 +6,8 @@
 #include "outputfiles.h"
 #include "chainreader.h"
 
+#if 0
+
 static uint g_DoneCount;
 static uint g_HitCount;
 
@@ -157,3 +159,4 @@ void cmd_ppfeatures()
 
 	Progress("100.0%% done, %u / %u hits\r", g_HitCount, g_DoneCount);
 	}
+#endif

@@ -320,10 +320,19 @@
     <ClCompile Include="ppfeatures.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="denovosearcher.cpp">
+    <ClCompile Include="ppspsearcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="matchmotifss.cpp">
+    <ClCompile Include="contactmap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppsp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppsp_train.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppsp_search.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -529,7 +538,10 @@
     <ClInclude Include="segfiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="denovosearcher.h">
+    <ClInclude Include="ppspsearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppsp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

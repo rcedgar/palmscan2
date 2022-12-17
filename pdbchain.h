@@ -70,6 +70,7 @@ public:
 	char GetMotifB_G() const;
 	char GetMotifC_D() const;
 	const char *GetAcc(string &Acc) const;
+	void GetDistMx(uint Pos, uint L, vector<vector<double> > &Mx) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
