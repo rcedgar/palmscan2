@@ -296,8 +296,24 @@ char PDBChain::FromPDBLines(const string &Label,
 	uint CurrentResidueNumber = 0;
 	for (uint LineNr = 0; LineNr < N; ++LineNr)
 		{
-		const string &Line = Lines[LineNr];
+		string Line = Lines[LineNr];
 		const size_t L = Line.size();
+
+		if (strncmp(Line.c_str(), "HETATM", 6) == 0)
+			{
+			asserta(Line.substr(17, 3) == "MSE");
+
+			Line[0] = 'A';
+			Line[1] = 'T';
+			Line[2] = 'O';
+			Line[3] = 'M';
+			Line[4] = ' ';
+			Line[5] = ' ';
+
+			Line[17] = 'M';
+			Line[18] = 'E';
+			Line[19] = 'T';
+			}
 
 		if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
 			continue;
@@ -566,7 +582,7 @@ void PDBChain::ChainsFromLines(const string &Label,
 		{
 		const string &Line = Lines[i];
 
-		if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
+		if (IsPDBAtomLine(Line))
 			{
 			if (Line.size() < 57)
 				continue;
@@ -804,17 +820,13 @@ void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
 	PPC.CheckPPCMotifCoords(true);
 	}
 
-//void PDBChain::XFormATOM(string &ATOM, const vector<double> &t,
-//  const vector<vector<double> > &R) const
-//	{
-//	}
-
 bool PDBChain::IsPDBAtomLine(const string &Line)
 	{
 	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
-	else
-		return false;
+	if (strncmp(Line.c_str(), "HETATM", 6) == 0)
+		return true;
+	return false;
 	}
 
 char PDBChain::GetChainCharFromPDBAtomLine(const string &Line)

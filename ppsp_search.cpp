@@ -32,7 +32,7 @@ void cmd_ppsp_search()
 		if (!Ok)
 			break;
 
-		if (++g_DoneCount%100 == 0)
+		if (++g_DoneCount%1000 == 0)
 			{
 			string sPct;
 			CR.GetStrPctDone(sPct);
@@ -40,17 +40,47 @@ void cmd_ppsp_search()
 			  sPct.c_str(), g_HitCount, g_DoneCount);
 			}
 
-		const string &QSeq = Q.m_Seq;
-		const string &QLabel = Q.m_Label;
+		const char *Seq = Q.m_Seq.c_str();
+		const string &Label = Q.m_Label;
+		uint APos = UINT_MAX;
+		uint BPos = UINT_MAX;
+		uint CPos = UINT_MAX;
 		PS.Search(Q);
-		Log("\n");
-		Log(">%s\n", Q.m_Label.c_str());
-		const uint HitCount = SIZE(PS.m_Ads);
-		Log("%u hits\n", HitCount);
-		for (uint i = 0; i < HitCount; ++i)
+		double Score = PS.GetPSSMStarts(APos, BPos, CPos);
+		if (APos == UINT_MAX)
+			continue;
+		++g_HitCount;
+
+		if (g_ftsv != 0)
 			{
-			Log("%6.3f  %4u  %4u  %4u\n",
-			  PS.m_Scores[i], PS.m_Ads[i], PS.m_Bgs[i], PS.m_Cds[i]);
+			const char *SeqA = Seq + APos;
+			const char *SeqB = Seq + BPos;
+			const char *SeqC = Seq + CPos;
+
+			char Gate = SeqA[8];
+			const char *GDD = SeqC + 2;
+
+			const char *Cat = "RdRp";
+			if (Gate == 'F' || Gate == 'Y')
+				Cat = "RT";
+			if (!strncmp(GDD, "ADD", 3) ||
+			    !strncmp(GDD, "VDD", 3) ||
+				!strncmp(GDD, "LDD", 3) ||
+				!strncmp(GDD, "MDD", 3))
+				Cat = "RT";
+
+			fprintf(g_ftsv, "%.4f", Score);
+			fprintf(g_ftsv, "\t%s", Cat);
+			fprintf(g_ftsv, "\t%s", Label.c_str());
+			fprintf(g_ftsv, "\t%u", APos+1);
+			fprintf(g_ftsv, "\t%u", BPos+1);
+			fprintf(g_ftsv, "\t%u", CPos+1);
+			fprintf(g_ftsv, "\t%*.*s", AL, AL, SeqA);
+			fprintf(g_ftsv, "\t%*.*s", BL, BL, SeqB);
+			fprintf(g_ftsv, "\t%*.*s", CL, CL, SeqC);
+			fprintf(g_ftsv, "\t%c", Gate);
+			fprintf(g_ftsv, "\t%3.3s", GDD);
+			fprintf(g_ftsv, "\n");
 			}
 		}
 

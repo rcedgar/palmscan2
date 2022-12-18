@@ -44,6 +44,7 @@ C(cfilter)
 C(pdb_pp)
 C(ppcontactmap)
 C(ppsp_train)
+C(ppsp_train_pssm)
 C(ppsp_search)
 
 #undef C

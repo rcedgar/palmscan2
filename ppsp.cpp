@@ -11,14 +11,27 @@ uint PPSP::GetSeqPos(uint i, uint APos, uint BPos, uint CPos)
 	return APos + i;
 	}
 
-bool PPSP::GetDistMx(const PDBChain &Q,
+char PPSP::GetMotifChar(uint Ix) const
+	{
+	if (Ix < AL)
+		return 'A';
+	if (Ix < AL + BL)
+		return 'B';
+	if (Ix < PPSPL)
+		return 'C';
+	asserta(false);
+	return '!';
+	}
+
+void PPSP::GetDistMx(const PDBChain &Q,
   uint APos, uint BPos, uint CPos,
   vector<vector<double> > &DistMx)
 	{
-	DistMx.clear();
-	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
-		return false;
+	asserta(APos != UINT_MAX);
+	asserta(BPos != UINT_MAX);
+	asserta(CPos != UINT_MAX);
 
+	DistMx.clear();
 	const uint N = CIX + CL;
 	DistMx.resize(N);
 	for (uint i = 0; i < N; ++i)
@@ -34,7 +47,6 @@ bool PPSP::GetDistMx(const PDBChain &Q,
 			DistMx[i][j] = d;
 			}
 		}
-	return true;
 	}
 
 void PPSP::ToFile(const string &FileName) const
@@ -151,22 +163,54 @@ double PPSP::GetScoreC(const PDBChain &Chain, uint PosC) const
 	return Score;
 	}
 
-double PPSP::GetScore(const PDBChain &Chain, uint SeqPos, uint Ix, uint L) const
+double PPSP::GetScore(const PDBChain &Chain, uint SeqPos,
+  uint Ix, uint L, bool Trace) const
 	{
+	double Score = GetScore2(Chain, SeqPos, SeqPos, Ix, Ix, L, L, Trace);
+	return Score;
+	}
+
+double PPSP::GetScore2(const PDBChain &Chain,
+  uint SeqPos1, uint SeqPos2,
+  uint Ix1, uint Ix2,
+  uint L1, uint L2, bool Trace) const
+	{
+	bool Diag = (Ix1 == Ix2);
+	double XS = (Diag ? 1.5 : 2);
 	double Sum = 0;
 	uint n = 0;
-	for (uint i = 1; i < L; ++i)
+	if (Trace)
+		Log("\n");
+	for (uint i = 0; i < L1; ++i)
 		{
-		for (uint j = 0; j < i; ++j)
+		uint jhi = (Diag ? i : L2);
+		for (uint j = 0; j < jhi; ++j)
 			{
-			double Observed_d = Chain.GetDist(SeqPos+i, SeqPos+j);
-			double Mu = m_Means[Ix+i][Ix+j];
-			double Sigma = m_StdDevs[Ix+i][Ix+j];
-			double y = GetNormal(Mu, Sigma, Observed_d);
-			double Max = GetNormal(Mu, Sigma, Mu);
+			double Observed_d = Chain.GetDist(SeqPos1+i, SeqPos2+j);
+			double Mu = m_Means[Ix1+i][Ix2+j];
+			double Sigma = m_StdDevs[Ix1+i][Ix2+j];
+			double y = GetNormal(Mu, XS*Sigma, Observed_d);
+			double Max = GetNormal(Mu, XS*Sigma, Mu);
 			double Ratio = y/Max;
 			Sum += Ratio;
 			++n;
+
+			if (Trace)
+				{
+				char MotifChari = GetMotifChar(Ix1);
+				char MotifCharj = GetMotifChar(Ix2);
+
+				char ci = Chain.m_Seq[SeqPos1+i];
+				char cj = Chain.m_Seq[SeqPos2+j];
+
+				Log("%c[%3u]%c", MotifChari, SeqPos1+i, ci);
+				Log("  %c[%3u]%c", MotifCharj, SeqPos2+j, cj);
+				Log("  d %6.2f", Observed_d);
+				Log("  mu %6.2f", Mu);
+				Log("  sd %6.2f", Sigma);
+				Log("  r %6.4f", Ratio);
+				Log("\n");
+				}
 			}
 		}
 	asserta(n > 0);
@@ -174,54 +218,37 @@ double PPSP::GetScore(const PDBChain &Chain, uint SeqPos, uint Ix, uint L) const
 	return Score;
 	}
 
-double PPSP::GetScore2(const PDBChain &Chain,
-  uint SeqPos1, uint SeqPos2,
-  uint Ix1, uint Ix2,
-  uint L1, uint L2) const
+double PPSP::GetScoreAB(const PDBChain &Chain, uint PosA, uint PosB) const
 	{
-	double Sum = 0;
-	uint n = 0;
-	for (uint i = 0; i < L1; ++i)
-		{
-		for (uint j = 0; j < L2; ++j)
-			{
-			double Observed_d = Chain.GetDist(SeqPos1+i, SeqPos2+j);
-			double Mu = m_Means[Ix1+i][Ix2+j];
-			double Sigma = m_StdDevs[Ix1+i][Ix2+j];
-			double y = GetNormal(Mu, Sigma, Observed_d);
-			double Max = GetNormal(Mu, Sigma, Mu);
-			double Ratio = y/Max;
-			Sum += Ratio;
-			++n;
-			}
-		}
-	asserta(n > 0 && n == L1*L2);
-	double Score = Sum/n;
-	return Score;
+	double ScoreAB = GetScore2(Chain, PosA, PosB, AIX, BIX, AL, BL);
+	return ScoreAB;
+	}
+
+double PPSP::GetScoreBC(const PDBChain &Chain, uint PosB, uint PosC) const
+	{
+	double ScoreBC = GetScore2(Chain, PosB, PosC, BIX, CIX, BL, CL);
+	return ScoreBC;
+	}
+
+double PPSP::GetScoreAC(const PDBChain &Chain, uint PosA, uint PosC) const
+	{
+	double ScoreAC = GetScore2(Chain, PosA, PosC, AIX, CIX, AL, CL);
+	return ScoreAC;
 	}
 
 double PPSP::GetScore3(const PDBChain &Chain,
   uint PosA, uint PosB, uint PosC) const
 	{
-	double ScoreA = GetScoreA(Chain, PosA);
-	double ScoreB = GetScoreB(Chain, PosB);
-	double ScoreC = GetScoreC(Chain, PosC);
-
-	double ScoreAB = GetScore2(Chain, PosA, PosB, AIX, BIX, AL, BL);
-	double ScoreBC = GetScore2(Chain, PosB, PosC, BIX, CIX, BL, CL);
-	double ScoreAC = GetScore2(Chain, PosA, PosC, AIX, CIX, AL, CL);
-
 	double Score = 0;
 
-	Score += ScoreA;
-	Score += ScoreB;
-	Score += ScoreC;
+	Score += GetScoreA(Chain, PosA);
+	Score += GetScoreB(Chain, PosB);
+	Score += GetScoreC(Chain, PosC);
 
-	Score += ScoreAB;
-	Score += ScoreBC;
-	Score += ScoreAC;
+	Score += GetScoreAB(Chain, PosA, PosB);
+	Score += GetScoreBC(Chain, PosB, PosC);
+	Score += GetScoreAC(Chain, PosA, PosC);
 
 	Score /= 6;
-
 	return Score;
 	}

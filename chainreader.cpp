@@ -84,6 +84,8 @@ bool ChainReader::KeepPDBAtomLine(const string &Line)
 		return true;
 	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
+	if (strncmp(Line.c_str(), "HETATM", 6) == 0)
+		return true;
 	return false;
 	}
 

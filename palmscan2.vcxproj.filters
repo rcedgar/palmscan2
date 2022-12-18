@@ -335,6 +335,9 @@
     <ClCompile Include="ppsp_search.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ppsp_train_pssm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

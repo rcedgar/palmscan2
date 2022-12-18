@@ -304,6 +304,7 @@
     <ClCompile Include="ppsp.cpp" />
     <ClCompile Include="ppsp_train.cpp" />
     <ClCompile Include="ppsp_search.cpp" />
+    <ClCompile Include="ppsp_train_pssm.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
     <ClCompile Include="cluster_cl.cpp" />

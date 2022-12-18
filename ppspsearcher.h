@@ -26,9 +26,11 @@ public:
 		m_Ads.clear();
 		m_Bgs.clear();
 		m_Cds.clear();
+		m_Scores.clear();
 		}
 
 	void Search(PDBChain &Query);
+	double GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const;
 
 	void SearchAd(uint AdLo, uint AdHi, vector<uint> &PosVec);
 	void SearchBg(uint BgLo, uint BgHi, vector<uint> &PosVec);
