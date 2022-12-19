@@ -119,7 +119,7 @@
     <ClCompile Include="searchgroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="output.cpp">
+    <ClCompile Include="pssm_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test_pssms.cpp">
@@ -336,6 +336,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppsp_train_pssm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="residueprob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

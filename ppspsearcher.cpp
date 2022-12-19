@@ -1,17 +1,31 @@
 #include "myutils.h"
 #include "ppspsearcher.h"
 
+/***
+From D:\src\py\palmscan3d_params.py
+-----------------------------------
+static const uint min_aadist_AdBg = 21;
+static const uint max_aadist_AdBg = 136;
+
+static const uint min_aadist_BgCd = 28;
+static const uint max_aadist_BgCd = 140;
+
+static const uint min_aadist_AdCd = 85;
+static const uint max_aadist_AdCd = 173;
+***/
+
+// Manually extended to allow outliers
 static const uint min_aadist_AdBg = 10;
-static const uint max_aadist_AdBg = 140;
+static const uint max_aadist_AdBg = 150;
 
 static const uint min_aadist_BgCd = 10;
-static const uint max_aadist_BgCd = 120;
+static const uint max_aadist_BgCd = 150;
 
-static const uint min_aadist_AdCd = 80;
+static const uint min_aadist_AdCd = 70;
 static const uint max_aadist_AdCd = 200;
 
-static const double MINSCORE1 = 0.6;
-static const double MINSCORE3 = 0.6;
+static const double MINSCORE1 = 0.5;
+static const double MINSCORE3 = 0.5;
 
 #define TRACE	0
 

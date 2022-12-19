@@ -46,7 +46,7 @@ void cmd_ppsp_search()
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
 		PS.Search(Q);
-		double Score = PS.GetPSSMStarts(APos, BPos, CPos);
+		double PalmScore = PS.GetPSSMStarts(APos, BPos, CPos);
 		if (APos == UINT_MAX)
 			continue;
 		++g_HitCount;
@@ -60,17 +60,18 @@ void cmd_ppsp_search()
 			char Gate = SeqA[8];
 			const char *GDD = SeqC + 2;
 
-			const char *Cat = "RdRp";
-			if (Gate == 'F' || Gate == 'Y')
-				Cat = "RT";
-			if (!strncmp(GDD, "ADD", 3) ||
-			    !strncmp(GDD, "VDD", 3) ||
-				!strncmp(GDD, "LDD", 3) ||
-				!strncmp(GDD, "MDD", 3))
-				Cat = "RT";
+			char CmfX = SeqC[2];
 
-			fprintf(g_ftsv, "%.4f", Score);
-			fprintf(g_ftsv, "\t%s", Cat);
+			double P_rdrp = PPSP::GetRdRpProb(Gate, CmfX);
+			double P_rdrp_gate = PPSP::GetRdRpProb_Gate(Gate);
+			double P_rdrp_cmfx = PPSP::GetRdRpProb_CmfX(CmfX);
+
+			double AdjustedPalmScore = 0.75 + PalmScore/4;
+			double RdRpScore = AdjustedPalmScore*P_rdrp;
+
+			fprintf(g_ftsv, "%.4f", RdRpScore);
+			fprintf(g_ftsv, "\t%.4f", PalmScore);
+			fprintf(g_ftsv, "\t%.4f", P_rdrp);
 			fprintf(g_ftsv, "\t%s", Label.c_str());
 			fprintf(g_ftsv, "\t%u", APos+1);
 			fprintf(g_ftsv, "\t%u", BPos+1);
@@ -78,8 +79,8 @@ void cmd_ppsp_search()
 			fprintf(g_ftsv, "\t%*.*s", AL, AL, SeqA);
 			fprintf(g_ftsv, "\t%*.*s", BL, BL, SeqB);
 			fprintf(g_ftsv, "\t%*.*s", CL, CL, SeqC);
-			fprintf(g_ftsv, "\t%c", Gate);
-			fprintf(g_ftsv, "\t%3.3s", GDD);
+			fprintf(g_ftsv, "\t%c(%.4f)", Gate, P_rdrp_gate);
+			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD, P_rdrp_cmfx);
 			fprintf(g_ftsv, "\n");
 			}
 		}

@@ -5,13 +5,6 @@
 
 extern vector<string> g_ExcludeNames;
 
-//static omp_lock_t g_OutputLock;
-//
-//void RdRpSearcher::InitOutput()
-//	{
-//	omp_init_lock(&g_OutputLock);
-//	}
-
 void RdRpSearcher::WriteOutput() const
 	{
 	if (!g_ExcludeNames.empty())

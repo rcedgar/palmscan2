@@ -80,6 +80,9 @@ public:
 
 public:
 	static uint GetSeqPos(uint i, uint APos, uint BPos, uint CPos);
+	static double GetRdRpProb(int Gate, int CmfX);
+	static double GetRdRpProb_Gate(int Gate);
+	static double GetRdRpProb_CmfX(int X);
 	};
 
 double GetNormal(double Mu, double Sigma, double x);
