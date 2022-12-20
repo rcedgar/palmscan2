@@ -288,7 +288,7 @@
     <ClCompile Include="clusters2model.cpp" />
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
-    <ClCompile Include="contactmap.cpp" />
+    <ClCompile Include="ppcontactmap.cpp" />
     <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
     <ClCompile Include="cfilter.cpp" />

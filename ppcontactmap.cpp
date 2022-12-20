@@ -24,6 +24,7 @@ static void PPContactMap(const PDBChain &Q,
 	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
 		return;
 
+	++g_HitCount;
 	const uint N = AL + BL + CL;
 	vector<vector<double> > Mx;
 	Mx.resize(N);

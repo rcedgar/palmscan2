@@ -5,33 +5,24 @@
 #include "outputfiles.h"
 #include "chainreader.h"
 #include "ppspsearcher.h"
+#include <time.h>
 
 static uint g_DoneCount;
 static uint g_HitCount;
 
-void cmd_ppsp_search()
+static void Thread(ChainReader &CR, const PPSP &Prof)
 	{
-	const string &QueryFN = opt_ppsp_search;
-
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
-
 	PPSPSearcher PS;
-	PS.m_Prof.FromFile(ModelFileName);
-
 	PDBChain Q;
-
-	ChainReader CR;
-	CR.m_SaveAtoms = true;
-	CR.Open(QueryFN, false);
-
+	PS.m_Prof = Prof;
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
 		if (!Ok)
 			break;
 
+#pragma omp critical
+		{
 		if (++g_DoneCount%1000 == 0)
 			{
 			string sPct;
@@ -39,6 +30,7 @@ void cmd_ppsp_search()
 			Progress("%s%% done, %u / %u hits\r",
 			  sPct.c_str(), g_HitCount, g_DoneCount);
 			}
+		}
 
 		const char *Seq = Q.m_Seq.c_str();
 		const string &Label = Q.m_Label;
@@ -84,6 +76,33 @@ void cmd_ppsp_search()
 			fprintf(g_ftsv, "\n");
 			}
 		}
+	}
 
-	Progress("100.0%% done, %u / %u hits\r", g_HitCount, g_DoneCount);
+void cmd_ppsp_search()
+	{
+	const string &QueryFN = opt_ppsp_search;
+
+	time_t tStart = time(0);
+	if (!optset_model)
+		Die("Must specify -model");
+	const string &ModelFileName = opt_model;
+
+	PPSP Prof;
+	Prof.FromFile(ModelFileName);
+
+	ChainReader CR;
+	CR.m_SaveAtoms = true;
+	CR.Open(QueryFN, false);
+
+	uint ThreadCount = GetRequestedThreadCount();
+
+#pragma omp parallel num_threads(ThreadCount)
+	Thread(CR, Prof);
+	time_t tEnd = time(0);
+	uint Secs = uint(tEnd - tStart);
+	if (Secs <= 0)
+		Secs = 1;
+	double Throughput = double(g_DoneCount)/(Secs*ThreadCount);
+	ProgressLog("%u done, %u hits, %s secs (%u threads, %.1f/ sec/ thread)\n",
+	  g_DoneCount, g_HitCount, IntToStr(Secs), ThreadCount, Throughput);
 	}

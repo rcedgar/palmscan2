@@ -323,7 +323,7 @@
     <ClCompile Include="ppspsearcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="contactmap.cpp">
+    <ClCompile Include="ppcontactmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppsp.cpp">
