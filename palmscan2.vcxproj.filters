@@ -341,6 +341,9 @@
     <ClCompile Include="residueprob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ppsearcher_permuted.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

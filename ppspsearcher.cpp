@@ -21,8 +21,8 @@ static const uint max_aadist_AdBg = 150;
 static const uint min_aadist_BgCd = 10;
 static const uint max_aadist_BgCd = 150;
 
-static const uint min_aadist_AdCd = 70;
-static const uint max_aadist_AdCd = 200;
+//static const uint min_aadist_AdCd = 70;
+//static const uint max_aadist_AdCd = 200;
 
 static const double MINSCORE1 = 0.5;
 static const double MINSCORE3 = 0.5;
@@ -133,11 +133,20 @@ void PPSPSearcher::GetCdLoHi(uint Bg, uint &CdLo, uint &CdHi) const
 
 void PPSPSearcher::Search(PDBChain &Query)
 	{
-	const uint QL = SIZE(Query.m_Seq);
-
 	Clear();
 	m_Query = &Query;
 	m_Seq = Query.m_Seq;
+
+	if (!opt_permuted)
+		Search_ABC(Query);
+
+	if (!opt_notpermuted)
+		Search_CAB(Query);
+	}
+
+void PPSPSearcher::Search_ABC(PDBChain &Query)
+	{
+	const uint QL = SIZE(Query.m_Seq);
 
 	vector<uint> AdVec;
 	vector<uint> BgVec;

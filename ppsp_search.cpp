@@ -58,7 +58,7 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 			double P_rdrp_gate = PPSP::GetRdRpProb_Gate(Gate);
 			double P_rdrp_cmfx = PPSP::GetRdRpProb_CmfX(CmfX);
 
-			double AdjustedPalmScore = 0.75 + PalmScore/4;
+			double AdjustedPalmScore = 0.5 + PalmScore/2;
 			double RdRpScore = AdjustedPalmScore*P_rdrp;
 
 			fprintf(g_ftsv, "%.4f", RdRpScore);
@@ -73,6 +73,7 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 			fprintf(g_ftsv, "\t%*.*s", CL, CL, SeqC);
 			fprintf(g_ftsv, "\t%c(%.4f)", Gate, P_rdrp_gate);
 			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD, P_rdrp_cmfx);
+			fprintf(g_ftsv, "\t%s", (APos < CPos ? "ABC" : "CAB"));
 			fprintf(g_ftsv, "\n");
 			}
 		}

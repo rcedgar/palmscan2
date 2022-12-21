@@ -30,6 +30,8 @@ public:
 		}
 
 	void Search(PDBChain &Query);
+	void Search_ABC(PDBChain &Query);
+	void Search_CAB(PDBChain &Query);
 	double GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const;
 
 	void SearchAd(uint AdLo, uint AdHi, vector<uint> &PosVec);
@@ -42,6 +44,9 @@ public:
 
 	void GetBgLoHi(uint Ad, uint &BgLo, uint &BgHi) const;
 	void GetCdLoHi(uint Bg, uint &CdLo, uint &CdHi) const;
+
+	void GetAdLoHi_Permuted(uint Cd, uint &AdLo, uint &AdHi) const;
+	void GetBgLoHi_Permuted(uint Ad, uint &BgLo, uint &BgHi) const;
 
 	double GetScore(uint Ad, uint Bg, uint Cd) const;
 	void CheckHit(uint Ad, uint Bg, uint Cd, double Score);
