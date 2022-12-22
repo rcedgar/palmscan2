@@ -242,7 +242,7 @@ static void Test(ChainReader &CR,
 	g_DoneCount = 0;
 	g_HitCount = 0;
 
-	const PPSP &Prof = PS.m_Prof;
+	const PPSP &Prof = *PS.m_Prof;
 
 	PDBChain Q;
 
@@ -398,7 +398,7 @@ void cmd_ppsp_train()
 	CR.Open(QueryFN, false);
 
 	PPSPSearcher PS;
-	PS.m_Prof = Prof;
+	PS.m_Prof = &Prof;
 
 	//Test(CR, &RS, 0, Prof);
 

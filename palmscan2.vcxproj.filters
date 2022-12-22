@@ -338,10 +338,13 @@
     <ClCompile Include="ppsp_train_pssm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="residueprob.cpp">
+    <ClCompile Include="gddgateprob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppsearcher_permuted.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppspdbsearcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -551,6 +554,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ppsp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppspdbsearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

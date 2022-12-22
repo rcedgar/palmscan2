@@ -90,24 +90,25 @@ void PPSP::ToFile(const string &FileName) const
 	CloseStdioFile(f);
 	}
 
-void PPSP::FromFile(const string &FileName)
+bool PPSP::FromFile(FILE *f)
 	{
-	asserta(FileName != "");
 	Clear();
 	string Line;
 	vector<string> Fields;
-	FILE *f = OpenStdioFile(FileName);
 	bool Ok = ReadLineStdioFile(f, Line);
 	if (!Ok)
-		Die("Premature EOF in PPSP file %s", FileName.c_str());
-	if (Line != "PPSP")
-		Die("Not PSPP file %s", FileName.c_str());
+		Die("Premature EOF in PPSP file");
+	if (Line == "//")
+		return false;
+	Split(Line, Fields, '\t');
+	if (SIZE(Fields) != 2 || Fields[0] != "PPSP")
+		Die("Invalid PPSP file (hdr)");
 
 	for (uint i = 1; i < PPSPL; ++i)
 		{
 		bool Ok = ReadLineStdioFile(f, Line);
 		if (!Ok)
-			Die("Premature EOF in PPSP file %s", FileName.c_str());
+			Die("Premature EOF in PPSP file");
 		Split(Line, Fields, '\t');
 		asserta(SIZE(Fields) == i+3);
 		asserta(Fields[0] == "mean");
@@ -126,7 +127,7 @@ void PPSP::FromFile(const string &FileName)
 		{
 		bool Ok = ReadLineStdioFile(f, Line);
 		if (!Ok)
-			Die("Premature EOF in PPSP file %s", FileName.c_str());
+			Die("Premature EOF in PPSP file");
 		Split(Line, Fields, '\t');
 		asserta(SIZE(Fields) == i+3);
 		asserta(Fields[0] == "stddev");
@@ -140,6 +141,16 @@ void PPSP::FromFile(const string &FileName)
 			m_StdDevs[j][i] = m_StdDevs[i][j];
 			}
 		}
+	return true;
+	}
+
+bool PPSP::FromFile(const string &FileName)
+	{
+	asserta(FileName != "");
+	FILE *f = OpenStdioFile(FileName);
+	bool Ok = FromFile(f);
+	CloseStdioFile(f);
+	return Ok;
 	}
 
 double PPSP::GetScoreA(const PDBChain &Chain, uint PosA) const

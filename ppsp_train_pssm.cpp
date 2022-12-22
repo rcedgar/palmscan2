@@ -258,7 +258,7 @@ void cmd_ppsp_train_pssm()
 	CR.Open(QueryFN, false);
 
 	PPSPSearcher PS;
-	PS.m_Prof = Prof;
+	PS.m_Prof = &Prof;
 
 	CR.Clear();
 	CR.Open(QueryFN, false);

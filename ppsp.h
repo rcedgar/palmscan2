@@ -37,7 +37,8 @@ public:
 		}
 
 	void ToFile(const string &FileName) const;
-	void FromFile(const string &FileName);
+	bool FromFile(FILE *f);
+	bool FromFile(const string &FileName);
 	double GetScore3(const PDBChain &Chain,
 	  uint PosA, uint PosB, uint PosC) const;
 	double GetScoreA(const PDBChain &Chain, uint PosA) const;
@@ -80,9 +81,9 @@ public:
 
 public:
 	static uint GetSeqPos(uint i, uint APos, uint BPos, uint CPos);
-	static double GetRdRpProb(int Gate, int CmfX);
+	static double GetRdRpProb(int Gate, const string &GDD);
 	static double GetRdRpProb_Gate(int Gate);
-	static double GetRdRpProb_CmfX(int X);
+	static double GetRdRpProb_GDD(const string &GDD);
 	};
 
 double GetNormal(double Mu, double Sigma, double x);

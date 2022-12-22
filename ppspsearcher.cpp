@@ -33,7 +33,7 @@ bool PPSPSearcher::MatchAd(uint Pos) const
 	{
 	if (Pos < 3)
 		return false;
-	double Score = m_Prof.GetScoreA(*m_Query, Pos-3);
+	double Score = m_Prof->GetScoreA(*m_Query, Pos-3);
 	if (Score >= MINSCORE1)
 		{
 #if TRACE
@@ -48,7 +48,7 @@ bool PPSPSearcher::MatchBg(uint Pos) const
 	{
 	if (Pos < 1)
 		return false;
-	double Score = m_Prof.GetScoreB(*m_Query, Pos-1);
+	double Score = m_Prof->GetScoreB(*m_Query, Pos-1);
 	if (Score >= MINSCORE1)
 		{
 #if TRACE
@@ -63,7 +63,7 @@ bool PPSPSearcher::MatchCd(uint Pos) const
 	{
 	if (Pos < 3)
 		return false;
-	double Score = m_Prof.GetScoreC(*m_Query, Pos-3);
+	double Score = m_Prof->GetScoreC(*m_Query, Pos-3);
 	if (Score >= MINSCORE1)
 		{
 #if TRACE
@@ -133,7 +133,7 @@ void PPSPSearcher::GetCdLoHi(uint Bg, uint &CdLo, uint &CdHi) const
 
 void PPSPSearcher::Search(PDBChain &Query)
 	{
-	Clear();
+	ClearSearch();
 	m_Query = &Query;
 	m_Seq = Query.m_Seq;
 
@@ -226,7 +226,7 @@ double PPSPSearcher::GetScore(uint Ad, uint Bg, uint Cd) const
 	asserta(Ad >= 3 && Ad < QL);
 	asserta(Bg >= 2 && Bg < QL);
 	asserta(Cd >= 3 && Cd < QL);
-	double Score = m_Prof.GetScore3(*m_Query, Ad-3, Bg-1, Cd-3);
+	double Score = m_Prof->GetScore3(*m_Query, Ad-3, Bg-1, Cd-3);
 	return Score;
 	}
 

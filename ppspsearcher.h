@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include "pdbchain.h"
 #include "ppsp.h"
@@ -11,7 +10,7 @@ class PPSPSearcher
 public:
 	PDBChain *m_Query = 0;
 	string m_Seq;
-	PPSP m_Prof;
+	const PPSP *m_Prof = 0;
 
 	vector<uint> m_Ads;
 	vector<uint> m_Bgs;
@@ -19,7 +18,7 @@ public:
 	vector<double> m_Scores;
 
 public:
-	void Clear()
+	void ClearSearch()
 		{
 		m_Query = 0;
 		m_Seq.clear();

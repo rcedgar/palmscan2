@@ -14,7 +14,7 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 	{
 	PPSPSearcher PS;
 	PDBChain Q;
-	PS.m_Prof = Prof;
+	PS.m_Prof = &Prof;
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
@@ -50,13 +50,14 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 			const char *SeqC = Seq + CPos;
 
 			char Gate = SeqA[8];
-			const char *GDD = SeqC + 2;
+			string GDD;
+			GDD += SeqC[2];
+			GDD += SeqC[3];
+			GDD += SeqC[4];
 
-			char CmfX = SeqC[2];
-
-			double P_rdrp = PPSP::GetRdRpProb(Gate, CmfX);
+			double P_rdrp = PPSP::GetRdRpProb(Gate, GDD);
 			double P_rdrp_gate = PPSP::GetRdRpProb_Gate(Gate);
-			double P_rdrp_cmfx = PPSP::GetRdRpProb_CmfX(CmfX);
+			double P_rdrp_gdd = PPSP::GetRdRpProb_GDD(GDD);
 
 			double AdjustedPalmScore = 0.5 + PalmScore/2;
 			double RdRpScore = AdjustedPalmScore*P_rdrp;
@@ -72,7 +73,7 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 			fprintf(g_ftsv, "\t%*.*s", BL, BL, SeqB);
 			fprintf(g_ftsv, "\t%*.*s", CL, CL, SeqC);
 			fprintf(g_ftsv, "\t%c(%.4f)", Gate, P_rdrp_gate);
-			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD, P_rdrp_cmfx);
+			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD.c_str(), P_rdrp_gdd);
 			fprintf(g_ftsv, "\t%s", (APos < CPos ? "ABC" : "CAB"));
 			fprintf(g_ftsv, "\n");
 			}

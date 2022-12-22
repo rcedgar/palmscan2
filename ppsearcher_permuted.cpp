@@ -1,7 +1,7 @@
 #include "myutils.h"
 #include "ppspsearcher.h"
 
-#define TRACE 1
+#define TRACE 0
 
 //// Manually extended to allow outliers
 //static const uint min_aadist_AdBg = 10;
