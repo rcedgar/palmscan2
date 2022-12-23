@@ -1,5 +1,5 @@
 #include "myutils.h"
-#include "ppspsearcher.h"
+#include "cmpsearcher.h"
 
 #define TRACE 0
 
@@ -17,19 +17,19 @@ static const uint max_aadist_CdAd_permuted = 150;
 static const uint min_aadist_AdBg_permuted = 10;
 static const uint max_aadist_AdBg_permuted = 150;
 
-void PPSPSearcher::GetAdLoHi_Permuted(uint Cd, uint &AdLo, uint &AdHi) const
+void CMPSearcher::GetAdLoHi_Permuted(uint Cd, uint &AdLo, uint &AdHi) const
 	{
 	AdLo = Cd + min_aadist_CdAd_permuted;
 	AdHi = Cd + max_aadist_CdAd_permuted;
 	}
 
-void PPSPSearcher::GetBgLoHi_Permuted(uint Ad, uint &BgLo, uint &BgHi) const
+void CMPSearcher::GetBgLoHi_Permuted(uint Ad, uint &BgLo, uint &BgHi) const
 	{
 	BgLo = Ad + min_aadist_AdBg_permuted;
 	BgHi = Ad + max_aadist_AdBg_permuted;
 	}
 
-void PPSPSearcher::Search_CAB(PDBChain &Query)
+void CMPSearcher::Search_CAB(PDBChain &Query)
 	{
 	const uint QL = SIZE(Query.m_Seq);
 

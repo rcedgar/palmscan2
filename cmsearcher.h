@@ -1,16 +1,18 @@
 #pragma once
 
-#include "ppspsearcher.h"
+#include "cmpsearcher.h"
 #include "pdbchain.h"
-#include "ppsp.h"
+#include "cmp.h"
 
 class DSHit;
 
-class PPSPDBSearcher
+class CMSearcher
 	{
 public:
-	vector<PPSP *> m_Profs;
-	PPSPSearcher m_PS;
+	static vector<const CMP *> m_Profs;
+
+public:
+	CMPSearcher m_PS;
 
 	PDBChain *m_Query = 0;
 
@@ -32,5 +34,10 @@ public:
 		}
 
 	void Search(PDBChain &Query);
-	void ProfsFromFile(const string &FileName);
+	double GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const;
+
+public:
+	static void ProfsFromFile(const string &FileName);
+	static bool MeansFromFile(FILE *f, string &Label,
+	  vector<vector<double> > &Means);
 	};

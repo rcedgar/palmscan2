@@ -4,15 +4,15 @@
 #include "abcxyz.h"
 #include "outputfiles.h"
 #include "chainreader.h"
-#include "ppspsearcher.h"
+#include "cmpsearcher.h"
 #include <time.h>
 
 static uint g_DoneCount;
 static uint g_HitCount;
 
-static void Thread(ChainReader &CR, const PPSP &Prof)
+static void Thread(ChainReader &CR, const CMP &Prof)
 	{
-	PPSPSearcher PS;
+	CMPSearcher PS;
 	PDBChain Q;
 	PS.m_Prof = &Prof;
 	for (;;)
@@ -55,9 +55,9 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 			GDD += SeqC[3];
 			GDD += SeqC[4];
 
-			double P_rdrp = PPSP::GetRdRpProb(Gate, GDD);
-			double P_rdrp_gate = PPSP::GetRdRpProb_Gate(Gate);
-			double P_rdrp_gdd = PPSP::GetRdRpProb_GDD(GDD);
+			double P_rdrp = CMP::GetRdRpProb(Gate, GDD);
+			double P_rdrp_gate = CMP::GetRdRpProb_Gate(Gate);
+			double P_rdrp_gdd = CMP::GetRdRpProb_GDD(GDD);
 
 			double AdjustedPalmScore = 0.5 + PalmScore/2;
 			double RdRpScore = AdjustedPalmScore*P_rdrp;
@@ -80,16 +80,16 @@ static void Thread(ChainReader &CR, const PPSP &Prof)
 		}
 	}
 
-void cmd_ppsp_search()
+void cmd_cmp_search()
 	{
-	const string &QueryFN = opt_ppsp_search;
+	const string &QueryFN = opt_cmp_search;
 
 	time_t tStart = time(0);
 	if (!optset_model)
 		Die("Must specify -model");
 	const string &ModelFileName = opt_model;
 
-	PPSP Prof;
+	CMP Prof;
 	Prof.FromFile(ModelFileName);
 
 	ChainReader CR;

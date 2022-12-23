@@ -295,6 +295,7 @@
     <ClCompile Include="pdbinfo.cpp" />
     <ClCompile Include="pdb_pp.cpp" />
     <ClCompile Include="ppcalignertm.cpp" />
+    <ClCompile Include="ppcontactmap_pssm.cpp" />
     <ClCompile Include="ppcprofile.cpp" />
     <ClCompile Include="ppcsearcher.cpp" />
     <ClCompile Include="build_ppp.cpp" />
@@ -302,11 +303,12 @@
     <ClCompile Include="ppfeatures.cpp" />
     <ClCompile Include="ppp.cpp" />
     <ClCompile Include="ppsearcher_permuted.cpp" />
-    <ClCompile Include="ppsp.cpp" />
-    <ClCompile Include="ppspdbsearcher.cpp" />
-    <ClCompile Include="ppsp_train.cpp" />
-    <ClCompile Include="ppsp_search.cpp" />
-    <ClCompile Include="ppsp_train_pssm.cpp" />
+    <ClCompile Include="cmp.cpp" />
+    <ClCompile Include="cmsearcher.cpp" />
+    <ClCompile Include="cm_search.cpp" />
+    <ClCompile Include="cmp_train.cpp" />
+    <ClCompile Include="cmp_search.cpp" />
+    <ClCompile Include="cmp_train_pssm.cpp" />
     <ClCompile Include="readppc.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
     <ClCompile Include="cluster_cl.cpp" />
@@ -376,7 +378,7 @@
     <ClCompile Include="tshit.cpp" />
     <ClCompile Include="tshitmgr.cpp" />
     <ClCompile Include="tsoutput.cpp" />
-    <ClCompile Include="ppspsearcher.cpp" />
+    <ClCompile Include="cmpsearcher.cpp" />
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xbasis.cpp" />
@@ -421,8 +423,8 @@
     <ClInclude Include="ppp.h" />
     <ClInclude Include="pf.h" />
     <ClInclude Include="pppfeatures.h" />
-    <ClInclude Include="ppsp.h" />
-    <ClInclude Include="ppspdbsearcher.h" />
+    <ClInclude Include="cmp.h" />
+    <ClInclude Include="cmsearcher.h" />
     <ClInclude Include="pssm.h" />
     <ClInclude Include="pssms.h" />
     <ClInclude Include="pssmsearch.h" />
@@ -447,7 +449,7 @@
     <ClInclude Include="trisearcher.h" />
     <ClInclude Include="tshit.h" />
     <ClInclude Include="tshitmgr.h" />
-    <ClInclude Include="ppspsearcher.h" />
+    <ClInclude Include="cmpsearcher.h" />
     <ClInclude Include="usearch.h" />
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />

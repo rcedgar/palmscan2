@@ -1,5 +1,5 @@
 #include "myutils.h"
-#include "ppspsearcher.h"
+#include "cmpsearcher.h"
 
 /***
 From D:\src\py\palmscan3d_params.py
@@ -29,7 +29,7 @@ static const double MINSCORE3 = 0.5;
 
 #define TRACE	0
 
-bool PPSPSearcher::MatchAd(uint Pos) const
+bool CMPSearcher::MatchAd(uint Pos) const
 	{
 	if (Pos < 3)
 		return false;
@@ -44,7 +44,7 @@ bool PPSPSearcher::MatchAd(uint Pos) const
 	return false;
 	}
 
-bool PPSPSearcher::MatchBg(uint Pos) const
+bool CMPSearcher::MatchBg(uint Pos) const
 	{
 	if (Pos < 1)
 		return false;
@@ -59,7 +59,7 @@ bool PPSPSearcher::MatchBg(uint Pos) const
 	return false;
 	}
 
-bool PPSPSearcher::MatchCd(uint Pos) const
+bool CMPSearcher::MatchCd(uint Pos) const
 	{
 	if (Pos < 3)
 		return false;
@@ -74,7 +74,7 @@ bool PPSPSearcher::MatchCd(uint Pos) const
 	return false;
 	}
 
-void PPSPSearcher::SearchAd(uint AdLo, uint AdHi,
+void CMPSearcher::SearchAd(uint AdLo, uint AdHi,
   vector<uint> &PosVec)
 	{
 	PosVec.clear();
@@ -89,7 +89,7 @@ void PPSPSearcher::SearchAd(uint AdLo, uint AdHi,
 		}
 	}
 
-void PPSPSearcher::SearchBg(uint BgLo, uint BgHi,
+void CMPSearcher::SearchBg(uint BgLo, uint BgHi,
   vector<uint> &PosVec)
 	{
 	PosVec.clear();
@@ -104,7 +104,7 @@ void PPSPSearcher::SearchBg(uint BgLo, uint BgHi,
 		}
 	}
 
-void PPSPSearcher::SearchCd(uint CdLo, uint CdHi,
+void CMPSearcher::SearchCd(uint CdLo, uint CdHi,
   vector<uint> &PosVec)
 	{
 	PosVec.clear();
@@ -119,19 +119,19 @@ void PPSPSearcher::SearchCd(uint CdLo, uint CdHi,
 		}
 	}
 
-void PPSPSearcher::GetBgLoHi(uint Ad, uint &BgLo, uint &BgHi) const
+void CMPSearcher::GetBgLoHi(uint Ad, uint &BgLo, uint &BgHi) const
 	{
 	BgLo = Ad + min_aadist_AdBg;
 	BgHi = Ad + max_aadist_AdBg;
 	}
 
-void PPSPSearcher::GetCdLoHi(uint Bg, uint &CdLo, uint &CdHi) const
+void CMPSearcher::GetCdLoHi(uint Bg, uint &CdLo, uint &CdHi) const
 	{
 	CdLo = Bg + min_aadist_BgCd;
 	CdHi = Bg + max_aadist_BgCd;
 	}
 
-void PPSPSearcher::Search(PDBChain &Query)
+void CMPSearcher::Search(PDBChain &Query)
 	{
 	ClearSearch();
 	m_Query = &Query;
@@ -144,7 +144,7 @@ void PPSPSearcher::Search(PDBChain &Query)
 		Search_CAB(Query);
 	}
 
-void PPSPSearcher::Search_ABC(PDBChain &Query)
+void CMPSearcher::Search_ABC(PDBChain &Query)
 	{
 	const uint QL = SIZE(Query.m_Seq);
 
@@ -183,7 +183,7 @@ void PPSPSearcher::Search_ABC(PDBChain &Query)
 		}
 	}
 
-double PPSPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
+double CMPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
 	{
 	PosA = UINT_MAX;
 	PosB = UINT_MAX;
@@ -220,7 +220,7 @@ double PPSPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
 	return TopScore;
 	}
 
-double PPSPSearcher::GetScore(uint Ad, uint Bg, uint Cd) const
+double CMPSearcher::GetScore(uint Ad, uint Bg, uint Cd) const
 	{
 	const uint QL = SIZE(m_Query->m_Seq);
 	asserta(Ad >= 3 && Ad < QL);
@@ -230,7 +230,7 @@ double PPSPSearcher::GetScore(uint Ad, uint Bg, uint Cd) const
 	return Score;
 	}
 
-void PPSPSearcher::CheckHit(uint Ad, uint Bg, uint Cd, double Score)
+void CMPSearcher::CheckHit(uint Ad, uint Bg, uint Cd, double Score)
 	{
 	if (Score < MINSCORE3)
 		return;

@@ -1,10 +1,9 @@
 #include "myutils.h"
 #include "pdbchain.h"
-#include "rdrpmodel.h"
-#include "rdrpsearcher.h"
 #include "abcxyz.h"
 #include "outputfiles.h"
 #include "chainreader.h"
+#include "cmp.h"
 
 static uint g_DoneCount;
 static uint g_HitCount;
@@ -18,61 +17,16 @@ static uint GetSeqPos(uint i, uint APos, uint BPos, uint CPos)
 	return APos + i;
 	}
 
-static void PPContactMap(const PDBChain &Q, 
-  uint APos, uint BPos, uint CPos)
-	{
-	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
-		return;
+void PPContactMap(const PDBChain &Q, 
+  uint APos, uint BPos, uint CPos);
 
-	++g_HitCount;
-	const uint N = AL + BL + CL;
-	vector<vector<double> > Mx;
-	Mx.resize(N);
-	for (uint i = 0; i < N; ++i)
-		Mx[i].resize(N, DBL_MAX);
-
-	for (uint i = 0; i < N; ++i)
-		{
-		uint SeqPosi = GetSeqPos(i, APos, BPos, CPos);
-		for (uint j = 0; j < N; ++j)
-			{
-			uint SeqPosj = GetSeqPos(j, APos, BPos, CPos);
-			double d = Q.GetDist(SeqPosi, SeqPosj);
-			Mx[i][j] = d;
-			}
-		}
-#if 0
-	{
-	Log("\n");
-	Log(">%s\n", Q.m_Label.c_str());
-	for (uint i = 0; i < N; ++i)
-		{
-		for (uint j = 0; j <= i; ++j)
-			Log(" %8.3g", Mx[i][j]);
-		Log("\n");
-		}
-	}
-#endif
-	FILE *f = g_fppcontactmap_tsv;
-	if (f != 0)
-		{
-		const char *Label = Q.m_Label.c_str();
-		for (uint i = 0; i < N; ++i)
-			{
-			fprintf(f, "%s\t%u", Label, i);
-			for (uint j = 0; j <= i; ++j)
-				fprintf(f, "\t%.3g", Mx[i][j]);
-			fprintf(f, "\n");
-			}
-		}
-	}
-
-static void Thread(ChainReader &CR, vector<PDBChain> &Qs,  
-  vector<RdRpSearcher> &RSs)
+static void Thread(ChainReader &CR,
+  const vector<vector<uint> > &MotifCoordsVec,
+  const vector<string> &Labels,
+  const map<string, uint> &LabelToIndex)
 	{
 	uint ThreadIndex = GetThreadIndex();
-	PDBChain &Q = Qs[ThreadIndex];
-	RdRpSearcher &RS = RSs[ThreadIndex];
+	PDBChain Q;
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
@@ -89,15 +43,23 @@ static void Thread(ChainReader &CR, vector<PDBChain> &Qs,
 			}
 		}
 
-		const string &QSeq = Q.m_Seq;
-		const string &QLabel = Q.m_Label;
+		const string &Seq = Q.m_Seq;
+		const string &Label = Q.m_Label;
 
-		RS.Search(QLabel, QSeq);
-		RS.WriteOutput();
+		map<string, uint>::const_iterator p = LabelToIndex.find(Label);
+		if (p == LabelToIndex.end())
+			{
+			Log("Label not found >%s\n", Label.c_str());
+			continue;
+			}
+		uint Index = p->second;
+		asserta(Index < SIZE(MotifCoordsVec));
+		const vector<uint> &MotifCoords = MotifCoordsVec[Index];
+		asserta(SIZE(MotifCoords) == 3);
 
-		uint APos = RS.GetMotifPos(0);
-		uint BPos = RS.GetMotifPos(1);
-		uint CPos = RS.GetMotifPos(2);
+		uint APos = MotifCoords[0];
+		uint BPos = MotifCoords[1];
+		uint CPos = MotifCoords[2];
 
 		PPContactMap(Q, APos, BPos, CPos);
 		}
@@ -107,11 +69,10 @@ void cmd_ppcontactmap()
 	{
 	const string &QueryFN = opt_ppcontactmap;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
-	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	vector<vector<uint> > MotifCoordsVec;
+	vector<string> Labels;
+	map<string, uint> LabelToIndex;
+	ReadMotifCoords(MotifCoordsVec, Labels, LabelToIndex);
 
 	uint ThreadCount = GetRequestedThreadCount();
 
@@ -120,18 +81,13 @@ void cmd_ppcontactmap()
 	uint ThreadFinishedCount = 0;
 	uint DoneCount = 0;
 	uint HitCount = 0;
-	vector<PDBChain> Qs(ThreadCount);
-	vector<bool> ThreadDone(ThreadCount);
-	vector<RdRpSearcher> RSs(ThreadCount);
-	for (uint i = 0; i < ThreadCount; ++i)
-		RSs[i].Init(Model);
 
 	ChainReader CR;
 	CR.m_SaveAtoms = true;
 	CR.Open(QueryFN, false);
 
 #pragma omp parallel num_threads(ThreadCount)
-	Thread(CR, Qs, RSs);
+	Thread(CR, MotifCoordsVec, Labels, LabelToIndex);
 
 	Progress("100.0%% done, %u / %u hits\r", g_HitCount, g_DoneCount);
 	}

@@ -320,22 +320,22 @@
     <ClCompile Include="ppfeatures.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppspsearcher.cpp">
+    <ClCompile Include="cmpsearcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ppcontactmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppsp.cpp">
+    <ClCompile Include="cmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppsp_train.cpp">
+    <ClCompile Include="cmp_train.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppsp_search.cpp">
+    <ClCompile Include="cmp_search.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppsp_train_pssm.cpp">
+    <ClCompile Include="cmp_train_pssm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gddgateprob.cpp">
@@ -344,7 +344,13 @@
     <ClCompile Include="ppsearcher_permuted.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ppspdbsearcher.cpp">
+    <ClCompile Include="cmsearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppcontactmap_pssm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cm_search.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -550,13 +556,13 @@
     <ClInclude Include="segfiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ppspsearcher.h">
+    <ClInclude Include="cmpsearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ppsp.h">
+    <ClInclude Include="cmp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ppspdbsearcher.h">
+    <ClInclude Include="cmsearcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

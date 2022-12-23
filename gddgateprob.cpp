@@ -1,5 +1,5 @@
 #include "myutils.h"
-#include "ppsp.h"
+#include "cmp.h"
 #include <map>
 
 static double g_Gate_Rdrp_Probs[256];
@@ -51,13 +51,13 @@ GDD("TDD", 0.1221) // gdd       TDD     1       14      0.0013  0.0095  P( RT ) 
 
 static bool g_InitDone = Init();
 
-double PPSP::GetRdRpProb_Gate(int Gate)
+double CMP::GetRdRpProb_Gate(int Gate)
 	{
 	double P = g_Gate_Rdrp_Probs[Gate];
 	return P;
 	}
 
-double PPSP::GetRdRpProb_GDD(const string &GDD)
+double CMP::GetRdRpProb_GDD(const string &GDD)
 	{
 	map<string, double>::const_iterator p = g_GDD_To_Rdrp_Prob.find(GDD);
 	if (p == g_GDD_To_Rdrp_Prob.end())
@@ -66,7 +66,7 @@ double PPSP::GetRdRpProb_GDD(const string &GDD)
 	return P;
 	}
 
-double PPSP::GetRdRpProb(int Gate, const string &GDD)
+double CMP::GetRdRpProb(int Gate, const string &GDD)
 	{
 	double P_gate = GetRdRpProb_Gate(Gate);
 	double P_gdd = GetRdRpProb_GDD(GDD);

@@ -1,10 +1,10 @@
 #include "myutils.h"
 #include "pdbchain.h"
-#include "ppspsearcher.h"
+#include "cmpsearcher.h"
 #include "abcxyz.h"
 #include "outputfiles.h"
 #include "chainreader.h"
-#include "ppsp.h"
+#include "cmp.h"
 #include <map>
 
 static uint g_DoneCount;
@@ -20,7 +20,7 @@ static double g_MinScoreAC = DBL_MAX;
 
 static double g_MinScore3 = DBL_MAX;
 
-void PPSP::GetMeanStdDev(uint i, uint j,
+void CMP::GetMeanStdDev(uint i, uint j,
   double &Mean, double &StdDev) const
 	{
 	const uint N = SIZE(m_DistMxVec);
@@ -44,7 +44,7 @@ void PPSP::GetMeanStdDev(uint i, uint j,
 	StdDev = (double) sqrt(Sumd2/N);
 	}
 
-void PPSP::FinalizeTrain()
+void CMP::FinalizeTrain()
 	{
 	for (uint i = 0; i < PPSPL; ++i)
 		{
@@ -64,7 +64,7 @@ void PPSP::FinalizeTrain()
 		}
 	}
 
-void PPSP::TrainChain(const PDBChain &Chain,
+void CMP::TrainChain(const PDBChain &Chain,
   uint APos, uint BPos, uint CPos)
 	{
 	asserta(APos != UINT_MAX);
@@ -80,7 +80,7 @@ static void Train(ChainReader &CR,
   const vector<string> &Labels, 
   const map<string, uint> &LabelToIndex, 
   const vector<vector<uint> > &MotifCoordsVec,
-  PPSP &Prof)
+  CMP &Prof)
 	{
 	g_DoneCount = 0;
 	g_HitCount = 0;
@@ -161,7 +161,7 @@ static void Train(ChainReader &CR,
 	Prof.FinalizeTrain();
 	}
 
-static void Write1(const char *Method, const PDBChain &Q, const PPSP &Prof,
+static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
   uint APos, uint BPos, uint CPos)
 	{
 	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
@@ -237,12 +237,12 @@ static void Test(ChainReader &CR,
   const vector<string> &Labels, 
   const map<string, uint> &LabelToIndex, 
   const vector<vector<uint> > &MotifCoordsVec,
-  PPSPSearcher &PS)
+  CMPSearcher &PS)
 	{
 	g_DoneCount = 0;
 	g_HitCount = 0;
 
-	const PPSP &Prof = *PS.m_Prof;
+	const CMP &Prof = *PS.m_Prof;
 
 	PDBChain Q;
 
@@ -331,19 +331,20 @@ static void Test(ChainReader &CR,
 
 	Progress("Test 100.0%% done, %u / %u hits\r", g_HitCount, g_DoneCount);
 
-	Log("%u / %u PPSP hits\n", g_HitCount, g_DoneCount);
+	Log("%u / %u CMP hits\n", g_HitCount, g_DoneCount);
 	}
 
-void cmd_ppsp_train()
+void ReadMotifCoords(
+  vector<vector<uint> > &MotifCoordsVec,
+  vector<string> &Labels,
+  map<string, uint> &LabelToIndex)
 	{
-	const string &QueryFN = opt_ppsp_train;
+	MotifCoordsVec.clear();
+	Labels.clear();
+	LabelToIndex.clear();
 
 	if (!optset_motif_coords)
 		Die("Must specify -motif_coords");
-
-	vector<string> Labels;
-	map<string, uint> LabelToIndex;
-	vector<vector<uint> > MotifCoordsVec;
 
 	FILE *f = OpenStdioFile(opt_motif_coords);
 	string Line;
@@ -353,7 +354,7 @@ void cmd_ppsp_train()
 		Split(Line, Fields, '\t');
 		asserta(SIZE(Fields) == 7);
 
-		const string &Label = Fields[0].substr(0, 4);
+		const string &Label = Fields[0];
 
 		uint LoA = StrToUint(Fields[1]);
 		uint HiA = StrToUint(Fields[2]);
@@ -384,20 +385,30 @@ void cmd_ppsp_train()
 		Labels.push_back(Label);
 		MotifCoordsVec.push_back(MotifCoords);
 		}
+	}
+
+void cmd_cmp_train()
+	{
+	const string &QueryFN = opt_cmp_train;
+
+	vector<vector<uint> > MotifCoordsVec;
+	vector<string> Labels;
+	map<string, uint> LabelToIndex;
+	ReadMotifCoords(MotifCoordsVec, Labels, LabelToIndex);
 
 	PDBChain Q;
 
 	ChainReader CR;
 	CR.Open(QueryFN, false);
 
-	PPSP Prof;
+	CMP Prof;
 	Train(CR, Labels, LabelToIndex, MotifCoordsVec, Prof);
 	Prof.ToFile(opt_output);
 
 	CR.Clear();
 	CR.Open(QueryFN, false);
 
-	PPSPSearcher PS;
+	CMPSearcher PS;
 	PS.m_Prof = &Prof;
 
 	//Test(CR, &RS, 0, Prof);

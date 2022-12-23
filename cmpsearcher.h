@@ -1,16 +1,16 @@
 #pragma once
 
 #include "pdbchain.h"
-#include "ppsp.h"
+#include "cmp.h"
 
 class DSHit;
 
-class PPSPSearcher
+class CMPSearcher
 	{
 public:
 	PDBChain *m_Query = 0;
 	string m_Seq;
-	const PPSP *m_Prof = 0;
+	const CMP *m_Prof = 0;
 
 	vector<uint> m_Ads;
 	vector<uint> m_Bgs;

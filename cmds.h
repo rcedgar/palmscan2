@@ -43,8 +43,10 @@ C(clusters2model)
 C(cfilter)
 C(pdb_pp)
 C(ppcontactmap)
-C(ppsp_train)
-C(ppsp_train_pssm)
-C(ppsp_search)
+C(ppcontactmap_pssm)
+C(cmp_train)
+C(cmp_train_pssm)
+C(cmp_search)
+C(cm_search)
 
 #undef C

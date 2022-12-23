@@ -2,11 +2,11 @@
 #include "pdbchain.h"
 #include "rdrpmodel.h"
 #include "rdrpsearcher.h"
-#include "ppspsearcher.h"
+#include "cmpsearcher.h"
 #include "abcxyz.h"
 #include "outputfiles.h"
 #include "chainreader.h"
-#include "ppsp.h"
+#include "cmp.h"
 
 static uint g_DoneCount;
 static uint g_HitCount;
@@ -21,7 +21,7 @@ static double g_MinScoreAC = DBL_MAX;
 
 static double g_MinScore3 = DBL_MAX;
 
-static void Train(ChainReader &CR, RdRpSearcher &RS, PPSP &Prof)
+static void Train(ChainReader &CR, RdRpSearcher &RS, CMP &Prof)
 	{
 	g_DoneCount = 0;
 	g_HitCount = 0;
@@ -70,7 +70,7 @@ static void Train(ChainReader &CR, RdRpSearcher &RS, PPSP &Prof)
 	Prof.FinalizeTrain();
 	}
 
-static void Write1(const char *Method, const PDBChain &Q, const PPSP &Prof,
+static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
   uint APos, uint BPos, uint CPos)
 	{
 	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
@@ -135,7 +135,7 @@ static void Write1(const char *Method, const PDBChain &Q, const PPSP &Prof,
 	}
 
 static void Test(ChainReader &CR, RdRpSearcher *RS, 
-  PPSPSearcher *PS, PPSP &Prof)
+  CMPSearcher *PS, CMP &Prof)
 	{
 	g_DoneCount = 0;
 	g_HitCount = 0;
@@ -191,7 +191,7 @@ static void Test(ChainReader &CR, RdRpSearcher *RS,
 			{
 			PS->Search(Q);
 			PS->GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
-			const char *Method = "PPSP";
+			const char *Method = "CMP";
 			if (RS != 0)
 				{
 				if (APos_PS == APos_RS
@@ -230,12 +230,12 @@ static void Test(ChainReader &CR, RdRpSearcher *RS,
 	Prof.FinalizeTrain();
 
 	Log("%u / %u %s hits\n",
-	  g_HitCount, g_DoneCount, (RS == 0 ? "PPSP" : "PSSM"));
+	  g_HitCount, g_DoneCount, (RS == 0 ? "CMP" : "PSSM"));
 	}
 
-void cmd_ppsp_train_pssm()
+void cmd_cmp_train_pssm()
 	{
-	const string &QueryFN = opt_ppsp_train_pssm;
+	const string &QueryFN = opt_cmp_train_pssm;
 
 	if (!optset_model)
 		Die("Must specify -model");
@@ -250,14 +250,14 @@ void cmd_ppsp_train_pssm()
 	ChainReader CR;
 	CR.Open(QueryFN, false);
 
-	PPSP Prof;
+	CMP Prof;
 	Train(CR, RS, Prof);
 	Prof.ToFile(opt_output);
 
 	CR.Clear();
 	CR.Open(QueryFN, false);
 
-	PPSPSearcher PS;
+	CMPSearcher PS;
 	PS.m_Prof = &Prof;
 
 	CR.Clear();

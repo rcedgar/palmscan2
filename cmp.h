@@ -2,15 +2,17 @@
 
 #include "pdbchain.h"
 #include "abcxyz.h"
+#include <map>
 
 const uint PPSPL = 34;
 const uint AIX = 0;
 const uint BIX = AL;
 const uint CIX = AL + BL;
 
-class PPSP
+class CMP
 	{
 public:
+	string m_Label;
 	vector<vector<double> > m_Means;
 	vector<vector<double> > m_StdDevs;
 	
@@ -18,13 +20,14 @@ public:
 	vector<vector<vector<double> > > m_DistMxVec;
 
 public:
-	PPSP()
+	CMP()
 		{
 		Clear();
 		};
 
 	void Clear()
 		{
+		m_Label.clear();
 		m_Means.clear();
 		m_StdDevs.clear();
 		m_Means.resize(PPSPL);
@@ -54,6 +57,10 @@ public:
 	  uint Ix1, uint Ix2,
 	  uint L1, uint L2, bool Trace = false) const;
 	char GetMotifChar(uint Ix) const;
+	double GetScore2_NoStdDevs(const PDBChain &Chain,
+	  uint SeqPos1, uint SeqPos2,
+	  uint Ix1, uint Ix2,
+	  uint L1, uint L2, bool Trace = false) const;
 
 // For training
 public:
@@ -87,3 +94,7 @@ public:
 	};
 
 double GetNormal(double Mu, double Sigma, double x);
+void ReadMotifCoords(
+  vector<vector<uint> > &MotifCoordsVec,
+  vector<string> &Labels,
+  map<string, uint> &LabelToIndex);
