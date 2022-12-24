@@ -27,20 +27,48 @@ static const uint max_aadist_BgCd = 150;
 static const double MINSCORE1 = 0.5;
 static const double MINSCORE3 = 0.5;
 
+static const double MAXSCORE1 = 2;
+static const double MAXSCORE3 = 2;
+
 #define TRACE	0
+
+bool CMPSearcher::GoodScore1(double Score) const
+	{
+	if (NoStdDevs())
+		{
+		if (Score <= MAXSCORE1)
+			return true;
+		}
+	else
+		{
+		if (Score >= MINSCORE1)
+			return true;
+		}
+	return false;
+	}
+
+bool CMPSearcher::GoodScore3(double Score) const
+	{
+	if (NoStdDevs())
+		{
+		if (Score <= MAXSCORE3)
+			return true;
+		}
+	else
+		{
+		if (Score >= MINSCORE3)
+			return true;
+		}
+	return false;
+	}
 
 bool CMPSearcher::MatchAd(uint Pos) const
 	{
 	if (Pos < 3)
 		return false;
 	double Score = m_Prof->GetScoreA(*m_Query, Pos-3);
-	if (Score >= MINSCORE1)
-		{
-#if TRACE
-		Log("[A] %3d  %.4f\n", Pos, Score);
-#endif
+	if (GoodScore1(Score))
 		return true;
-		}
 	return false;
 	}
 
@@ -49,13 +77,8 @@ bool CMPSearcher::MatchBg(uint Pos) const
 	if (Pos < 1)
 		return false;
 	double Score = m_Prof->GetScoreB(*m_Query, Pos-1);
-	if (Score >= MINSCORE1)
-		{
-#if TRACE
-		Log("[B] %3d  %.4f\n", Pos, Score);
-#endif
+	if (GoodScore1(Score))
 		return true;
-		}
 	return false;
 	}
 
@@ -64,13 +87,8 @@ bool CMPSearcher::MatchCd(uint Pos) const
 	if (Pos < 3)
 		return false;
 	double Score = m_Prof->GetScoreC(*m_Query, Pos-3);
-	if (Score >= MINSCORE1)
-		{
-#if TRACE
-		Log("[C] %3d  %.4f\n", Pos, Score);
-#endif
+	if (GoodScore1(Score))
 		return true;
-		}
 	return false;
 	}
 
@@ -140,13 +158,25 @@ void CMPSearcher::Search(PDBChain &Query)
 	if (!opt_permuted)
 		Search_ABC(Query);
 
+#if 0 // TODO
 	if (!opt_notpermuted)
 		Search_CAB(Query);
+#endif
 	}
 
 void CMPSearcher::Search_ABC(PDBChain &Query)
 	{
 	const uint QL = SIZE(Query.m_Seq);
+
+	//{
+	//const uint Ad = 3;
+	//const uint Bg = 68;
+	//const uint Cd = 145;
+	//bool AOk = MatchAd(Ad);
+	//bool BOk = MatchBg(Bg);
+	//bool COk = MatchCd(Cd);
+	//return;
+	//}
 
 	vector<uint> AdVec;
 	vector<uint> BgVec;
@@ -196,14 +226,19 @@ double CMPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
 	PosB = m_Bgs[0];
 	PosC = m_Cds[0];
 
+	const bool NoS = NoStdDevs();
+
 	for (uint i = 1; i < N; ++i)
-		if (m_Scores[i] > TopScore)
+		{
+		bool Better = (NoS ? m_Scores[i] < TopScore : m_Scores[i] > TopScore);
+		if (Better)
 			{
 			TopScore = m_Scores[i];
 			PosA = m_Ads[i];
 			PosB = m_Bgs[i];
 			PosC = m_Cds[i];
 			}
+		}
 
 	asserta(PosA >= 3);
 	asserta(PosB >= 1);
@@ -232,8 +267,9 @@ double CMPSearcher::GetScore(uint Ad, uint Bg, uint Cd) const
 
 void CMPSearcher::CheckHit(uint Ad, uint Bg, uint Cd, double Score)
 	{
-	if (Score < MINSCORE3)
+	if (!GoodScore3(Score))
 		return;
+
 	m_Ads.push_back(Ad);
 	m_Bgs.push_back(Bg);
 	m_Cds.push_back(Cd);

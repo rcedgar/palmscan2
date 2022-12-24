@@ -2,6 +2,8 @@
 #include "cmp.h"
 #include "abcxyz.h"
 
+static bool g_Trace = false;
+
 uint CMP::GetSeqPos(uint i, uint APos, uint BPos, uint CPos)
 	{
 	if (i >= CIX)
@@ -175,21 +177,21 @@ double CMP::GetScoreC(const PDBChain &Chain, uint PosC) const
 	}
 
 double CMP::GetScore(const PDBChain &Chain, uint SeqPos,
-  uint Ix, uint L, bool Trace) const
+  uint Ix, uint L) const
 	{
-	double Score = GetScore2(Chain, SeqPos, SeqPos, Ix, Ix, L, L, Trace);
+	double Score = GetScore2(Chain, SeqPos, SeqPos, Ix, Ix, L, L);
 	return Score;
 	}
 
 double CMP::GetScore2(const PDBChain &Chain,
   uint SeqPos1, uint SeqPos2,
   uint Ix1, uint Ix2,
-  uint L1, uint L2, bool Trace) const
+  uint L1, uint L2) const
 	{
 	if (m_StdDevs.empty())
 		{
 		double Score =
-		  GetScore2_NoStdDevs(Chain, SeqPos1, SeqPos2, Ix1, Ix2, L1, L2, Trace);
+		  GetScore2_NoStdDevs(Chain, SeqPos1, SeqPos2, Ix1, Ix2, L1, L2);
 		return Score;
 		}
 
@@ -197,7 +199,7 @@ double CMP::GetScore2(const PDBChain &Chain,
 	double XS = (Diag ? 1.5 : 2);
 	double Sum = 0;
 	uint n = 0;
-	if (Trace)
+	if (g_Trace)
 		Log("\n");
 	for (uint i = 0; i < L1; ++i)
 		{
@@ -213,7 +215,7 @@ double CMP::GetScore2(const PDBChain &Chain,
 			Sum += Ratio;
 			++n;
 
-			if (Trace)
+			if (g_Trace)
 				{
 				char MotifChari = GetMotifChar(Ix1);
 				char MotifCharj = GetMotifChar(Ix2);
@@ -274,29 +276,26 @@ double CMP::GetScore3(const PDBChain &Chain,
 double CMP::GetScore2_NoStdDevs(const PDBChain &Chain,
   uint SeqPos1, uint SeqPos2,
   uint Ix1, uint Ix2,
-  uint L1, uint L2, bool Trace) const
+  uint L1, uint L2) const
 	{
 	bool Diag = (Ix1 == Ix2);
 	double XS = (Diag ? 1.5 : 2);
 	double Sum = 0;
 	uint n = 0;
-	if (Trace)
+	if (g_Trace)
 		Log("\n");
 	for (uint i = 0; i < L1; ++i)
 		{
 		uint jhi = (Diag ? i : L2);
 		for (uint j = 0; j < jhi; ++j)
 			{
-			double Observed_d = Chain.GetDist(SeqPos1+i, SeqPos2+j);
-			double Mu = m_Means[Ix1+i][Ix2+j];
-			double Sigma = m_StdDevs[Ix1+i][Ix2+j];
-			double y = GetNormal(Mu, XS*Sigma, Observed_d);
-			double Max = GetNormal(Mu, XS*Sigma, Mu);
-			double Ratio = y/Max;
-			Sum += Ratio;
+			double Query_d = Chain.GetDist(SeqPos1+i, SeqPos2+j);
+			double Ref_d = m_Means[Ix1+i][Ix2+j];
+			double Diff = fabs(Query_d - Ref_d);
+			Sum += Diff;
 			++n;
 
-			if (Trace)
+			if (g_Trace)
 				{
 				char MotifChari = GetMotifChar(Ix1);
 				char MotifCharj = GetMotifChar(Ix2);
@@ -306,10 +305,9 @@ double CMP::GetScore2_NoStdDevs(const PDBChain &Chain,
 
 				Log("%c[%3u]%c", MotifChari, SeqPos1+i, ci);
 				Log("  %c[%3u]%c", MotifCharj, SeqPos2+j, cj);
-				Log("  d %6.2f", Observed_d);
-				Log("  mu %6.2f", Mu);
-				Log("  sd %6.2f", Sigma);
-				Log("  r %6.4f", Ratio);
+				Log("  Qd %6.2f", Query_d);
+				Log("  Rd %6.2f", Ref_d);
+				Log("  Diff %6.2f", Diff);
 				Log("\n");
 				}
 			}

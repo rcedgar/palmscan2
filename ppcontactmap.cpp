@@ -18,7 +18,54 @@ static uint GetSeqPos(uint i, uint APos, uint BPos, uint CPos)
 	}
 
 void PPContactMap(const PDBChain &Q, 
-  uint APos, uint BPos, uint CPos);
+  uint APos, uint BPos, uint CPos)
+	{
+	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
+		return;
+
+	++g_HitCount;
+	const uint N = AL + BL + CL;
+	vector<vector<double> > Mx;
+	Mx.resize(N);
+	for (uint i = 0; i < N; ++i)
+		Mx[i].resize(N, DBL_MAX);
+
+	for (uint i = 0; i < N; ++i)
+		{
+		uint SeqPosi = GetSeqPos(i, APos, BPos, CPos);
+		for (uint j = 0; j < N; ++j)
+			{
+			uint SeqPosj = GetSeqPos(j, APos, BPos, CPos);
+			double d = Q.GetDist(SeqPosi, SeqPosj);
+			Mx[i][j] = d;
+			}
+		}
+#if 1
+	{
+	Log("\n");
+	Log(">%s\n", Q.m_Label.c_str());
+	for (uint i = 0; i < N; ++i)
+		{
+		for (uint j = 0; j <= i; ++j)
+			Log(" %8.3g", Mx[i][j]);
+		Log("\n");
+		}
+	}
+#endif
+	FILE *f = g_fppcontactmap_tsv;
+	if (f != 0)
+		{
+		const char *Label = Q.m_Label.c_str();
+#pragma omp critical
+		for (uint i = 1; i < N; ++i)
+			{
+			fprintf(f, "%s\t%u", Label, i);
+			for (uint j = 0; j <= i; ++j)
+				fprintf(f, "\t%.6g", Mx[i][j]);
+			fprintf(f, "\n");
+			}
+		}
+	}
 
 static void Thread(ChainReader &CR,
   const vector<vector<uint> > &MotifCoordsVec,

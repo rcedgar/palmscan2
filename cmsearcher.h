@@ -30,7 +30,7 @@ public:
 		uint m_PosA = UINT_MAX;
 		uint m_PosB = UINT_MAX;
 		uint m_PosC = UINT_MAX;
-		double m_Score = 0;
+		double m_Score = DBL_MAX;
 		}
 
 	void Search(PDBChain &Query);

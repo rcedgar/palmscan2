@@ -28,6 +28,9 @@ public:
 		m_Scores.clear();
 		}
 
+	bool NoStdDevs() const { return m_Prof->m_StdDevs.empty(); }
+	bool GoodScore1(double Score) const;
+	bool GoodScore3(double Score) const;
 	void Search(PDBChain &Query);
 	void Search_ABC(PDBChain &Query);
 	void Search_CAB(PDBChain &Query);

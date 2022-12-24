@@ -719,8 +719,8 @@ void Die_(const char *Format, ...)
 
 #ifdef _MSC_VER
 	if (IsDebuggerPresent())
-	_CrtSetDbgFlag(0);
- 		__debugbreak();
+		_CrtSetDbgFlag(0);
+	__debugbreak();
 #endif
 
 	exit(1);

@@ -15,7 +15,9 @@ void CMSearcher::Search(PDBChain &Query)
 
 		uint PosA, PosB, PosC;
 		double Score = m_PS.GetPSSMStarts(PosA, PosB, PosC);
-		if (Score > m_Score)
+		Log("Score = %8.3f  %4u  %4u  %4u  >%s\n",
+		  Score, PosA, PosB, PosC, m_Profs[RefIndex]->m_Label.c_str());//@@
+		if (Score < m_Score)
 			{
 			m_Score = Score;
 			m_PosA = PosA;
@@ -70,13 +72,13 @@ void CMSearcher::ProfsFromFile(const string &FileName)
 	for (;;)
 		{
 		CMP *Prof = new CMP;
-		string Label;
 		bool Ok = MeansFromFile(f, Prof->m_Label, Prof->m_Means);
 		if (!Ok)
 			{
 			delete Prof;
 			break;
 			}
+		Prof->m_StdDevs.clear();
 		m_Profs.push_back(Prof);
 		}
 	CloseStdioFile(f);

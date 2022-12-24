@@ -51,16 +51,16 @@ public:
 	double GetScoreBC(const PDBChain &Chain, uint PosB, uint PosC) const;
 	double GetScoreAC(const PDBChain &Chain, uint PosA, uint PosC) const;
 	double GetScore(const PDBChain &Chain,
-	  uint SeqPos, uint Ix, uint L, bool Trace = false) const;
+	  uint SeqPos, uint Ix, uint L) const;
 	double GetScore2(const PDBChain &Chain,
 	  uint SeqPos1, uint SeqPos2,
 	  uint Ix1, uint Ix2,
-	  uint L1, uint L2, bool Trace = false) const;
+	  uint L1, uint L2) const;
 	char GetMotifChar(uint Ix) const;
 	double GetScore2_NoStdDevs(const PDBChain &Chain,
 	  uint SeqPos1, uint SeqPos2,
 	  uint Ix1, uint Ix2,
-	  uint L1, uint L2, bool Trace = false) const;
+	  uint L1, uint L2) const;
 
 // For training
 public:
