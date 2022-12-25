@@ -82,8 +82,6 @@ void RdRpSearcher::WritePalmprintFasta(FILE *fABC, FILE *fCAB) const
 	GetGroupName(GroupIndex, GroupName);
 
 	string Label = m_QueryLabel;
-	Label += " group=";
-	Label += GroupName;
 
 	Psa(Label, " A:%u:%s", PosA - PPLo + 1, SeqA.c_str());
 	Psa(Label, " B:%u:%s", PosB - PPLo + 1, SeqB.c_str());
