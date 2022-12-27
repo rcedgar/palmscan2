@@ -28,7 +28,7 @@ static const double MINSCORE1 = 0.5;
 static const double MINSCORE3 = 0.5;
 
 static const double MAXSCORE1 = 2;
-static const double MAXSCORE3 = 2;
+static const double MAXSCORE3 = 2.5;
 
 #define TRACE	0
 
@@ -168,16 +168,6 @@ void CMPSearcher::Search_ABC(PDBChain &Query)
 	{
 	const uint QL = SIZE(Query.m_Seq);
 
-	//{
-	//const uint Ad = 3;
-	//const uint Bg = 68;
-	//const uint Cd = 145;
-	//bool AOk = MatchAd(Ad);
-	//bool BOk = MatchBg(Bg);
-	//bool COk = MatchCd(Cd);
-	//return;
-	//}
-
 	vector<uint> AdVec;
 	vector<uint> BgVec;
 	vector<uint> CdVec;
@@ -220,7 +210,7 @@ double CMPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
 	PosC = UINT_MAX;
 	const uint N = SIZE(m_Scores);
 	if (N == 0)
-		return 0;
+		return -1;
 	double TopScore = m_Scores[0];
 	PosA = m_Ads[0];
 	PosB = m_Bgs[0];

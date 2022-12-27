@@ -33,17 +33,21 @@ static void Thread(ChainReader &CR)
 
 		const char *Seq = Q.m_Seq.c_str();
 		const string &Label = Q.m_Label;
+		CS.Search(Q);
+
 		uint APos = UINT_MAX;
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
-		CS.Search(Q);
-		double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
-		if (APos == UINT_MAX)
+		double PalmScore = DBL_MAX;
+		uint RefIndex = CS.GetPSSMStarts(APos, BPos, CPos, PalmScore);
+		if (RefIndex == UINT_MAX)
 			continue;
 		++g_HitCount;
 
 		if (g_ftsv != 0)
 			{
+			asserta(RefIndex < SIZE(CS.m_Profs));
+			const char *RefLabel = CS.m_Profs[RefIndex]->m_Label.c_str();
 			const char *SeqA = Seq + APos;
 			const char *SeqB = Seq + BPos;
 			const char *SeqC = Seq + CPos;
@@ -54,25 +58,15 @@ static void Thread(ChainReader &CR)
 			GDD += SeqC[3];
 			GDD += SeqC[4];
 
-			double P_rdrp = CMP::GetRdRpProb(Gate, GDD);
-			double P_rdrp_gate = CMP::GetRdRpProb_Gate(Gate);
-			double P_rdrp_gdd = CMP::GetRdRpProb_GDD(GDD);
-
-			double AdjustedPalmScore = 0.5 + PalmScore/2;
-			double RdRpScore = AdjustedPalmScore*P_rdrp;
-
-			fprintf(g_ftsv, "%.4f", RdRpScore);
+			fprintf(g_ftsv, "%s", Label.c_str());
+			fprintf(g_ftsv, "\t%s", RefLabel);
 			fprintf(g_ftsv, "\t%.4f", PalmScore);
-			fprintf(g_ftsv, "\t%.4f", P_rdrp);
-			fprintf(g_ftsv, "\t%s", Label.c_str());
 			fprintf(g_ftsv, "\t%u", APos+1);
 			fprintf(g_ftsv, "\t%u", BPos+1);
 			fprintf(g_ftsv, "\t%u", CPos+1);
 			fprintf(g_ftsv, "\t%*.*s", AL, AL, SeqA);
 			fprintf(g_ftsv, "\t%*.*s", BL, BL, SeqB);
 			fprintf(g_ftsv, "\t%*.*s", CL, CL, SeqC);
-			fprintf(g_ftsv, "\t%c(%.4f)", Gate, P_rdrp_gate);
-			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD.c_str(), P_rdrp_gdd);
 			fprintf(g_ftsv, "\t%s", (APos < CPos ? "ABC" : "CAB"));
 			fprintf(g_ftsv, "\n");
 			}

@@ -27,14 +27,15 @@ public:
 		{
 		m_Query = 0;
 		m_RefIndex = UINT_MAX;
-		uint m_PosA = UINT_MAX;
-		uint m_PosB = UINT_MAX;
-		uint m_PosC = UINT_MAX;
-		double m_Score = DBL_MAX;
+		m_PosA = UINT_MAX;
+		m_PosB = UINT_MAX;
+		m_PosC = UINT_MAX;
+		m_Score = DBL_MAX;
 		}
 
 	void Search(PDBChain &Query);
-	double GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const;
+	uint GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC,
+	  double &Score) const;
 
 public:
 	static void ProfsFromFile(const string &FileName);
