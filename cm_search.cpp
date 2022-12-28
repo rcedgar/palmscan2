@@ -7,6 +7,8 @@
 #include "cmsearcher.h"
 #include <time.h>
 
+#if 0
+
 static uint g_DoneCount;
 static uint g_HitCount;
 
@@ -100,3 +102,6 @@ void cmd_cm_search()
 	ProgressLog("%u done, %u hits, %s secs (%u threads, %.1f/ sec/ thread)\n",
 	  g_DoneCount, g_HitCount, IntToStr(Secs), ThreadCount, Throughput);
 	}
+#else
+void cmd_cm_search() { Die("TODO"); }
+#endif

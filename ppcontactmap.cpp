@@ -40,18 +40,7 @@ void PPContactMap(const PDBChain &Q,
 			Mx[i][j] = d;
 			}
 		}
-#if 1
-	{
-	Log("\n");
-	Log(">%s\n", Q.m_Label.c_str());
-	for (uint i = 0; i < N; ++i)
-		{
-		for (uint j = 0; j <= i; ++j)
-			Log(" %8.3g", Mx[i][j]);
-		Log("\n");
-		}
-	}
-#endif
+
 	FILE *f = g_fppcontactmap_tsv;
 	if (f != 0)
 		{

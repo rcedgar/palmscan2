@@ -12,9 +12,9 @@ static uint g_HitCount;
 
 static void Thread(ChainReader &CR, const CMP &Prof)
 	{
-	CMPSearcher PS;
+	CMPSearcher CS;
 	PDBChain Q;
-	PS.m_Prof = &Prof;
+	CS.SetProf(Prof);
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
@@ -37,9 +37,13 @@ static void Thread(ChainReader &CR, const CMP &Prof)
 		uint APos = UINT_MAX;
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
-		PS.Search(Q);
-		double PalmScore = PS.GetPSSMStarts(APos, BPos, CPos);
-		if (APos == UINT_MAX)
+//		CS.Search(Q);
+		//double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
+		//if (APos == UINT_MAX)
+		//	continue;
+		string RefLabel;
+		double PalmScore = CS.SearchRefs(Q, Prof, APos, BPos, CPos, RefLabel);
+		if (PalmScore == 0)
 			continue;
 		++g_HitCount;
 
@@ -75,6 +79,7 @@ static void Thread(ChainReader &CR, const CMP &Prof)
 			fprintf(g_ftsv, "\t%c(%.4f)", Gate, P_rdrp_gate);
 			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD.c_str(), P_rdrp_gdd);
 			fprintf(g_ftsv, "\t%s", (APos < CPos ? "ABC" : "CAB"));
+			fprintf(g_ftsv, "\t%s", RefLabel.c_str());
 			fprintf(g_ftsv, "\n");
 			}
 		}

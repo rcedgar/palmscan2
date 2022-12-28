@@ -24,6 +24,7 @@ void CMP::GetMeanStdDev(uint i, uint j,
   double &Mean, double &StdDev) const
 	{
 	const uint N = SIZE(m_DistMxVec);
+	asserta(N > 0);
 	double Sum = 0;
 	for (uint k = 0; k < N; ++k)
 		{
@@ -48,15 +49,15 @@ void CMP::FinalizeTrain()
 	{
 	for (uint i = 0; i < PPSPL; ++i)
 		{
-		m_Means[i][i] = 0;
+		m_RefMeans[i][i] = 0;
 		m_StdDevs[i][i] = 0;
 		for (uint j = 0; j < i; ++j)
 			{
 			double Mean, StdDev;
 			GetMeanStdDev(i, j, Mean, StdDev);
 
-			m_Means[i][j] = Mean;
-			m_Means[j][i] = Mean;
+			m_RefMeans[i][j] = Mean;
+			m_RefMeans[j][i] = Mean;
 
 			m_StdDevs[i][j] = StdDev;
 			m_StdDevs[j][i] = StdDev;
@@ -73,7 +74,18 @@ void CMP::TrainChain(const PDBChain &Chain,
 
 	vector<vector<double> > DistMx;
 	GetDistMx(Chain, APos, BPos, CPos, DistMx);
+
+	m_RefLabels.push_back(Chain.m_Label);
 	m_DistMxVec.push_back(DistMx);
+	}
+
+void CMP::ToDBFile(const string &FileName) const
+	{
+	if (FileName == "")
+		return;
+	FILE *f = CreateStdioFile(FileName);
+
+	CloseStdioFile(f);
 	}
 
 static void Train(ChainReader &CR,
@@ -96,6 +108,7 @@ static void Train(ChainReader &CR,
 	g_MinScore3 = DBL_MAX;
 
 	PDBChain Q;
+	uint NotFoundCount = 0;
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
@@ -111,11 +124,16 @@ static void Train(ChainReader &CR,
 			}
 
 		const string &Seq = Q.m_Seq;
-		const string Label = Q.m_Label.substr(0, 4);
+		const string Label = Q.m_Label;
 
 		map<string, uint>::const_iterator p = LabelToIndex.find(Label);
 		if (p == LabelToIndex.end())
+			{
+			if (NotFoundCount < 10)
+				Log("Not found >%s\n", Label.c_str());
+			++NotFoundCount;
 			continue;
+			}
 		uint Index = p->second;
 
 		asserta(Index < SIZE(MotifCoordsVec));
@@ -158,11 +176,14 @@ static void Train(ChainReader &CR,
 		Prof.TrainChain(Q, APos, BPos, CPos);
 		}
 	Progress("Train 100.0%% done, %u / %u hits\r", g_HitCount, g_DoneCount);
+	if (NotFoundCount > 0)
+		Warning("%u labels not found", NotFoundCount);
+	asserta(g_HitCount > 0);
 	Prof.FinalizeTrain();
 	}
 
-static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
-  uint APos, uint BPos, uint CPos)
+static void Write1(const char *Method, const PDBChain &Q,
+  const CMPSearcher &CS, uint APos, uint BPos, uint CPos)
 	{
 	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
 		{
@@ -184,13 +205,13 @@ static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
 		return;
 		}
 
-	double ScoreA = Prof.GetScoreA(Q, APos);
-	double ScoreB = Prof.GetScoreB(Q, BPos);
-	double ScoreC = Prof.GetScoreC(Q, CPos);
+	double ScoreA = CS.GetScoreA(Q, APos);
+	double ScoreB = CS.GetScoreB(Q, BPos);
+	double ScoreC = CS.GetScoreC(Q, CPos);
 
-	double ScoreAB = Prof.GetScoreAB(Q, APos, BPos);
-	double ScoreBC = Prof.GetScoreBC(Q, BPos, CPos);
-	double ScoreAC = Prof.GetScoreAC(Q, APos, CPos);
+	double ScoreAB = CS.GetScoreAB(Q, APos, BPos);
+	double ScoreBC = CS.GetScoreBC(Q, BPos, CPos);
+	double ScoreAC = CS.GetScoreAC(Q, APos, CPos);
 
 	g_MinScoreA = min(ScoreA, g_MinScoreA);
 	g_MinScoreB = min(ScoreB, g_MinScoreB);
@@ -237,12 +258,10 @@ static void Test(ChainReader &CR,
   const vector<string> &Labels, 
   const map<string, uint> &LabelToIndex, 
   const vector<vector<uint> > &MotifCoordsVec,
-  CMPSearcher &PS)
+  CMPSearcher &CS)
 	{
 	g_DoneCount = 0;
 	g_HitCount = 0;
-
-	const CMP &Prof = *PS.m_Prof;
 
 	PDBChain Q;
 
@@ -276,7 +295,7 @@ static void Test(ChainReader &CR,
 			}
 
 		const string &Seq = Q.m_Seq;
-		string Label = Q.m_Label.substr(0, 4);
+		string Label = Q.m_Label;
 
 		map<string, uint>::const_iterator p = LabelToIndex.find(Label);
 		if (p == LabelToIndex.end())
@@ -294,8 +313,8 @@ static void Test(ChainReader &CR,
 		uint APos_PS = UINT_MAX;
 		uint BPos_PS = UINT_MAX;
 		uint CPos_PS = UINT_MAX;
-		PS.Search(Q);
-		PS.GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
+		CS.Search(Q);
+		CS.GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
 		const char *Method = "???";
 		if (APos_PS == APos_Train
 			&& BPos_PS == BPos_Train
@@ -303,8 +322,8 @@ static void Test(ChainReader &CR,
 			Method = " Same";
 		else
 			Method = "*DIFF";
-		Write1(Method, Q, Prof, APos_PS, BPos_PS, CPos_PS);
-		Write1("Train", Q, Prof, APos_Train, BPos_Train, CPos_Train);
+		Write1(Method, Q, CS, APos_PS, BPos_PS, CPos_PS);
+		Write1("Train", Q, CS, APos_Train, BPos_Train, CPos_Train);
 
 		++g_HitCount;
 		Log("\n");
@@ -408,16 +427,10 @@ void cmd_cmp_train()
 	CR.Clear();
 	CR.Open(QueryFN, false);
 
-	CMPSearcher PS;
-	PS.m_Prof = &Prof;
-
-	//Test(CR, &RS, 0, Prof);
-
-	//CR.Clear();
-	//CR.Open(QueryFN, false);
-	//Test(CR, 0, &PS, Prof);
-
+	CMPSearcher CS;
 	CR.Clear();
 	CR.Open(QueryFN, false);
-	Test(CR, Labels, LabelToIndex, MotifCoordsVec, PS);
+	CS.m_DistMx = &Prof.m_RefMeans;
+	CS.m_StdDevs = &Prof.m_StdDevs;
+	Test(CR, Labels, LabelToIndex, MotifCoordsVec, CS);
 	}

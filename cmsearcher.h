@@ -9,7 +9,7 @@ class DSHit;
 class CMSearcher
 	{
 public:
-	static vector<const CMP *> m_Profs;
+	CMP m_ProfDB;
 
 public:
 	CMPSearcher m_PS;
@@ -36,9 +36,4 @@ public:
 	void Search(PDBChain &Query);
 	uint GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC,
 	  double &Score) const;
-
-public:
-	static void ProfsFromFile(const string &FileName);
-	static bool MeansFromFile(FILE *f, string &Label,
-	  vector<vector<double> > &Means);
 	};

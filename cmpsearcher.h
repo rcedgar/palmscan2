@@ -8,9 +8,10 @@ class DSHit;
 class CMPSearcher
 	{
 public:
-	PDBChain *m_Query = 0;
+	const PDBChain *m_Query = 0;
 	string m_Seq;
-	const CMP *m_Prof = 0;
+	const vector<vector<double> > *m_DistMx = 0;
+	const vector<vector<double> > *m_StdDevs = 0;
 
 	vector<uint> m_Ads;
 	vector<uint> m_Bgs;
@@ -28,12 +29,15 @@ public:
 		m_Scores.clear();
 		}
 
-	bool NoStdDevs() const { return m_Prof->m_StdDevs.empty(); }
+	void SetProfRef(const CMP &Prof, uint RefIndex);
+	void SetProf(const CMP &Prof);
 	bool GoodScore1(double Score) const;
 	bool GoodScore3(double Score) const;
-	void Search(PDBChain &Query);
-	void Search_ABC(PDBChain &Query);
-	void Search_CAB(PDBChain &Query);
+	void Search(const PDBChain &Query);
+	void Search_ABC(const PDBChain &Query);
+	void Search_CAB(const PDBChain &Query);
+	double SearchRefs(const PDBChain &Query, const CMP &Prof,
+	  uint &PosA, uint &PosB, uint &PosC, string &BestRefLabel);
 	double GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const;
 
 	void SearchAd(uint AdLo, uint AdHi, vector<uint> &PosVec);
@@ -52,4 +56,19 @@ public:
 
 	double GetScore(uint Ad, uint Bg, uint Cd) const;
 	void CheckHit(uint Ad, uint Bg, uint Cd, double Score);
+
+	double GetScore3(const PDBChain &Chain,
+	  uint PosA, uint PosB, uint PosC) const;
+	double GetScoreA(const PDBChain &Chain, uint PosA) const;
+	double GetScoreB(const PDBChain &Chain, uint PosB) const;
+	double GetScoreC(const PDBChain &Chain, uint PosC) const;
+	double GetScoreAB(const PDBChain &Chain, uint PosA, uint PosB) const;
+	double GetScoreBC(const PDBChain &Chain, uint PosB, uint PosC) const;
+	double GetScoreAC(const PDBChain &Chain, uint PosA, uint PosC) const;
+	double GetScore(const PDBChain &Chain,
+	  uint SeqPos, uint Ix, uint L) const;
+	double GetScore2(const PDBChain &Chain,
+	  uint SeqPos1, uint SeqPos2,
+	  uint Ix1, uint Ix2,
+	  uint L1, uint L2) const;
 	};

@@ -70,8 +70,8 @@ static void Train(ChainReader &CR, RdRpSearcher &RS, CMP &Prof)
 	Prof.FinalizeTrain();
 	}
 
-static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
-  uint APos, uint BPos, uint CPos)
+static void Write1(const char *Method, const PDBChain &Q,
+  const CMPSearcher &CS, uint APos, uint BPos, uint CPos)
 	{
 	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
 		{
@@ -90,13 +90,13 @@ static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
 		return;
 		}
 
-	double ScoreA = Prof.GetScoreA(Q, APos);
-	double ScoreB = Prof.GetScoreB(Q, BPos);
-	double ScoreC = Prof.GetScoreC(Q, CPos);
+	double ScoreA = CS.GetScoreA(Q, APos);
+	double ScoreB = CS.GetScoreB(Q, BPos);
+	double ScoreC = CS.GetScoreC(Q, CPos);
 
-	double ScoreAB = Prof.GetScoreAB(Q, APos, BPos);
-	double ScoreBC = Prof.GetScoreBC(Q, BPos, CPos);
-	double ScoreAC = Prof.GetScoreAC(Q, APos, CPos);
+	double ScoreAB = CS.GetScoreAB(Q, APos, BPos);
+	double ScoreBC = CS.GetScoreBC(Q, BPos, CPos);
+	double ScoreAC = CS.GetScoreAC(Q, APos, CPos);
 
 	g_MinScoreA = min(ScoreA, g_MinScoreA);
 	g_MinScoreB = min(ScoreB, g_MinScoreB);
@@ -134,15 +134,15 @@ static void Write1(const char *Method, const PDBChain &Q, const CMP &Prof,
 	Log("  >%s\n", Q.m_Label.c_str());
 	}
 
-static void Test(ChainReader &CR, RdRpSearcher *RS, 
-  CMPSearcher *PS, CMP &Prof)
+static void Test(ChainReader &CR, RdRpSearcher &RS, CMPSearcher &CS)
 	{
 	g_DoneCount = 0;
 	g_HitCount = 0;
 
 	PDBChain Q;
 
-	Log("%6.6s", "\nScore");
+	Log("\n");
+	Log("%6.6s", "Score");
 	Log("  %4.4s", "A");
 	Log("  %4.4s", "B");
 	Log("  %4.4s", "C");
@@ -173,40 +173,30 @@ static void Test(ChainReader &CR, RdRpSearcher *RS,
 		uint APos_RS = UINT_MAX;
 		uint BPos_RS = UINT_MAX;
 		uint CPos_RS = UINT_MAX;
-		if (RS != 0)
-			{
-			RS->Search(QLabel, QSeq);
-			RS->WriteOutput();
+		RS.Search(QLabel, QSeq);
+		RS.WriteOutput();
 
-			APos_RS = RS->GetMotifPos(0);
-			BPos_RS = RS->GetMotifPos(1);
-			CPos_RS = RS->GetMotifPos(2);
-			Write1("PSSM", Q, Prof, APos_RS, BPos_RS, CPos_RS);
-			}
+		APos_RS = RS.GetMotifPos(0);
+		BPos_RS = RS.GetMotifPos(1);
+		CPos_RS = RS.GetMotifPos(2);
+		Write1("PSSM", Q, CS, APos_RS, BPos_RS, CPos_RS);
 
 		uint APos_PS = UINT_MAX;
 		uint BPos_PS = UINT_MAX;
 		uint CPos_PS = UINT_MAX;
-		if (PS != 0)
-			{
-			PS->Search(Q);
-			PS->GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
-			const char *Method = "CMP";
-			if (RS != 0)
-				{
-				if (APos_PS == APos_RS
-				 && BPos_PS == BPos_RS
-				 && CPos_PS == CPos_RS)
-					Method = "SAME";
-				else
-					Method = "*DIF";
-				}
-			Write1(Method, Q, Prof, APos_PS, BPos_PS, CPos_PS);
-			}
+		CS.Search(Q);
+		CS.GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
+		const char *Method = "CMP";
+		if (APos_PS == APos_RS
+			&& BPos_PS == BPos_RS
+			&& CPos_PS == CPos_RS)
+			Method = "SAME";
+		else
+			Method = "*DIF";
+		Write1(Method, Q, CS, APos_PS, BPos_PS, CPos_PS);
 
 		if (APos_PS != UINT_MAX || APos_RS != UINT_MAX)
 			++g_HitCount;
-		if (RS != 0 && PS != 0)
 			Log("\n");
 		}
 
@@ -226,11 +216,7 @@ static void Test(ChainReader &CR, RdRpSearcher *RS,
 		Log("  Minimum\n");
 		}
 
-	Progress("Test 100.0%% done, %u / %u hits\r", g_HitCount, g_DoneCount);
-	Prof.FinalizeTrain();
-
-	Log("%u / %u %s hits\n",
-	  g_HitCount, g_DoneCount, (RS == 0 ? "CMP" : "PSSM"));
+	Progress("Test 100.0%% done, %u / %u hits\n", g_HitCount, g_DoneCount);
 	}
 
 void cmd_cmp_train_pssm()
@@ -257,10 +243,11 @@ void cmd_cmp_train_pssm()
 	CR.Clear();
 	CR.Open(QueryFN, false);
 
-	CMPSearcher PS;
-	PS.m_Prof = &Prof;
+	CMPSearcher CS;
+	CS.m_DistMx = &Prof.m_RefMeans;
+	CS.m_StdDevs = &Prof.m_StdDevs;
 
 	CR.Clear();
 	CR.Open(QueryFN, false);
-	Test(CR, &RS, &PS, Prof);
+	Test(CR, RS, CS);
 	}

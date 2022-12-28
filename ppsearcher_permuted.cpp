@@ -29,7 +29,7 @@ void CMPSearcher::GetBgLoHi_Permuted(uint Ad, uint &BgLo, uint &BgHi) const
 	BgHi = Ad + max_aadist_AdBg_permuted;
 	}
 
-void CMPSearcher::Search_CAB(PDBChain &Query)
+void CMPSearcher::Search_CAB(const PDBChain &Query)
 	{
 	const uint QL = SIZE(Query.m_Seq);
 
