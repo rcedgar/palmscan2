@@ -149,6 +149,7 @@ FLAG_OPT(label_substr_match)
 FLAG_OPT(pdb_ent)
 FLAG_OPT(dgd)
 FLAG_OPT(top_hit_only)
+FLAG_OPT(refs)
 
 #undef FLAG_OPT
 #undef UNS_OPT

@@ -205,7 +205,7 @@ double CMPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
 	PosC = UINT_MAX;
 	const uint N = SIZE(m_Scores);
 	if (N == 0)
-		return -1;
+		return 0;
 	double TopScore = m_Scores[0];
 	PosA = m_Ads[0];
 	PosB = m_Bgs[0];
@@ -405,7 +405,5 @@ double CMPSearcher::SearchRefs(const PDBChain &Query, const CMP &Prof,
 			BestScore = Score;
 			}
 		}
-	//Log("%u %u %u >%s\n",
-	//  BestPosA, BestPosB, BestPosC, BestRefLabel.c_str());
 	return BestScore;
 	}

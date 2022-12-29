@@ -37,12 +37,15 @@ static void Thread(ChainReader &CR, const CMP &Prof)
 		uint APos = UINT_MAX;
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
-//		CS.Search(Q);
-		//double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
-		//if (APos == UINT_MAX)
-		//	continue;
-		string RefLabel;
-		double PalmScore = CS.SearchRefs(Q, Prof, APos, BPos, CPos, RefLabel);
+		string RefLabel = ".";
+		double PalmScore = 0;
+		if (optset_refs)
+			PalmScore = CS.SearchRefs(Q, Prof, APos, BPos, CPos, RefLabel);
+		else
+			{
+			CS.Search(Q);
+			PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
+			}
 		if (PalmScore == 0)
 			continue;
 		++g_HitCount;
