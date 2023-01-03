@@ -211,8 +211,8 @@ void PDBChain::ToPDB(const string &FileName) const
 		fprintf(f, " ");				// 27             AChar         iCode        Code for insertion of residues.
 		fprintf(f, "   ");				// 28 - 30
 		fprintf(f, "%8.3f", m_Xs[i]);	// 31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
-		fprintf(f, "%8.3f", m_Ys[i]);	// 39 - 46        Real(8.3)     y            Orthogonal coordinates for X in Angstroms.
-		fprintf(f, "%8.3f", m_Zs[i]);	// 47 - 57        Real(8.3)     z            Orthogonal coordinates for X in Angstroms.
+		fprintf(f, "%8.3f", m_Ys[i]);	// 39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
+		fprintf(f, "%8.3f", m_Zs[i]);	// 47 - 57        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
 		fprintf(f, "%6.2f", 1.0);		// 55 - 60        Real(6.2)     occupancy    Occupancy.
 		fprintf(f, "%6.2f", 0.0);		// 61 - 66        Real(6.2)     tempFactor   Temperature  factor.
 		fprintf(f, "          ");		// 67 - 76
@@ -250,8 +250,88 @@ void PDBChain::RenumberResidues(uint Start)
 	m_ATOMs = OutputAtoms;
 	}
 
+static double GetFloatFromString(const string &s, uint Pos, uint n)
+	{
+	string t = s.substr(Pos, n);
+	StripWhiteSpace(t);
+	double Value = StrToFloat(t);
+	return Value;
+	}
+
+// 31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
+// 39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
+// 47 - 57        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
+void PDBChain::GetXYZFromATOMLine(const string &InputLine,
+  double &x, double &y, double &z)
+	{
+	x = GetFloatFromString(InputLine, 30, 8);
+	y = GetFloatFromString(InputLine, 38, 8);
+	z = GetFloatFromString(InputLine, 46, 8);
+	}
+
+void PDBChain::SetXYZInATOMLine(const string &InputLine,
+  double x, double y, double z, string &OutputLine)
+	{
+	string sx;
+	string sy;
+	string sz;
+	Ps(sx, "%8.3f", x);
+	Ps(sy, "%8.3f", y);
+	Ps(sz, "%8.3f", z);
+	asserta(SIZE(sx) == 8);
+	asserta(SIZE(sy) == 8);
+	asserta(SIZE(sz) == 8);
+
+	OutputLine = InputLine;
+	for (uint i = 0; i < 8; ++i)
+		{
+		OutputLine[30+i] = sx[i];
+		OutputLine[38+i] = sy[i];
+		OutputLine[46+i] = sz[i];
+		}
+	}
+
+void PDBChain::GetCAAtomLine(uint Pos, string &Line) const
+	{
+	asserta(Pos < SIZE(m_ATOMs));
+	const vector<string> &v = m_ATOMs[Pos];
+	for (uint i = 0; i < SIZE(v); ++i)
+		{
+		Line = v[i];
+		asserta(SIZE(Line) > 40);
+		string AtomName = Line.substr(12, 4);
+		StripWhiteSpace(AtomName);
+		if (AtomName == "CA")
+			return;
+		}
+	assert(false);
+	}
+
+int PDBChain::GetResidueNr(uint Pos) const
+	{
+	string CALine;
+	GetCAAtomLine(Pos, CALine);
+	int ResNr = GetResidueNrFromATOMLine(CALine);
+	return ResNr;
+	}
+
+void PDBChain::GetResidueRange(uint PosLo, uint ResidueCount,
+  int &ResLo, int &ResHi) const
+	{
+	ResLo = INT_MAX;
+	ResHi = INT_MIN;
+	for (uint Pos = PosLo; Pos < PosLo + ResidueCount; ++Pos)
+		{
+		int ResNr = GetResidueNr(Pos);
+		if (ResNr < ResLo)
+			ResLo = ResNr;
+		if (ResNr > ResHi)
+			ResHi = ResNr;
+		}
+	}
+
 // Residue nr in Cols 23-26 (1-based)
-uint PDBChain::GetResidueNrFromATOMLine(const string &Line)
+int PDBChain::GetResidueNrFromATOMLine(const string &Line)
 	{
 	asserta(SIZE(Line) > 60);
 	string s;
@@ -260,7 +340,7 @@ uint PDBChain::GetResidueNrFromATOMLine(const string &Line)
 	s += Line[24];
 	s += Line[25];
 	StripWhiteSpace(s);
-	uint Nr = StrToUint(s);
+	int Nr = atoi(s.c_str());
 	return Nr;
 	}
 
@@ -293,16 +373,15 @@ char PDBChain::FromPDBLines(const string &Label,
 	const uint N = SIZE(Lines);
 	char Chain = 0;
 	uint ResidueCount = 0;
-	uint CurrentResidueNumber = 0;
+	int CurrentResidueNumber = INT_MAX;
 	for (uint LineNr = 0; LineNr < N; ++LineNr)
 		{
 		string Line = Lines[LineNr];
 		const size_t L = Line.size();
 
-		if (strncmp(Line.c_str(), "HETATM", 6) == 0)
+		if (strncmp(Line.c_str(), "HETATM", 6) == 0 &&
+		  Line.substr(17, 3) == "MSE")
 			{
-			asserta(Line.substr(17, 3) == "MSE");
-
 			Line[0] = 'A';
 			Line[1] = 'T';
 			Line[2] = 'O';
@@ -321,22 +400,30 @@ char PDBChain::FromPDBLines(const string &Label,
 		if (SaveAtoms)
 			{
 		// 23 - 26 residue nr.
-			uint ResidueNumber = 0;
+			int ResidueNumber = 0;
+			int Sign = 1;
 			for (uint i = 22; i < 26; ++i)
 				{
 				char c = Line[i];
+				if (c == '-')
+					{
+					Sign = -1;
+					continue;
+					}
 				if (!isspace(c) && !isdigit(c))
 					Die("Invalid character in residue number field (cols 23-26): %s\n",
 					  Line.c_str());
 				if (isdigit(c))
 					ResidueNumber = ResidueNumber*10 + (c - '0');
 				}
+			ResidueNumber *= Sign;
 			if (ResidueNumber != CurrentResidueNumber)
 				{
 				CurrentResidueNumber = ResidueNumber;
 				++ResidueCount;
 				m_ATOMs.resize(ResidueCount);
 				}
+			asserta(SIZE(m_ATOMs) > 0);
 			m_ATOMs.back().push_back(Line);
 			}
 
@@ -536,6 +623,18 @@ void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 	MotifCoords[C][Z] = m_Zs[PosC];
 	}
 
+void PDBChain::SetMotifPosVec(uint PosA, uint PosB, uint PosC)
+	{
+	const uint L = GetSeqLength();
+	asserta(PosA < PosB);
+	asserta(PosB < PosC);
+	asserta(PosC < L);
+	m_MotifPosVec.clear();
+	m_MotifPosVec.push_back(PosA);
+	m_MotifPosVec.push_back(PosB);
+	m_MotifPosVec.push_back(PosC);
+	}
+
 uint PDBChain::GetSeqLength() const
 	{
 	return SIZE(m_Seq);
@@ -622,7 +721,20 @@ void PDBChain::ReadChainsFromFile(const string &FileName,
 	ChainsFromLines(FileName, Lines, Chains, SaveAtoms);
 	}
 
-void PDBChain::CopyTriForm(const vector<double> &t,
+void PDBChain::GetTriFormChain_MotifCoords(PDBChain &XChain) const
+	{
+	vector<vector<double> > MotifCoords;
+	GetMotifCoords(MotifCoords);
+
+	vector<double> t;
+	vector<vector<double> > R;
+	GetTriForm(MotifCoords, t, R);
+
+	GetTriFormChain_tR(t, R, XChain);
+	}
+
+void PDBChain::GetTriFormChain_tR(
+  const vector<double> &t,
   const vector<vector<double> > &R,
   PDBChain &XChain) const
 	{
@@ -630,19 +742,41 @@ void PDBChain::CopyTriForm(const vector<double> &t,
 	XChain.m_Label = m_Label;
 	XChain.m_Seq = m_Seq;
 	XChain.m_MotifPosVec = m_MotifPosVec;
+	XChain.m_ATOMs = m_ATOMs;
+
 	const uint N = SIZE(m_Xs);
 	asserta(SIZE(m_Seq) == N);
 	asserta(SIZE(m_Ys) == N);
 	asserta(SIZE(m_Zs) == N);
+
+	const uint AtomCount = SIZE(m_ATOMs);
+	asserta(AtomCount == 0 || AtomCount == N);
+
 	vector<double> Pt(3);
 	vector<double> XPt(3);
 	for (uint Pos = 0; Pos < N; ++Pos)
 		{
 		GetPt(Pos, Pt);
 		XFormPt(Pt, t, R, XPt);
-		XChain.m_Xs.push_back(XPt[X]);
-		XChain.m_Ys.push_back(XPt[Y]);
-		XChain.m_Zs.push_back(XPt[Z]);
+
+		double x = XPt[X];
+		double y = XPt[Y];
+		double z = XPt[Z];
+
+		XChain.m_Xs.push_back(x);
+		XChain.m_Ys.push_back(y);
+		XChain.m_Zs.push_back(z);
+
+		if (AtomCount != 0)
+			{
+			vector<string> &a = XChain.m_ATOMs[Pos];
+			for (uint i = 0; i < SIZE(a); ++i)
+				{
+				GetXYZFromATOMLine(a[i], Pt[X], Pt[Y], Pt[Z]);
+				XFormPt(Pt, t, R, XPt);
+				SetXYZInATOMLine(a[i], XPt[X], XPt[Y], XPt[Z], a[i]);
+				}
+			}
 		}
 	}
 
@@ -668,6 +802,18 @@ uint PDBChain::GetPalmPrintLength(uint PosA, uint PosC, uint L)
 	uint Hi = PosC + CL - 1;
 	uint PPL = Hi - PosA + 1;
 	return PPL;
+	}
+
+void PDBChain::GetPalmCoreCoords(uint PosA, uint PosC, uint L,
+  uint &Lo, uint &Hi)
+	{
+	asserta(PosA < PosC);
+	asserta(PosC + CL <= L);
+
+	Lo = (PosA <= PALMCOREM ? 0 : PosA - PALMCOREM);
+	Hi = PosC + CL + PALMCOREM - 1;
+	if (Hi >= L)
+		Hi = L - 1;
 	}
 
 bool PDBChain::CheckMotifCoords(bool FailOnError) const
@@ -704,7 +850,7 @@ bool PDBChain::CheckMotifCoords(bool FailOnError) const
 		if (FailOnError)
 			Die("CheckMotifCoords(), PosC+CL > QC");
 		return false;
-		}
+		} 
 
 	return true;
 	}
@@ -759,10 +905,15 @@ bool PDBChain::CheckPPCMotifCoords(bool FailOnError) const
 	return true;
 	}
 
-void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
-  PDBChain &PPC) const
+void PDBChain::GetPPC(PDBChain &PPC) const
 	{
 	PPC.Clear();
+
+	asserta(SIZE(m_MotifPosVec) == 3);
+
+	uint PosA = m_MotifPosVec[A];
+	uint PosB = m_MotifPosVec[B];
+	uint PosC = m_MotifPosVec[C];
 
 	uint L = GetSeqLength();
 	uint PPL = GetPalmPrintLength(PosA, PosC, L);
@@ -787,23 +938,7 @@ void PDBChain::GetPPC(uint PosA, uint PosB, uint PosC,
 
 	vector<double> t;
 	vector<vector<double> > R;
-	GetTriForm(MotifCoords, t, R);
-
-	vector<double> Pt;
-	vector<double> XPt;
-	for (uint i = 0; i < PPL; ++i)
-		{
-		uint Pos = PosA + i;
-		char c = m_Seq[Pos];
-		PPC.m_Seq += c;
-
-		GetPt(Pos, Pt);
-		XFormPt(Pt, t, R, XPt);
-
-		PPC.m_Xs.push_back(XPt[X]);
-		PPC.m_Ys.push_back(XPt[Y]);
-		PPC.m_Zs.push_back(XPt[Z]);
-		}
+	GetTriFormChain_tR(t, R, PPC);
 
 	string MotifA, MotifB, MotifC;
 	GetSubSeq(PosA, AL, MotifA);
@@ -967,4 +1102,38 @@ const char *PDBChain::GetAcc(string &Acc) const
 	else
 		Acc = m_Label;
 	return Acc.c_str();
+	}
+
+void PDBChain::TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const
+	{
+	Chain.Clear();
+	asserta(Lo <= Hi);
+	uint L = GetSeqLength();
+	asserta(Hi < L);
+
+	Chain.m_Label = m_Label;
+
+	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+		{
+#define c(x)	Chain.m_##x.push_back(m_##x[Pos])
+		c(Seq);
+		if (!m_ATOMs.empty())
+			c(ATOMs);
+		c(Xs);
+		c(Ys);
+		c(Zs);
+#undef c
+		}
+
+	if (!m_MotifPosVec.empty())
+		{
+		asserta(SIZE(m_MotifPosVec) == 3);
+		for (uint i = 0; i < 3; ++i)
+			{
+			uint Pos = m_MotifPosVec[i];
+			asserta(Pos >= Lo);
+			Chain.m_MotifPosVec.push_back(Pos - Lo);
+			}
+		asserta(SIZE(Chain.m_MotifPosVec) == 3);
+		}
 	}

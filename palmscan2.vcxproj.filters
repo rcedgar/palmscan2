@@ -284,7 +284,7 @@
     <ClCompile Include="search_ppp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rotate.cpp">
+    <ClCompile Include="calpp2ppc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tm_ppc.cpp">
@@ -351,6 +351,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cm_search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="palmcore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="palmcore_pssms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="palmcore_cmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

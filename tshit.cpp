@@ -187,32 +187,6 @@ void TSHit::WritePalmprintFasta(FILE *f) const
 	SeqToFasta(f, Label.c_str(), Q.c_str() + PPLo, PPL);
 	}
 
-void TSHit::WritePalmprintPDB(const string &FileNamePrefix) const
-	{
-	if (FileNamePrefix == "")
-		return;
-	asserta(m_Query != 0);
-	vector<double> t;
-	vector<vector<double> > R;
-
-	vector<vector<double> > MotifCoords(3);
-	m_Query->GetPt(m_QPosA, MotifCoords[A]);
-	m_Query->GetPt(m_QPosB, MotifCoords[B]);
-	m_Query->GetPt(m_QPosC, MotifCoords[C]);
-
-	GetTriForm(MotifCoords, t, R);
-
-	PDBChain XChain;
-	m_Query->CopyTriForm(t, R, XChain);
-
-	string Label;
-	const string &QLabel = m_Query->m_Label;
-	string FileName = FileNamePrefix + Label;
-	if (!EndsWith(FileName, ".pdb"))
-		FileName += ".pdb";
-	XChain.ToPDB(FileName);
-	}
-
 void TSHit::SetSketch()
 	{
 	//asserta(SIZE(m_Query->m_SS) == SIZE(m_Query->m_Seq));

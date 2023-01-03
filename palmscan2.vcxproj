@@ -288,6 +288,10 @@
     <ClCompile Include="clusters2model.cpp" />
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
+    <ClCompile Include="palmcore.cpp" />
+    <ClCompile Include="palmcore_cmp.cpp" />
+    <ClCompile Include="palmcore_pssms.cpp" />
+    <ClCompile Include="pml.cpp" />
     <ClCompile Include="ppcontactmap.cpp" />
     <ClCompile Include="find_tri.cpp" />
     <ClCompile Include="getchains.cpp" />
@@ -338,7 +342,7 @@
     <ClCompile Include="ppcaligner.cpp" />
     <ClCompile Include="readchains.cpp" />
     <ClCompile Include="gddgateprob.cpp" />
-    <ClCompile Include="rotate.cpp" />
+    <ClCompile Include="calpp2ppc.cpp" />
     <ClCompile Include="search3d_tri.cpp" />
     <ClCompile Include="pdbchain.cpp" />
     <ClCompile Include="psms.cpp" />

@@ -22,8 +22,10 @@ public:
 		m_Zs.clear();
 		m_MotifPosVec.clear();
 		m_ATOMs.clear();
+		m_SS.clear();
 		}
 
+	void SetMotifPosVec(uint PosA, uint PosB, uint PosC);
 	uint GetSeqLength() const;
 	char FromPDBLines(const string &Label,
 	  const vector<string> &Lines, bool SaveAtoms);
@@ -35,9 +37,11 @@ public:
 	void ToCalSeg(FILE *f, uint Pos, uint n) const;
 	void ToCal(const string &FileName) const;
 	void ToPDB(const string &FileName) const;
-	void CopyTriForm(const vector<double> &t,
+	void GetTriFormChain_tR(
+	  const vector<double> &t,
 	  const vector<vector<double> > &R,
 	  PDBChain &XChain) const;
+	void GetTriFormChain_MotifCoords(PDBChain &XChain) const;
 	void LogMe(bool WithCoords = false) const;
 	void GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetSubSeq(uint Pos, uint n, string &s) const;
@@ -53,14 +57,13 @@ public:
 	uint GetMotifPos(uint MotifIndex) const;
 	void GetSubSeq(uint StartPos, uint n,
 	  bool FailOnOverflow, string &MotifSeq) const;
-	//void XFormATOM(string &ATOM, const vector<double> &t,
-	//  const vector<vector<double> > &R) const;
 	void GetSS(string &SS) const;
 	void SetSS()
 		{
 		GetSS(m_SS);
 		}
-	void GetPPC(uint PosA, uint PosB, uint PosC, PDBChain &PPC) const;
+	void GetPPC(PDBChain &PPC) const;
+	void GetPC(PDBChain &PC) const;
 	bool CheckMotifCoords(bool FailOnError = true) const;
 	bool CheckPPCMotifCoords(bool FailOnError = true) const;
 	double GetSmoothedCoord(uint Axis, uint i, uint N, uint w) const;
@@ -71,10 +74,18 @@ public:
 	char GetMotifC_D() const;
 	const char *GetAcc(string &Acc) const;
 	void GetDistMx(uint Pos, uint L, vector<vector<double> > &Mx) const;
+	void TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const;
+	void ToPML(FILE *f, const string &PDBFileName) const;
+	void GetCAAtomLine(uint Pos, string &Line) const;
+	int GetResidueNr(uint Pos) const;
+	void GetResidueRange(uint PosLo, uint ResidueCount, int &ResLo,
+	  int &ResHi) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
 	static uint GetPalmPrintLength(uint PosA, uint PosC, uint L);
+	static void GetPalmCoreCoords(uint PosA, uint PosC, uint L,
+	  uint &Lo, uint &Hi);
 	static void ChainsFromLines(const string &Label,
 	  const vector<string> &Lines, vector<PDBChain *> &Chains,
 	  bool SaveAstoms);
@@ -83,9 +94,13 @@ public:
 	static void AppendChainToLabel(string &Label, char Chain);
 	static char GetChainCharFromPDBAtomLine(const string &Line);
 	static bool IsPDBAtomLine(const string &Line);
-	static uint GetResidueNrFromATOMLine(const string &Line);
+	static int GetResidueNrFromATOMLine(const string &Line);
 	static void SetResidueNrInATOMLine(const string &InputLine,
 	  uint ResidueNr, string &OutputLine);
+	static void GetXYZFromATOMLine(const string &InputLine,
+	  double &x, double &y, double &z);
+	static void SetXYZInATOMLine(const string &InputLine,
+	  double x, double y, double z, string &OutputLine);
 	};
 
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);

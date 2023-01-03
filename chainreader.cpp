@@ -85,7 +85,14 @@ bool ChainReader::KeepPDBAtomLine(const string &Line)
 	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
 	if (strncmp(Line.c_str(), "HETATM", 6) == 0)
-		return true;
+		{
+		string AtomName = Line.substr(12, 4);
+		StripWhiteSpace(AtomName);
+		if (AtomName == "CA")
+			return true;
+		else
+			return false;
+		}
 	return false;
 	}
 

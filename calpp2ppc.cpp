@@ -4,9 +4,9 @@
 
 // Input is CAL which is palmprint-only with coordinates,
 //  output is rotated into PPC.
-void cmd_rotate()
+void cmd_calpp2ppc()
 	{
-	const string &InputFN = opt_rotate;
+	const string &InputFN = opt_calpp2ppc;
 
 	vector<PDBChain *> Chains;
 	ReadChains(InputFN, Chains, false);
@@ -14,15 +14,12 @@ void cmd_rotate()
 	const uint N = SIZE(Chains);
 	for (uint i = 0; i < N; ++i)
 		{
-		ProgressStep(i, N, "Rotating");
+		ProgressStep(i, N, "Converting");
 		const PDBChain &Chain = *Chains[i];
 		Chain.CheckMotifCoords();
-		uint PosA = Chain.m_MotifPosVec[0];
-		uint PosB = Chain.m_MotifPosVec[1];
-		uint PosC = Chain.m_MotifPosVec[2];
 
 		PDBChain PPC;
-		Chain.GetPPC(PosA, PosB, PosC, PPC);
+		Chain.GetPPC(PPC);
 		asserta(PPC.CheckPPCMotifCoords());
 		PPC.ToCal(g_fppc);
 		}

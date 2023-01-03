@@ -12,6 +12,7 @@ static const int C = 2;
 const uint AL = 12;
 const uint BL = 14;
 const uint CL = 8;
+const uint PALMCOREM = 150;
 
 extern const uint MotifLVec[3];
 

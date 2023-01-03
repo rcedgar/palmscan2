@@ -83,7 +83,8 @@ static void Thread(ChainReader &CR, vector<PDBChain> &Qs,
 #pragma omp critical
 		{
 		PDBChain Q_PPC;
-		Q.GetPPC(APos, BPos, CPos, Q_PPC);
+		Q.SetMotifPosVec(APos, BPos, CPos);
+		Q.GetPPC(Q_PPC);
 		Q_PPC.ToCal(g_fppc);
 		if (optset_pdbout)
 			Q_PPC.ToPDB(opt_pdbout);

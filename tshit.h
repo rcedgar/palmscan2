@@ -46,6 +46,5 @@ public:
 	void WriteSketch(FILE* f) const;
 	void WriteReport(FILE *f) const;
 	void WritePalmprintFasta(FILE *f) const;
-	void WritePalmprintPDB(const string &FileNamePrefix) const;
 	void SetSketch();
 	};

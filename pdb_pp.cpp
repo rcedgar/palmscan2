@@ -67,7 +67,7 @@ void cmd_pdb_pp()
 		RS.Search(QLabel, QSeq);
 		RS.WriteOutput();
 		if (!RS.IsHit())
-			break;
+			continue;
 
 		fprintf(fOut, "TITLE %s\n", Chain.m_Label.c_str());
 

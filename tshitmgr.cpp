@@ -203,7 +203,8 @@ void TSHitMgr::WritePPC(FILE* f) const
 	uint PosC = m_TopHit->m_QPosC;
 
 	PDBChain PPC;
-	m_Query->GetPPC(PosA, PosB, PosC, PPC);
+	m_Query->SetMotifPosVec(PosA, PosB, PosC);
+	m_Query->GetPPC(PPC);
 	asserta(PPC.CheckPPCMotifCoords());
 	PPC.ToCal(f);
 	}
