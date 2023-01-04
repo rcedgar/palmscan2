@@ -365,6 +365,9 @@
     <ClCompile Include="palmcore_cmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kabsch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

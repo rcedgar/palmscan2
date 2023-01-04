@@ -600,6 +600,37 @@ void PDBChain::GetMotifDists2(double &AB, double &BC, double &AC) const
 	AC = GetDist2_Mxij(MotifCoords, A, C);
 	}
 
+void PDBChain::GetDGDCoords(vector<vector<double> > &DGDCoords) const
+	{
+	asserta(m_MotifPosVec.size() == 3);
+
+	Resize3x3(DGDCoords);
+
+	uint PosA = m_MotifPosVec[A];
+	uint PosB = m_MotifPosVec[B];
+	uint PosC = m_MotifPosVec[C];
+
+	uint L = GetSeqLength();
+	uint PosA_D = PosA + 3;
+	uint PosB_G = PosB + 1;
+	uint PosC_D = PosC + 3;
+	asserta(PosA_D < PosB_G);
+	asserta(PosB_G < PosC_D);
+	asserta(PosC_D < L);
+
+	DGDCoords[A][X] = m_Xs[PosA_D];
+	DGDCoords[A][Y] = m_Ys[PosA_D];
+	DGDCoords[A][Z] = m_Zs[PosA_D];
+
+	DGDCoords[B][X] = m_Xs[PosB_G];
+	DGDCoords[B][Y] = m_Ys[PosB_G];
+	DGDCoords[B][Z] = m_Zs[PosB_G];
+
+	DGDCoords[C][X] = m_Xs[PosC_D];
+	DGDCoords[C][Y] = m_Ys[PosC_D];
+	DGDCoords[C][Z] = m_Zs[PosC_D];
+	}
+
 void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 	{
 	asserta(m_MotifPosVec.size() == 3);
@@ -719,6 +750,18 @@ void PDBChain::ReadChainsFromFile(const string &FileName,
 	vector<string> Lines;
 	ReadLinesFromFile(FileName, Lines);
 	ChainsFromLines(FileName, Lines, Chains, SaveAtoms);
+	}
+
+void PDBChain::GetTriFormChain_DGD(PDBChain &XChain) const
+	{
+	vector<vector<double> > DGDCoords;
+	GetDGDCoords(DGDCoords);
+
+	vector<double> t;
+	vector<vector<double> > R;
+	GetTriForm(DGDCoords, t, R);
+
+	GetTriFormChain_tR(t, R, XChain);
 	}
 
 void PDBChain::GetTriFormChain_MotifCoords(PDBChain &XChain) const

@@ -21,7 +21,8 @@ void PDBChain::GetPC(PDBChain &PC) const
 
 	PDBChain Trunc;
 	TruncateChain(Lo, Hi, Trunc);
-	Trunc.GetTriFormChain_MotifCoords(PC);
+//	Trunc.GetTriFormChain_MotifCoords(PC);
+	Trunc.GetTriFormChain_DGD(PC);
 
 	uint PC_PosA = PosA - Lo;
 	uint PC_PosB = PosB - Lo;

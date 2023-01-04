@@ -1935,12 +1935,12 @@ void TMA::LogAln(
 /**************************************************************************
 Implemetation of Kabsch algoritm for finding the best rotation matrix
 ---------------------------------------------------------------------------
-x    - x(i,m) are coordinates of atom m in set x            (input)
-y    - y(i,m) are coordinates of atom m in set y            (input)
-n    - n is number of atom pairs                            (input)
-mode  - 0:calculate rms only                                (input)
-1:calculate u,t only                                (takes medium)
-2:calculate rms,u,t                                 (takes longer)
+x     - x(i,m) are coordinates of atom m in set x            (input)
+y     - y(i,m) are coordinates of atom m in set y            (input)
+n     - n is number of atom pairs                            (input)
+mode  - 0: calculate rms only                                (input)
+  1:calculate u,t only                                (takes medium)
+  2:calculate rms,u,t                                 (takes longer)
 rms   - sum of w*(ux+t-y)**2 over all atom pairs            (output)
 u    - u(i,j) is   rotation  matrix for best superposition  (output)
 t    - t(i)   is translation vector for best superposition  (output)

@@ -42,6 +42,7 @@ public:
 	  const vector<vector<double> > &R,
 	  PDBChain &XChain) const;
 	void GetTriFormChain_MotifCoords(PDBChain &XChain) const;
+	void GetTriFormChain_DGD(PDBChain &XChain) const;
 	void LogMe(bool WithCoords = false) const;
 	void GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetSubSeq(uint Pos, uint n, string &s) const;
@@ -52,6 +53,7 @@ public:
 	double GetDist(uint Pos1, uint Pos2) const;
 	double GetDist2(uint Pos1, uint Pos2) const;
 	void GetMotifCoords(vector<vector<double> > &MotifCoords) const;
+	void GetDGDCoords(vector<vector<double> > &DGDCoords) const;
 	void GetMotifDists(double &AB, double &BC, double &AC) const;
 	void GetMotifDists2(double &AB, double &BC, double &AC) const;
 	uint GetMotifPos(uint MotifIndex) const;
