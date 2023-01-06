@@ -195,6 +195,15 @@ static inline void Sub_Vecs(const vector<double> &vi,
 	Diff[Z] = vi[Z] - vj[Z];
 	}
 
+static inline void Add_Vecs(const vector<double> &vi,
+  const vector<double> &vj, vector<double> &Sum)
+	{
+	Resize3(Sum);
+	Sum[X] = vi[X] + vj[X];
+	Sum[Y] = vi[Y] + vj[Y];
+	Sum[Z] = vi[Z] + vj[Z];
+	}
+
 static inline double GetTheta_Vecs(const vector<double> &vi,
   const vector<double> &vj)
 	{

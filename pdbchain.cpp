@@ -298,9 +298,11 @@ void PDBChain::GetCAAtomLine(uint Pos, string &Line) const
 	for (uint i = 0; i < SIZE(v); ++i)
 		{
 		Line = v[i];
-		asserta(SIZE(Line) > 40);
-		string AtomName = Line.substr(12, 4);
-		StripWhiteSpace(AtomName);
+		//asserta(SIZE(Line) > 40);
+		//string AtomName = Line.substr(12, 4);
+		//StripWhiteSpace(AtomName);
+		string AtomName;
+		GetAtomNameFromATOMLine(Line, AtomName);
 		if (AtomName == "CA")
 			return;
 		}
@@ -328,6 +330,14 @@ void PDBChain::GetResidueRange(uint PosLo, uint ResidueCount,
 		if (ResNr > ResHi)
 			ResHi = ResNr;
 		}
+	}
+
+void PDBChain::GetAtomNameFromATOMLine(const string &Line,
+  string &AtomName)
+	{
+	asserta(SIZE(Line) > 40);
+	AtomName = Line.substr(12, 4);
+	StripWhiteSpace(AtomName);
 	}
 
 // Residue nr in Cols 23-26 (1-based)
@@ -526,6 +536,36 @@ void PDBChain::SetPt(uint Pos, const vector<double> &Pt)
 	m_Zs[Pos] = Pt[Z];
 	}
 
+bool PDBChain::Get_CB_Pt(uint Pos, vector<double> &Pt) const
+	{
+	Pt.resize(3);
+	bool Ok = Get_CB_XYZ(Pos, Pt[0], Pt[1], Pt[2]);
+	return Ok;
+	}
+
+bool PDBChain::Get_CB_XYZ(uint Pos, double &x, double &y, double &z) const
+	{
+	x = DBL_MAX;
+	y = DBL_MAX;
+	z = DBL_MAX;
+	if (m_ATOMs.empty())
+		return false;
+	asserta(Pos < SIZE(m_ATOMs));
+	const vector<string> &v = m_ATOMs[Pos];
+	for (uint i = 0; i < SIZE(v); ++i)
+		{
+		const string &Line = v[i];
+		string AtomName;
+		GetAtomNameFromATOMLine(Line, AtomName);
+		if (AtomName == "CB")
+			{
+			GetXYZFromATOMLine(Line, x, y, z);
+			return true;
+			}
+		}
+	return false;
+	}
+
 void PDBChain::GetXYZ(uint Pos, double &x, double &y, double &z) const
 	{
 	assert(Pos < SIZE(m_Xs));
@@ -712,7 +752,7 @@ void PDBChain::ChainsFromLines(const string &Label,
 		{
 		const string &Line = Lines[i];
 
-		if (IsPDBAtomLine(Line))
+		if (IsATOMLine(Line))
 			{
 			if (Line.size() < 57)
 				continue;
@@ -998,7 +1038,7 @@ void PDBChain::GetPPC(PDBChain &PPC) const
 	PPC.CheckPPCMotifCoords(true);
 	}
 
-bool PDBChain::IsPDBAtomLine(const string &Line)
+bool PDBChain::IsATOMLine(const string &Line)
 	{
 	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
@@ -1007,9 +1047,9 @@ bool PDBChain::IsPDBAtomLine(const string &Line)
 	return false;
 	}
 
-char PDBChain::GetChainCharFromPDBAtomLine(const string &Line)
+char PDBChain::GetChainCharFromATOMLine(const string &Line)
 	{
-	if (!IsPDBAtomLine(Line))
+	if (!IsATOMLine(Line))
 		return 0;
 	if (Line.size() < 22)
 		return 0;
@@ -1178,5 +1218,19 @@ void PDBChain::TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const
 			Chain.m_MotifPosVec.push_back(Pos - Lo);
 			}
 		asserta(SIZE(Chain.m_MotifPosVec) == 3);
+		}
+	}
+
+void PDBChain::GetSphere(uint Pos, double Radius,
+  vector<uint> &PosVec) const
+	{
+	const uint L = GetSeqLength();
+	for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+		{
+		if (Pos2 == Pos)
+			continue;
+		double d = GetDist(Pos, Pos2);
+		if (d <= Radius)
+			PosVec.push_back(Pos2);
 		}
 	}

@@ -368,6 +368,12 @@
     <ClCompile Include="kabsch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pseudo_cb_angles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

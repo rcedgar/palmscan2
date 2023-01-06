@@ -129,6 +129,7 @@ FLT_OPT(mincscore,			0.0,		0.0,		DBL_MAX)
 FLT_OPT(rmsd,				0.0,		0.0,		DBL_MAX)
 FLT_OPT(train_pct,			0.0,		0.0,		DBL_MAX)
 FLT_OPT(min_palm_score,			0.0,		0.0,		DBL_MAX)
+FLT_OPT(radius,			0.0,		0.0,		DBL_MAX)
 
 FLAG_OPT(trunclabels)
 FLAG_OPT(notrunclabels)

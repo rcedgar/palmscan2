@@ -47,6 +47,8 @@ public:
 	void GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetSubSeq(uint Pos, uint n, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
+	bool Get_CB_XYZ(uint Pos, double &x, double &y, double &z) const;
+	bool Get_CB_Pt(uint Pos, vector<double> &Pt) const;
 	double GetCoord(uint Axis, uint Pos) const;
 	void GetPt(uint Pos, vector<double> &Pt) const;
 	void SetPt(uint Pos, const vector<double> &Pt);
@@ -82,6 +84,8 @@ public:
 	int GetResidueNr(uint Pos) const;
 	void GetResidueRange(uint PosLo, uint ResidueCount, int &ResLo,
 	  int &ResHi) const;
+	void GetSphere(uint Pos, double Radius,
+	  vector<uint> &PosVec) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
@@ -94,9 +98,11 @@ public:
 	static void ReadChainsFromFile(const string &FileName,
 	  vector<PDBChain *> &Chains, bool SaveAtoms);
 	static void AppendChainToLabel(string &Label, char Chain);
-	static char GetChainCharFromPDBAtomLine(const string &Line);
-	static bool IsPDBAtomLine(const string &Line);
+	static char GetChainCharFromATOMLine(const string &Line);
+	static bool IsATOMLine(const string &Line);
 	static int GetResidueNrFromATOMLine(const string &Line);
+	static void GetAtomNameFromATOMLine(const string &Line,
+	  string &AtomName);
 	static void SetResidueNrInATOMLine(const string &InputLine,
 	  uint ResidueNr, string &OutputLine);
 	static void GetXYZFromATOMLine(const string &InputLine,

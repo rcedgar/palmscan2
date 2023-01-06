@@ -288,6 +288,8 @@
     <ClCompile Include="clusters2model.cpp" />
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
+    <ClCompile Include="hse.cpp" />
+    <ClCompile Include="pseudo_cb_angles.cpp" />
     <ClCompile Include="kabsch.cpp" />
     <ClCompile Include="palmcore.cpp" />
     <ClCompile Include="palmcore_cmp.cpp" />

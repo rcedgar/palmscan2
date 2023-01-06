@@ -116,7 +116,7 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 		const string &Line = m_Lines[m_LineIndex++];
 		if (!KeepPDBAtomLine(Line))
 			continue;
-		char ChainChar = PDBChain::GetChainCharFromPDBAtomLine(Line);
+		char ChainChar = PDBChain::GetChainCharFromATOMLine(Line);
 		if (CurrentChainChar == 0)
 			CurrentChainChar = ChainChar;
 		else
