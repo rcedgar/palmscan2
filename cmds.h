@@ -53,5 +53,6 @@ C(palmcore_cmp)
 C(pseudo_cb_angles)
 C(hse)
 C(hse_train)
+C(hse_cmp)
 
 #undef C

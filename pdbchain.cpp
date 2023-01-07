@@ -1222,10 +1222,10 @@ void PDBChain::TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const
 	}
 
 void PDBChain::GetSphere(uint Pos, double Radius,
-  vector<uint> &PosVec) const
+  uint MinPos, uint MaxPos, vector<uint> &PosVec) const
 	{
 	const uint L = GetSeqLength();
-	for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+	for (uint Pos2 = MinPos; Pos2 <= MaxPos; ++Pos2)
 		{
 		if (Pos2 == Pos)
 			continue;

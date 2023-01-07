@@ -85,6 +85,7 @@ public:
 	void GetResidueRange(uint PosLo, uint ResidueCount, int &ResLo,
 	  int &ResHi) const;
 	void GetSphere(uint Pos, double Radius,
+	  uint MinPos, uint MaxPos,
 	  vector<uint> &PosVec) const;
 
 public:

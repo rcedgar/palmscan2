@@ -374,6 +374,12 @@
     <ClCompile Include="hse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hse_train.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hse_cmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
