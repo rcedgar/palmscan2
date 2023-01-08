@@ -658,6 +658,10 @@ void PDBChain::GetDGDCoords(vector<vector<double> > &DGDCoords) const
 	asserta(PosB_G < PosC_D);
 	asserta(PosC_D < L);
 
+	asserta(m_Seq[PosA_D] == 'D');
+	asserta(m_Seq[PosB_G] == 'G');
+	asserta(m_Seq[PosC_D] == 'D');
+
 	DGDCoords[A][X] = m_Xs[PosA_D];
 	DGDCoords[A][Y] = m_Ys[PosA_D];
 	DGDCoords[A][Z] = m_Zs[PosA_D];
@@ -800,8 +804,65 @@ void PDBChain::GetTriFormChain_DGD(PDBChain &XChain) const
 	vector<double> t;
 	vector<vector<double> > R;
 	GetTriForm(DGDCoords, t, R);
-
 	GetTriFormChain_tR(t, R, XChain);
+
+#if 1
+	{
+	uint PosA = m_MotifPosVec[A];
+	uint PosB = m_MotifPosVec[B];
+	uint PosC = m_MotifPosVec[C];
+
+	uint PosA_D = PosA + 3;
+	uint PosB_G = PosB + 1;
+	uint PosC_D = PosC + 3;
+
+	Log("\n");
+	Log("GetTriFormChain_DGD()\n");
+
+	Log("  In  MotifA_D");
+	Log("  %c[%3u]", m_Seq[PosA_D], PosA_D);
+	Log("  %8.3f", m_Xs[PosA_D]);
+	Log("  %8.3f", m_Ys[PosA_D]);
+	Log("  %8.3f", m_Zs[PosA_D]);
+	Log("\n");
+
+	Log("  In  MotifB_G");
+	Log("  %c[%3u]", m_Seq[PosB_G], PosB_G);
+	Log("  %8.3f", m_Xs[PosB_G]);
+	Log("  %8.3f", m_Ys[PosB_G]);
+	Log("  %8.3f", m_Zs[PosB_G]);
+	Log("\n");
+
+	Log("  In  MotifC_D");
+	Log("  %c[%3u]", m_Seq[PosC_D], PosC_D);
+	Log("  %8.3f", m_Xs[PosC_D]);
+	Log("  %8.3f", m_Ys[PosC_D]);
+	Log("  %8.3f", m_Zs[PosC_D]);
+	Log("\n");
+
+	Log("\n");
+	Log(" Out  MotifA_D");
+	Log("  %c[%3u]", XChain.m_Seq[PosA_D], PosA_D);
+	Log("  %8.3f", XChain.m_Xs[PosA_D]);
+	Log("  %8.3f", XChain.m_Ys[PosA_D]);
+	Log("  %8.3f", XChain.m_Zs[PosA_D]);
+	Log("\n");
+
+	Log(" Out  MotifB_G");
+	Log("  %c[%3u]", XChain.m_Seq[PosB_G], PosB_G);
+	Log("  %8.3f", XChain.m_Xs[PosB_G]);
+	Log("  %8.3f", XChain.m_Ys[PosB_G]);
+	Log("  %8.3f", XChain.m_Zs[PosB_G]);
+	Log("\n");
+
+	Log(" Out  MotifC_D");
+	Log("  %c[%3u]", XChain.m_Seq[PosC_D], PosC_D);
+	Log("  %8.3f", XChain.m_Xs[PosC_D]);
+	Log("  %8.3f", XChain.m_Ys[PosC_D]);
+	Log("  %8.3f", XChain.m_Zs[PosC_D]);
+	Log("\n");
+	}
+#endif
 	}
 
 void PDBChain::GetTriFormChain_MotifCoords(PDBChain &XChain) const
@@ -827,8 +888,8 @@ void PDBChain::GetTriFormChain_tR(
 	XChain.m_MotifPosVec = m_MotifPosVec;
 	XChain.m_ATOMs = m_ATOMs;
 
-	const uint N = SIZE(m_Xs);
-	asserta(SIZE(m_Seq) == N);
+	const uint N = SIZE(m_Seq);
+	asserta(SIZE(m_Xs) == N);
 	asserta(SIZE(m_Ys) == N);
 	asserta(SIZE(m_Zs) == N);
 

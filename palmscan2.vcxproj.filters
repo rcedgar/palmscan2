@@ -380,6 +380,12 @@
     <ClCompile Include="hse_cmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="annotate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="findcavity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

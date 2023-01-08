@@ -20,16 +20,27 @@ void MulMx(
 		}
 	}
 
+double GetMxDeterminant(const vector<vector<double> > &Mx)
+	{
+	AssertMx3D(Mx);
+	double Det = 0;
+	for(uint i = 0; i < 3; ++i)
+		Det += Mx[0][i]*(Mx[1][(i+1)%3]*Mx[2][(i+2)%3] - Mx[1][(i+2)%3]*Mx[2][(i+1)%3]);
+	asserta(abs(Det) > 1e-6);
+	return Det;
+	}
+
 void InvertMx(const vector<vector<double> > &Mx,
   vector<vector<double> > &InvMx)
 	{
 	AssertMx3D(Mx);
 	InvMx.resize(3);
 
-	double Det = 0;
-	for(uint i = 0; i < 3; ++i)
-		Det += Mx[0][i]*(Mx[1][(i+1)%3]*Mx[2][(i+2)%3] - Mx[1][(i+2)%3]*Mx[2][(i+1)%3]);
-	asserta(abs(Det) > 1e-6);
+	//double Det = 0;
+	//for(uint i = 0; i < 3; ++i)
+	//	Det += Mx[0][i]*(Mx[1][(i+1)%3]*Mx[2][(i+2)%3] - Mx[1][(i+2)%3]*Mx[2][(i+1)%3]);
+	//asserta(abs(Det) > 1e-6);
+	double Det = GetMxDeterminant(Mx);
 
 	InvMx.resize(3);
 	for (uint i = 0; i < 3; ++i)

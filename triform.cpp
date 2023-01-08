@@ -1,7 +1,7 @@
 #include "myutils.h"
 #include "abcxyz.h"
 
-#define TRACE	0
+#define TRACE	1
 
 void GetTriForm(
   vector<vector<double> > &MotifCoords,

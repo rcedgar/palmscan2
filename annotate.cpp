@@ -6,9 +6,11 @@
 #include "chainreader.h"
 #include "cmpsearcher.h"
 
-void cmd_palmcore_cmp()
+void FindCavity(const PDBChain &Chain);
+
+void cmd_annotate()
 	{
-	const string &QueryFN = opt_palmcore_cmp;
+	const string &QueryFN = opt_annotate;
 
 	if (!optset_model)
 		Die("Must specify -model");
@@ -42,11 +44,19 @@ void cmd_palmcore_cmp()
 		++ConvertedCount;
 		Q.SetMotifPosVec(APos, BPos, CPos);
 
-		PDBChain PC;
-		Q.GetPC(PC);
+		PDBChain RotatedChain;
+		Q.GetTriFormChain_DGD(RotatedChain);
 
-		PC.ToPDB(opt_output);
-		PC.ToPML(g_fpml, opt_output);
+		RotatedChain.ToPDB(opt_output);
+		if (g_fpml != 0)
+			{
+			fprintf(g_fpml, "cmd.load(\"%s\")\n", "mx.pdb");
+			fprintf(g_fpml, "color violet");
+			}
+		RotatedChain.ToPML(g_fpml, opt_output);
+
+		vector<vector<double> > Pts;
+		FindCavity(RotatedChain);
 		break;
 		}
 	ProgressLog("%u chains converted\n", ConvertedCount);

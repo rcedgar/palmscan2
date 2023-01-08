@@ -18,6 +18,7 @@ extern const uint MotifLVec[3];
 
 void LogVec(const string &Msg, const vector<double> &v);
 void LogMx(const string &Msg, const vector<vector<double> > &Mx);
+double GetMxDeterminant(const vector<vector<double> > &Mx);
 void InvertMx(const vector<vector<double> > &Mx,
   vector<vector<double> > &InvMx);
 void MulMx(
@@ -227,6 +228,16 @@ static inline double GetTheta_Mxij(const vector<vector<double> > &Mx,
 	}
 
 static inline double degrees(double Radians) { return Radians*180.0/PI; }
+
+static inline double degrees_0_to_360(double Radians)
+	{
+	double Deg = Radians*180.0/PI;
+	Deg = fmod(Deg, 360);
+	if (Deg < 0)
+		Deg += 360;
+	assert(Deg >= 0 && Deg < 360);
+	return Deg;
+	}
 
 void GetIdentityMx(vector<vector<double> > &Mx);
 
