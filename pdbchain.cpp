@@ -960,6 +960,24 @@ void PDBChain::GetPalmCoreCoords(uint PosA, uint PosC, uint L,
 		Hi = L - 1;
 	}
 
+char PDBChain::GetMotifChar_Pos(uint Pos) const
+	{
+	if (SIZE(m_MotifPosVec) != 3)
+		return '-';
+
+	const uint PosA = m_MotifPosVec[A]; 
+	const uint PosB = m_MotifPosVec[B]; 
+	const uint PosC = m_MotifPosVec[C]; 
+
+	if (Pos >= PosA && Pos < PosA + AL)
+		return 'A';
+	if (Pos >= PosB && Pos < PosB + BL)
+		return 'B';
+	if (Pos >= PosC && Pos < PosC + CL)
+		return 'C';
+	return '.';
+	}
+
 bool PDBChain::CheckMotifCoords(bool FailOnError) const
 	{
 	uint n = SIZE(m_MotifPosVec);

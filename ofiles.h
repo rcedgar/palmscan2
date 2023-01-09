@@ -33,5 +33,6 @@ F(left_cab)
 F(right_abc)
 F(right_cab)
 F(pml)
+F(palmcator)
 
 #undef F

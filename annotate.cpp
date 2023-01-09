@@ -6,7 +6,7 @@
 #include "chainreader.h"
 #include "cmpsearcher.h"
 
-void FindCavity(const PDBChain &Chain);
+void FindCavity(const PDBChain &Chain, const string &PDBFileName);
 
 void cmd_annotate()
 	{
@@ -48,15 +48,9 @@ void cmd_annotate()
 		Q.GetTriFormChain_DGD(RotatedChain);
 
 		RotatedChain.ToPDB(opt_output);
-		if (g_fpml != 0)
-			{
-			fprintf(g_fpml, "cmd.load(\"%s\")\n", "mx.pdb");
-			fprintf(g_fpml, "color violet");
-			}
 		RotatedChain.ToPML(g_fpml, opt_output);
 
-		vector<vector<double> > Pts;
-		FindCavity(RotatedChain);
+		FindCavity(RotatedChain, opt_output);
 		break;
 		}
 	ProgressLog("%u chains converted\n", ConvertedCount);

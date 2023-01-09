@@ -68,6 +68,7 @@ public:
 		}
 	void GetPPC(PDBChain &PPC) const;
 	void GetPC(PDBChain &PC) const;
+	char GetMotifChar_Pos(uint Pos) const;
 	bool CheckMotifCoords(bool FailOnError = true) const;
 	bool CheckPPCMotifCoords(bool FailOnError = true) const;
 	double GetSmoothedCoord(uint Axis, uint i, uint N, uint w) const;

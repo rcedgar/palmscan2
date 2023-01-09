@@ -293,6 +293,7 @@
     <ClCompile Include="hse.cpp" />
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
+    <ClCompile Include="palmcator.cpp" />
     <ClCompile Include="pseudo_cb_angles.cpp" />
     <ClCompile Include="kabsch.cpp" />
     <ClCompile Include="palmcore.cpp" />
@@ -321,6 +322,7 @@
     <ClCompile Include="cmp_search.cpp" />
     <ClCompile Include="cmp_train_pssm.cpp" />
     <ClCompile Include="readppc.cpp" />
+    <ClCompile Include="removehidden.cpp" />
     <ClCompile Include="remove_dupes.cpp" />
     <ClCompile Include="cluster_cl.cpp" />
     <ClCompile Include="diagbox.cpp" />
@@ -367,6 +369,7 @@
     <ClCompile Include="searchtriangle.cpp" />
     <ClCompile Include="segs.cpp" />
     <ClCompile Include="smooth.cpp" />
+    <ClCompile Include="spher.cpp" />
     <ClCompile Include="split_train_test.cpp" />
     <ClCompile Include="test_pssms.cpp" />
     <ClCompile Include="seqdb.cpp" />
@@ -403,6 +406,7 @@
     <ClInclude Include="alnparams.h" />
     <ClInclude Include="alpha.h" />
     <ClInclude Include="calreader.h" />
+    <ClInclude Include="cavity.h" />
     <ClInclude Include="cmds.h" />
     <ClInclude Include="conncomp.h" />
     <ClInclude Include="diagbox.h" />
@@ -411,6 +415,7 @@
     <ClInclude Include="fileseqsource.h" />
     <ClInclude Include="gobuff.h" />
     <ClInclude Include="chainreader.h" />
+    <ClInclude Include="spher.h" />
     <ClInclude Include="heuristics.h" />
     <ClInclude Include="linereader.h" />
     <ClInclude Include="lockobj.h" />

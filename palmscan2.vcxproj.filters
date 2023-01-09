@@ -386,6 +386,15 @@
     <ClCompile Include="findcavity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="spher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="palmcator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="removehidden.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -596,6 +605,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cmsearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cavity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
