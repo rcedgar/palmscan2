@@ -22,9 +22,11 @@ void cmd_annotate()
 	ChainReader CR;
 	CR.m_SaveAtoms = true;
 	CR.Open(QueryFN, true);
+
 	CMPSearcher CS;
-	PDBChain Q;
 	CS.SetProf(Prof);
+
+	PDBChain Q;
 	uint ConvertedCount = 0;
 	for (;;)
 		{

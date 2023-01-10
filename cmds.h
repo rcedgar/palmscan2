@@ -55,5 +55,6 @@ C(pseudo_cb_angles)
 C(hse)
 C(hse_train)
 C(hse_cmp)
+C(struct_prof)
 
 #undef C

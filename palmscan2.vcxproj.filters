@@ -395,6 +395,12 @@
     <ClCompile Include="removehidden.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="structprof.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="structprofheuristics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -611,6 +617,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cavity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="structprof.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

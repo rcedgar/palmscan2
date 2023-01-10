@@ -710,6 +710,28 @@ void PDBChain::SetMotifPosVec(uint PosA, uint PosB, uint PosC)
 	m_MotifPosVec.push_back(PosC);
 	}
 
+void PDBChain::PrintSeqCoords(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	const uint L = GetSeqLength();
+
+	fprintf(f, "\n");
+	fprintf(f, ">%s\n", m_Label.c_str());
+	for (uint i = 0; i < L; ++i)
+		{
+		if ((i+1)%10 == 0)
+			fprintf(f, "%10u", (i+1)/10);
+		}
+	fprintf(f, "\n");
+
+	for (uint i = 0; i < L; ++i)
+		fprintf(f, "%u", (i+1)%10);
+	fprintf(f, "\n");
+
+	fprintf(f, "%s\n", m_Seq.c_str());
+	}
+
 uint PDBChain::GetSeqLength() const
 	{
 	return SIZE(m_Seq);
@@ -1303,7 +1325,9 @@ void PDBChain::TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const
 void PDBChain::GetSphere(uint Pos, double Radius,
   uint MinPos, uint MaxPos, vector<uint> &PosVec) const
 	{
+	PosVec.clear();
 	const uint L = GetSeqLength();
+	asserta(MinPos <= MaxPos && MaxPos < L);
 	for (uint Pos2 = MinPos; Pos2 <= MaxPos; ++Pos2)
 		{
 		if (Pos2 == Pos)

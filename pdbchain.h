@@ -27,6 +27,7 @@ public:
 
 	void SetMotifPosVec(uint PosA, uint PosB, uint PosC);
 	uint GetSeqLength() const;
+	void PrintSeqCoords(FILE *f) const;
 	char FromPDBLines(const string &Label,
 	  const vector<string> &Lines, bool SaveAtoms);
 	void FromCal(const string &FileName);
