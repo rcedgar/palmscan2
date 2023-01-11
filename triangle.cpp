@@ -79,7 +79,15 @@ void GetTriangleBasis(const vector<vector<double> > &MotifCoords,
 	double ModBasis1 = GetMod_Vec(Basis[1]);
 	assert(feq(ModBasis1, 1));
 	double Theta01 = GetTheta_Vecs(Basis[0], Basis[1]);
-	assert(feq(Theta01, PI/2));
+	if (!feq(Theta01, PI/2))
+		{
+		Log("\n");
+		LogVec("Basis X", Basis[0]);
+		LogVec("Basis Y", Basis[1]);
+		Log("Theta %.1f degrees (should be 90)\n",
+		  degrees(Theta01));
+		Die("Theta01");
+		}
 #endif
 
 	CrossProduct(Basis[0], Basis[1], Basis[2]);

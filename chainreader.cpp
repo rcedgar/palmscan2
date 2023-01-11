@@ -114,6 +114,8 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 		if (m_LineIndex >= SIZE(m_Lines))
 			break;
 		const string &Line = m_Lines[m_LineIndex++];
+		if (Line == "TER   ")
+			break;
 		if (!KeepPDBAtomLine(Line))
 			continue;
 		char ChainChar = PDBChain::GetChainCharFromATOMLine(Line);

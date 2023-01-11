@@ -5,6 +5,13 @@
 #include "cmpsearcher.h"
 #include "abcxyz.h"
 
+static uint g_APos;
+static uint g_BPos;
+static uint g_CPos;
+static uint g_DPos;
+static uint g_EPos;
+static uint g_FPos;
+
 void StructProf::SetChain(const PDBChain &Chain)
 	{
 	Clear();
@@ -22,9 +29,40 @@ void StructProf::SetMinMaxPos(uint MinPos, uint MaxPos)
 	m_MaxPos = MaxPos;
 	}
 
-uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,
-  bool Maximize, double X, double &BestDist) const
+void StructProf::SetCavityCenterPt()
 	{
+	vector<vector<double> > MotifCoords;
+	vector<vector<double> > Basis;
+	vector<double> CentroidCoords;
+	m_Chain->GetMotifCoords(MotifCoords);
+	GetTriangleBasis(MotifCoords, CentroidCoords, Basis);
+
+	m_CavityCenterPt.resize(3);
+	m_CavityCenterPt[X] = CentroidCoords[X];
+	m_CavityCenterPt[Y] = CentroidCoords[Y];
+	m_CavityCenterPt[Z] = CentroidCoords[Z];
+
+	m_CavityCenterPt[X] += 3.0*Basis[X][X];
+	m_CavityCenterPt[Y] += 3.0*Basis[X][Y];
+	m_CavityCenterPt[Z] += 3.0*Basis[X][Z];
+
+	m_CavityCenterPt[X] += -10.0*Basis[Z][X];
+	m_CavityCenterPt[Y] += -10.0*Basis[Z][Y];
+	m_CavityCenterPt[Z] += -10.0*Basis[Z][Z];
+
+	Log("Cavity center %.1f, %.1f, %.1f\n",
+	  m_CavityCenterPt[X],
+	  m_CavityCenterPt[Y],
+	  m_CavityCenterPt[Z]);//@@
+	}
+
+uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,
+  bool Maximize, double X, double &BestDist, bool Trace) const
+	{
+	if (Trace)
+		Log("SearchDist(Pos=%u, Lo=%u, Hi=%u, %s, X=%.1f)\n",
+		  Pos, Lo, Hi, Maximize ? "MAX" : "min", X);
+
 	const PDBChain &Chain = *m_Chain;
 	const uint L = Chain.GetSeqLength();
 	asserta(Lo < Hi && Hi < L);
@@ -33,15 +71,25 @@ uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,
 	for (uint Pos2 = Lo; Pos2 <= Hi; ++Pos2)
 		{
 		double Dist = Chain.GetDist(Pos2, Pos);
+		if (Trace)
+			Log("  Pos2 [%4u]  %5.1f", Pos2, Dist);
 		if (Maximize)
 			{
 			if (Dist > BestDist)
 				{
 				BestDist = Dist;
 				BestPos = Pos2;
+				if (Trace)
+					Log(" << best");
 				}
 			else if (Dist < BestDist - X)
+				{
+				if (Trace)
+					Log(" << X-drop\n");
 				break;
+				}
+			if (Trace)
+				Log("\n");
 			}
 		else
 			{
@@ -49,9 +97,17 @@ uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,
 				{
 				BestDist = Dist;
 				BestPos = Pos2;
+				if (Trace)
+					Log(" << best");
 				}
 			else if (Dist > BestDist + X)
+				{
+				if (Trace)
+					Log(" << X-drop\n");
 				break;
+				}
+			if (Trace)
+				Log("\n");
 			}
 		}
 	return BestPos;
@@ -121,6 +177,26 @@ void StructProf::GetHSE(uint Pos, double Radius,
 		}
 	}
 
+uint StructProf::GetCavityNumber(uint Pos) const
+	{
+	vector<double> Pt;
+	m_Chain->GetPt(Pos, Pt);
+
+	vector<double> CenterPt;
+	Add_Vecs(Pt, m_CavityCenterPt, CenterPt);
+
+	for (uint i = 0; i < 3; ++i)
+		CenterPt[i] /= 2.0;
+
+	double Dist = GetDist3D(Pt[X], Pt[Y], Pt[Z],
+	  CenterPt[X], CenterPt[Y], CenterPt[Z]);
+
+	vector<uint> SpherePosVec;
+	GetSphere(CenterPt, Dist/2.0, SpherePosVec);
+	uint CN = SIZE(SpherePosVec);
+	return CN;
+	}
+
 uint StructProf::GetTSB(uint Pos, double Radius) const
 	{
 	const uint L = m_Chain->GetSeqLength();
@@ -171,6 +247,7 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 	uint NU, ND;
 	SP.GetHSE(Pos, 12.0, NU, ND);
 	uint TSB = SP.GetTSB(Pos, 10.0);
+	uint CN = SP.GetCavityNumber(Pos);
 
 	uint Pos_aD = Chain.GetMotifPos(A) + 3;
 	uint Pos_bG = Chain.GetMotifPos(B) + 1;
@@ -196,9 +273,26 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 		fprintf(f, "\tDist_aD");
 		fprintf(f, "\tDist_bG");
 		fprintf(f, "\tDist_cD");
+		fprintf(f, "\tCN");
+		fprintf(f, "\tMotif");
 		fprintf(f, "\n");
 		HdrDone = true;
 		}
+
+	uint ResNr = SP.m_Chain->GetResidueNr(Pos);
+	char Motif = '.';
+	if (Pos == g_APos)
+		Motif = 'A';
+	if (Pos == g_BPos)
+		Motif = 'B';
+	if (Pos == g_CPos)
+		Motif = 'C';
+	if (Pos == g_DPos)
+		Motif = 'D';
+	if (Pos == g_EPos)
+		Motif = 'E';
+	if (Pos == g_FPos)
+		Motif = 'F';
 
 	fprintf(f, "%s", Label);
 	fprintf(f, "\t%u", Pos+1);
@@ -210,35 +304,120 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 	fprintf(f, "\t%.1f", Dist_aD);
 	fprintf(f, "\t%.1f", Dist_bG);
 	fprintf(f, "\t%.1f", Dist_cD);
+	fprintf(f, "\t%u", CN);
+	fprintf(f, "\t%c", Motif);
+	fprintf(f, "\t%u", ResNr);
 	fprintf(f, "\n");
 	}
 
-static void DoStructProf(FILE *f, CMPSearcher &CS,
+static bool DoStructProf(FILE *f, CMPSearcher &CS,
  PDBChain &Chain)
 	{
 	if (f == 0)
-		return;
+		return false;
 
 	CS.Search(Chain);
 
-	uint APos = UINT_MAX;
-	uint BPos = UINT_MAX;
-	uint CPos = UINT_MAX;
-	double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
+	g_APos = UINT_MAX;
+	g_BPos = UINT_MAX;
+	g_CPos = UINT_MAX;
+	double PalmScore = CS.GetPSSMStarts(g_APos, g_BPos, g_CPos);
 	if (PalmScore <= 0)
-		return;
+		return false;
 
-	Chain.SetMotifPosVec(APos, BPos, CPos);
-
+	Chain.SetMotifPosVec(g_APos, g_BPos, g_CPos);
 	Chain.PrintSeqCoords(g_fLog);
+
+	const uint L = Chain.GetSeqLength();
+	uint MinPos = (g_APos < 150 ? 0 : g_APos - 150);
+	uint MaxPos = g_CPos + CL + 150 - 1;
+	if (MaxPos >= L)
+		MaxPos = L - 1;
+
 	StructProf SP;
 	SP.SetChain(Chain);
-	const uint L = Chain.GetSeqLength();
-	for (uint Pos = 0; Pos < L; ++Pos)
+	SP.SetMinMaxPos(MinPos, MaxPos);
+	SP.SetCavityCenterPt();
+
+	g_DPos = SP.FindMofifD_Hueuristics();
+	g_EPos = UINT_MAX;
+	if (g_DPos != UINT_MAX)
+		g_EPos = SP.FindMofifE_Hueuristics(g_DPos);
+	g_FPos = UINT_MAX;
+	if (g_APos > 25)
+		g_FPos = SP.FindMofifF_Hueuristics(g_APos);
+
+	for (uint Pos = MinPos; Pos <= MaxPos; ++Pos)
 		DoStructProfPos(f, SP, Pos);
 
-	uint PosD = SP.FindMofifD_Hueuristics();
-	uint PosE = SP.FindMofifE_Hueuristics(PosD);
+	if (g_fpml != 0)
+		{
+		string Label;
+		GetLabelFromFileName(opt_struct_prof, Label);
+		fprintf(g_fpml, "cmd.load(\"%s\")\n", opt_struct_prof);
+		fprintf(g_fpml, "select %s\n", Label.c_str());
+		fprintf(g_fpml, "color gray40, %s\n", Label.c_str());
+		if (g_APos != UINT_MAX)
+			{
+			uint Res1 = Chain.GetResidueNr(g_APos);
+			uint Res2 = Chain.GetResidueNr(g_APos + AL - 1);
+			fprintf(g_fpml, "cmd.select(\"motifA\", \"%s and resi %u-%u\")\n",
+			  Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color tv_blue, motifA\n");
+			}
+		if (g_BPos != UINT_MAX)
+			{
+			uint Res1 = Chain.GetResidueNr(g_BPos);
+			uint Res2 = Chain.GetResidueNr(g_BPos + BL - 1);
+			fprintf(g_fpml, "cmd.select(\"motifB\", \"%s and resi %u-%u\")\n",
+			  Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color tv_green, motifB\n");
+			}
+		if (g_CPos != UINT_MAX)
+			{
+			uint Res1 = Chain.GetResidueNr(g_CPos);
+			uint Res2 = Chain.GetResidueNr(g_CPos + CL - 1);
+			fprintf(g_fpml, "cmd.select(\"motifC\", \"%s and resi %u-%u\")\n",
+			  Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color tv_red, motifC\n");
+			}
+		if (g_DPos != UINT_MAX)
+			{
+			int Res = (int) Chain.GetResidueNr(g_DPos);
+			int Res1 = Res - 2;
+			int Res2 = Res + 2;
+			if (Res1 <= 0)
+				Res1 = 1;
+			fprintf(g_fpml, "cmd.select(\"motifD\", \"%s and resi %u-%u\")\n",
+			  Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color yellow, motifD\n");
+			}
+		if (g_EPos != UINT_MAX)
+			{
+			int Res = (int) Chain.GetResidueNr(g_EPos);
+			int Res1 = Res - 2;
+			int Res2 = Res + 2;
+			if (Res1 <= 0)
+				Res1 = 1;
+			fprintf(g_fpml, "cmd.select(\"motifE\", \"%s and resi %u-%u\")\n",
+			  Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color orange, motifE\n");
+			}
+		if (g_FPos != UINT_MAX)
+			{
+			int Res = (int) Chain.GetResidueNr(g_FPos);
+			int Res1 = Res - 2;
+			int Res2 = Res + 2;
+			if (Res1 <= 0)
+				Res1 = 1;
+			fprintf(g_fpml, "cmd.select(\"motifF\", \"%s and resi %u-%u\")\n",
+			  Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color cyan, motifF\n");
+			}
+		fprintf(g_fpml, "deselect\n");
+		}
+
+	return true;
 	}
 
 void cmd_struct_prof()
@@ -256,12 +435,14 @@ void cmd_struct_prof()
 	CS.SetProf(Prof);
 
 	ChainReader CR;
-	CR.Open(InputFN, false);
+	CR.Open(InputFN, true);
 
 	PDBChain Chain;
 	while (CR.GetNext(Chain))
 		{
 		Chain.SetSS();
-		DoStructProf(g_ftsv, CS, Chain);
+		bool Ok = DoStructProf(g_ftsv, CS, Chain);
+		if (opt_first_only && Ok)
+			break;
 		}
 	}

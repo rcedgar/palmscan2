@@ -151,6 +151,7 @@ FLAG_OPT(pdb_ent)
 FLAG_OPT(dgd)
 FLAG_OPT(top_hit_only)
 FLAG_OPT(refs)
+FLAG_OPT(first_only)
 
 #undef FLAG_OPT
 #undef UNS_OPT

@@ -175,10 +175,10 @@ static inline double GetTheta3D(
   double xj, double yj, double zj)
 	{
 	double DotProd = xi*xj + yi*yj + zi*zj;
-	if (fabs(DotProd) < 1e-6)
-		return 0;
 	double Modi = GetMod_xyz(xi, yi, zi);
 	double Modj = GetMod_xyz(xj, yj, zj);
+	if (fabs(Modi*Modj) < 1e-6)
+		return 0;
 	double cos_theta = DotProd/(Modi*Modj);
 	asserta(cos_theta >= -1.02 && cos_theta <= 1.02);
 	if (cos_theta < -1)
