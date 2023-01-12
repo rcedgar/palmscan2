@@ -3,6 +3,7 @@
 #include "chainreader.h"
 #include "outputfiles.h"
 #include "cmpsearcher.h"
+#include "gsprof.h"
 #include "abcxyz.h"
 
 static uint g_APos;
@@ -313,9 +314,6 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 static bool DoStructProf(FILE *f, CMPSearcher &CS,
  PDBChain &Chain)
 	{
-	if (f == 0)
-		return false;
-
 	CS.Search(Chain);
 
 	g_APos = UINT_MAX;
@@ -338,6 +336,7 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 	SP.SetChain(Chain);
 	SP.SetMinMaxPos(MinPos, MaxPos);
 	SP.SetCavityCenterPt();
+	SP.WriteGSProf(g_fgsprof_out);
 
 	g_DPos = SP.FindMofifD_Hueuristics();
 	g_EPos = UINT_MAX;
@@ -418,6 +417,80 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 		}
 
 	return true;
+	}
+
+void StructProf::WriteGSProf(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	const uint L = m_Chain->GetSeqLength();
+	asserta(m_Chain != 0);
+	const PDBChain &Chain = *m_Chain;
+
+	uint Pos_aD = Chain.GetMotifPos(A) + 3;
+	uint Pos_bG = Chain.GetMotifPos(B) + 1;
+	uint Pos_cD = Chain.GetMotifPos(C) + 3;
+
+	string Annot(L, '.');
+	Annot[Pos_aD] = 'A';
+	Annot[Pos_bG] = 'C';
+	Annot[Pos_cD] = 'D';
+
+	GSProf GP;
+	GP.Init(Chain.m_Label, Chain.m_Seq, Annot);
+
+	vector<double> DistAVec;
+	vector<double> DistBVec;
+	vector<double> DistCVec;
+	vector<double> Dist5Vec;
+	vector<double> CNVec;
+
+	for (uint Pos = m_MinPos; Pos <= m_MaxPos; ++Pos)
+		{
+		double DistA = Chain.GetDist(Pos, Pos_aD);
+		double DistB = Chain.GetDist(Pos, Pos_bG);
+		double DistC = Chain.GetDist(Pos, Pos_cD);
+
+	// 0..12
+		double CN = GetCavityNumber(Pos);
+		if (CN > 12)
+			CN = 12;
+		CN /= 12;
+		asserta(CN >= 0 && CN <= 1);
+
+	// 4..16
+		double Dist5 = 0;
+		if (Pos + 5 < L)
+			Dist5 = Chain.GetDist(Pos, Pos+5);
+		if (Dist5 < 4)
+			Dist5 = 4;
+		else if (Dist5 > 16)
+			Dist5 = 16;
+
+		Dist5 = (Dist5 - 4)/12;
+		asserta(Dist5 >= 0 && Dist5 <= 1);
+
+		DistA /= 30;
+		DistB /= 30;
+		DistC /= 30;
+		DistA = min(DistA, 1.0);
+		DistB = min(DistB, 1.0);
+		DistC = min(DistC, 1.0);
+
+		DistAVec.push_back(DistA);
+		DistBVec.push_back(DistB);
+		DistCVec.push_back(DistC);
+		Dist5Vec.push_back(Dist5);
+		CNVec.push_back(CN);
+		}
+
+	GP.AppendFeature("DA", DistAVec);
+	GP.AppendFeature("DB", DistBVec);
+	GP.AppendFeature("DC", DistCVec);
+	GP.AppendFeature("D5", Dist5Vec);
+	GP.AppendFeature("CN", CNVec);
+	GP.ToTsv(f);
 	}
 
 void cmd_struct_prof()

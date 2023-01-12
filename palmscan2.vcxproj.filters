@@ -401,6 +401,15 @@
     <ClCompile Include="structprofheuristics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gsprof.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gspaligner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gspalign.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -620,6 +629,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="structprof.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gsprof.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gspaligner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

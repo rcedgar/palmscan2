@@ -34,5 +34,6 @@ F(right_abc)
 F(right_cab)
 F(pml)
 F(palmcator)
+F(gsprof_out)
 
 #undef F

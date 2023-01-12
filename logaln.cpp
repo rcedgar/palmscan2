@@ -183,7 +183,7 @@ static void LogAnnotRow(const byte *A, const byte *B, const char *Path,
 			byte b = B[j++];
 			if (toupper(a) == toupper(b))
 				Log("|");
-			else if (g_SubstMx[a][b] > 0.0f)
+			else if (g_SubstMx != 0 && g_SubstMx[a][b] > 0.0f)
 				Log("+");
 			else
 				Log(" ");

@@ -57,38 +57,38 @@ static void Thread(ChainReader &CR, vector<PDBChain> &Qs,
 		++g_HitCount;
 		}
 
-		Q.m_MotifPosVec.clear();
-		Q.m_MotifPosVec.push_back(APos);
-		Q.m_MotifPosVec.push_back(BPos);
-		Q.m_MotifPosVec.push_back(CPos);
-
-		vector<vector<double> > MotifCoords;
-		Q.GetMotifCoords(MotifCoords);
-
-		vector<double> t;
-		vector<vector<double> > R;
-		GetTriForm(MotifCoords, t, R);
-
-		const uint QL = Q.GetSeqLength();
-		vector<double> Pt;
-		vector<double> XPt;
-		for (uint Pos = 0; Pos < QL; ++Pos)
-			{
-			Q.GetPt(Pos, Pt);
-			XFormPt(Pt, t, R, XPt);
-			Q.SetPt(Pos, XPt);
-			}
-		uint PPL = CPos + CL - APos;
-
-#pragma omp critical
-		{
-		PDBChain Q_PPC;
-		Q.SetMotifPosVec(APos, BPos, CPos);
-		Q.GetPPC(Q_PPC);
-		Q_PPC.ToCal(g_fppc);
-		if (optset_pdbout)
-			Q_PPC.ToPDB(opt_pdbout);
-		}
+//		Q.m_MotifPosVec.clear();
+//		Q.m_MotifPosVec.push_back(APos);
+//		Q.m_MotifPosVec.push_back(BPos);
+//		Q.m_MotifPosVec.push_back(CPos);
+//
+//		vector<vector<double> > MotifCoords;
+//		Q.GetMotifCoords(MotifCoords);
+//
+//		vector<double> t;
+//		vector<vector<double> > R;
+//		GetTriForm(MotifCoords, t, R);
+//
+//		const uint QL = Q.GetSeqLength();
+//		vector<double> Pt;
+//		vector<double> XPt;
+//		for (uint Pos = 0; Pos < QL; ++Pos)
+//			{
+//			Q.GetPt(Pos, Pt);
+//			XFormPt(Pt, t, R, XPt);
+//			Q.SetPt(Pos, XPt);
+//			}
+//		uint PPL = CPos + CL - APos;
+//
+//#pragma omp critical
+//		{
+//		PDBChain Q_PPC;
+//		Q.SetMotifPosVec(APos, BPos, CPos);
+//		Q.GetPPC(Q_PPC);
+//		Q_PPC.ToCal(g_fppc);
+//		if (optset_pdbout)
+//			Q_PPC.ToPDB(opt_pdbout);
+//		}
 		}
 	}
 

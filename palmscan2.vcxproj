@@ -290,6 +290,9 @@
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="findcavity.cpp" />
+    <ClCompile Include="gspalign.cpp" />
+    <ClCompile Include="gspaligner.cpp" />
+    <ClCompile Include="gsprof.cpp" />
     <ClCompile Include="hse.cpp" />
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
@@ -417,6 +420,8 @@
     <ClInclude Include="fileseqsource.h" />
     <ClInclude Include="gobuff.h" />
     <ClInclude Include="chainreader.h" />
+    <ClInclude Include="gsprof.h" />
+    <ClInclude Include="gspaligner.h" />
     <ClInclude Include="spher.h" />
     <ClInclude Include="heuristics.h" />
     <ClInclude Include="linereader.h" />

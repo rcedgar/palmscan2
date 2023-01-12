@@ -11,8 +11,7 @@ void LogAln(const byte *A, const byte *B, const char *Path);
 void LogAlnPretty(const byte *A, const byte *B, const char *Path,
   bool StripTermGaps);
 
-float ViterbiFastMainDiagMem(XDPMem &Mem, const byte *A, unsigned LA,
-  const byte *B, unsigned LB, unsigned BandRadius, const AlnParams &AP,
-  PathInfo &PI);
+float ViterbiFastMem(XDPMem &Mem, float **ScoreMx,
+  uint LA, uint LB, string &Path);
 
 #endif // viterbi_h

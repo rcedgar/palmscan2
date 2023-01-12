@@ -34,4 +34,5 @@ public:
 	uint FindMofifD_Hueuristics() const;
 	uint FindMofifE_Hueuristics(uint Pos_MotifD) const;
 	uint FindMofifF_Hueuristics(uint Pos_MotifA) const;
+	void WriteGSProf(FILE *f) const;
 	};
