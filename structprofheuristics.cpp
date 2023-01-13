@@ -34,19 +34,13 @@ uint StructProf::FindMofifD_Hueuristics() const
 	if (CN > 6)
 		return UINT_MAX;
 
-	Log("D[%u] = ", D2+1);
-	for (int i = -3; i <= 3; ++i)
-		{
-		char c = m_Chain->m_Seq[int(D2)+i];
-		Log("%c", c);
-		}
-	Log("\n");
-
 	return D2;
 	}
 
 uint StructProf::FindMofifE_Hueuristics(uint Pos_MotifD) const
 	{
+	if (Pos_MotifD == UINT_MAX)
+		return UINT_MAX;
 	const uint L = m_Chain->GetSeqLength();
 	uint Pos_bG = m_Chain->GetMotifPos(B) + 1;
 	uint Lo1 = Pos_MotifD + 8;
@@ -60,31 +54,19 @@ uint StructProf::FindMofifE_Hueuristics(uint Pos_MotifD) const
 
 	double DistE;
 	uint PosE = SearchDist(Pos_bG, Pos1+1, Hi1, false, 5.0, DistE);
-	Log("E[%u] = ", PosE+1);
-	for (int i = -3; i <= 3; ++i)
-		{
-		char c = m_Chain->m_Seq[int(PosE)+i];
-		Log("%c", c);
-		}
-	Log("\n");
 	return PosE;
 	}
 
-uint StructProf::FindMofifF_Hueuristics(uint Pos_MotifA) const
+uint StructProf::FindMofifF2_Hueuristics(uint Pos_MotifA) const
 	{
+	if (Pos_MotifA == UINT_MAX)
+		return UINT_MAX;
 	if (Pos_MotifA < 25)
 		return UINT_MAX;
 	uint Pos_bG = m_Chain->GetMotifPos(B) + 1;
-	double Dist1 = DBL_MAX;
+	double Dist = DBL_MAX;
 	uint Lo1 = (Pos_MotifA < 100 ? 0 : Pos_MotifA - 100);
 	uint Hi1 = Pos_MotifA - 10;
-	uint PosF = SearchDist(Pos_bG, Lo1, Hi1, false, 99.0, Dist1);
-	Log("F[%u] = ", PosF+1);
-	for (int i = -3; i <= 3; ++i)
-		{
-		char c = m_Chain->m_Seq[int(PosF)+i];
-		Log("%c", c);
-		}
-	Log("\n");
-	return PosF;
+	uint PosF2 = SearchDist(Pos_bG, Lo1, Hi1, false, 99.0, Dist);
+	return PosF2;
 	}

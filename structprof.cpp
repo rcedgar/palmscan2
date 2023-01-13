@@ -11,7 +11,8 @@ static uint g_BPos;
 static uint g_CPos;
 static uint g_DPos;
 static uint g_EPos;
-static uint g_FPos;
+static uint g_F1Pos;
+static uint g_F2Pos;
 
 void StructProf::SetChain(const PDBChain &Chain)
 	{
@@ -337,6 +338,7 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 	SP.SetMinMaxPos(MinPos, MaxPos);
 	SP.SetCavityCenterPt();
 	SP.WriteGSProf(g_fgsprof_out);
+	SP.WriteTsv(g_fmotifs);
 
 	g_DPos = SP.FindMofifD_Hueuristics();
 	g_EPos = UINT_MAX;
@@ -344,7 +346,7 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 		g_EPos = SP.FindMofifE_Hueuristics(g_DPos);
 	g_FPos = UINT_MAX;
 	if (g_APos > 25)
-		g_FPos = SP.FindMofifF_Hueuristics(g_APos);
+		g_FPos = SP.FindMofifF2_Hueuristics(g_APos);
 
 	for (uint Pos = MinPos; Pos <= MaxPos; ++Pos)
 		DoStructProfPos(f, SP, Pos);
@@ -417,6 +419,60 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 		}
 
 	return true;
+	}
+
+void StructProf::WriteMotifTsv(FILE *f, uint Pos, uint n) const
+	{
+	if (f == 0)
+		return;
+	if (Pos == UINT_MAX)
+		{
+		fprintf(f, "\t.\t.");
+		return;
+		}
+
+	const uint L = m_Chain->GetSeqLength();
+	asserta(Pos + n <= L);
+	asserta(m_Chain != 0);
+	const PDBChain &Chain = *m_Chain;
+	const string &Seq = Chain.m_Seq;
+
+	fprintf(f, "\t%u\t", Pos+1);
+	for (uint i = 0; i < n; ++i)
+		fputc(Seq[Pos+i], f);
+	return;
+	}
+
+void StructProf::WriteTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	const uint L = m_Chain->GetSeqLength();
+	asserta(m_Chain != 0);
+	const PDBChain &Chain = *m_Chain;
+
+	uint PosA = Chain.GetMotifPos(A);
+	uint PosB = Chain.GetMotifPos(B);
+	uint PosC = Chain.GetMotifPos(C);
+	uint PosD = FindMofifD_Hueuristics();
+	uint PosE = FindMofifE_Hueuristics(PosD);
+	uint PosF = FindMofifF2_Hueuristics(PosA);
+
+	if (PosF < 4)
+		PosF = UINT_MAX;
+	if (PosD + 3 > L)
+		PosE = UINT_MAX;
+	if (PosE + 4 > L)
+		PosE = UINT_MAX;
+
+	fprintf(f, "%s", Chain.m_Label.c_str());
+	WriteMotifTsv(f, PosA, AL);
+	WriteMotifTsv(f, PosB, BL);
+	WriteMotifTsv(f, PosC, CL);
+	WriteMotifTsv(f, PosD-3, 7);
+	WriteMotifTsv(f, PosE-3, 7);
+	WriteMotifTsv(f, PosF-4, 11);
+	fprintf(f, "\n");
 	}
 
 void StructProf::WriteGSProf(FILE *f) const
