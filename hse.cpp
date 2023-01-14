@@ -83,7 +83,7 @@ void cmd_hse()
 	const string &FN = opt_hse;
 
 	vector<PDBChain *> Chains;
-	ReadChains(FN, Chains, true);
+	ReadChains(FN, Chains);
 	uint FlankSize = 0;
 
 	const uint ChainCount = SIZE(Chains);

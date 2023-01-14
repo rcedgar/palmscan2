@@ -67,7 +67,7 @@ void cmd_pseudo_cb_angles()
 	const string &FN = opt_pseudo_cb_angles;
 
 	vector<PDBChain *> Chains;
-	ReadChains(FN, Chains, true);
+	ReadChains(FN, Chains);
 	uint FlankSize = 0;
 
 	const uint ChainCount = SIZE(Chains);

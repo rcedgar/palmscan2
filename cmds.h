@@ -57,5 +57,6 @@ C(hse_train)
 C(hse_cmp)
 C(struct_prof)
 C(gspalign)
+C(cdp_train)
 
 #undef C

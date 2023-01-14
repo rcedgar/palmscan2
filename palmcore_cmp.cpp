@@ -18,8 +18,7 @@ void cmd_palmcore_cmp()
 	Prof.FromFile(ModelFileName);
 
 	ChainReader CR;
-	CR.m_SaveAtoms = true;
-	CR.Open(QueryFN, true);
+	CR.Open(QueryFN);
 	CMPSearcher CS;
 	PDBChain Q;
 	CS.SetProf(Prof);

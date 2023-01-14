@@ -8,7 +8,7 @@ void cmd_smooth()
 	const string &FN = opt_smooth;
 
 	ChainReader CR;
-	CR.Open(FN, false);
+	CR.Open(FN);
 
 	const uint ShapeLength = 64;
 	const uint w = 2;

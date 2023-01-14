@@ -49,7 +49,7 @@ void GetLabelFromFileName(const string &FileName, string &Label)
 	}
 
 void ReadChains(const vector<string> &FileNames,
-  vector<PDBChain *> &Structures, bool SaveAtoms)
+  vector<PDBChain *> &Structures)
 	{
 	Structures.clear();
 	const uint N = SIZE(FileNames);
@@ -68,7 +68,7 @@ void ReadChains(const vector<string> &FileNames,
 		ProgressStep(i, N, "Reading chains %s", Label.c_str());
 
 		vector<PDBChain *> Chains;
-		PDBChain::ChainsFromLines(Label, Lines, Chains, SaveAtoms);
+		PDBChain::ChainsFromLines(Label, Lines, Chains);
 		const uint NC = SIZE(Chains);
 		for (uint j = 0; j < NC; ++j)
 			Structures.push_back(Chains[j]);
@@ -99,8 +99,7 @@ void ReadChainsCal(const string &FileName, vector<PDBChain *> &Structures)
 	Progress("Reading %s 100.0%% done\n", FileName.c_str());
 	}
 
-void ReadChains(const string &FileName, vector<PDBChain *> &Structures,
-  bool SaveAtoms)
+void ReadChains(const string &FileName, vector<PDBChain *> &Structures)
 	{
 	if (FileName.empty())
 		Die("Missing chains filename");
@@ -114,7 +113,7 @@ void ReadChains(const string &FileName, vector<PDBChain *> &Structures,
 		{
 		vector<string> FileNames;
 		ReadLinesFromFile(FileName, FileNames);
-		ReadChains(FileNames, Structures, SaveAtoms);
+		ReadChains(FileNames, Structures);
 		}
 
 	string Label;
@@ -124,7 +123,7 @@ void ReadChains(const string &FileName, vector<PDBChain *> &Structures,
 	ReadLinesFromFile(FileName, Lines);
 
 	vector<PDBChain *> Chains;
-	PDBChain::ChainsFromLines(Label, Lines, Chains, SaveAtoms);
+	PDBChain::ChainsFromLines(Label, Lines, Chains);
 	const uint NC = SIZE(Chains);
 	for (uint j = 0; j < NC; ++j)
 		Structures.push_back(Chains[j]);

@@ -56,7 +56,7 @@ void cmd_hse_train()
 	PDBChain Chain;
 
 	ChainReader CR;
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 	double Radius = 12.0;
 	if (optset_radius)
 		Radius = opt_radius;

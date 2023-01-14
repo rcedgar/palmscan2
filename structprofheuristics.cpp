@@ -29,6 +29,8 @@ uint StructProf::FindMofifD_Hueuristics() const
 	if (Hi2 >= L)
 		Hi2 = L - 1;
 	uint D2 = SearchDist(Pos_bG, Lo2, Hi2, false, 5.0, Dist2, true);
+	if (D2 < 3)
+		return UINT_MAX;
 
 	uint CN = GetCavityNumber(D2);
 	if (CN > 6)
@@ -51,12 +53,14 @@ uint StructProf::FindMofifE_Hueuristics(uint Pos_MotifD) const
 	uint Pos1 = SearchDist(Pos_bG, Lo1, Hi1, true, 5.0, Dist1);
 	if (Pos1 >= Hi1 - 5)
 		return UINT_MAX;
-
 	double DistE;
 	uint PosE = SearchDist(Pos_bG, Pos1+1, Hi1, false, 5.0, DistE);
-	return PosE;
+	if (PosE < 3)
+		return UINT_MAX;
+	return PosE - 3;
 	}
 
+// PosF2 + 2 = 'R'
 uint StructProf::FindMofifF2_Hueuristics(uint Pos_MotifA) const
 	{
 	if (Pos_MotifA == UINT_MAX)
@@ -67,6 +71,36 @@ uint StructProf::FindMofifF2_Hueuristics(uint Pos_MotifA) const
 	double Dist = DBL_MAX;
 	uint Lo1 = (Pos_MotifA < 100 ? 0 : Pos_MotifA - 100);
 	uint Hi1 = Pos_MotifA - 10;
-	uint PosF2 = SearchDist(Pos_bG, Lo1, Hi1, false, 99.0, Dist);
-	return PosF2;
+	uint Pos1 = SearchDist(Pos_bG, Lo1, Hi1, false, 99.0, Dist);
+
+	int iPos;
+	const char *Seq = m_Chain->m_Seq.c_str();
+
+	Log("Pos1=%u\n", Pos1);
+	for (iPos = int(Pos1) -8; iPos < int(Pos1) + 4; ++iPos)
+		{
+		if (iPos >= 0)
+			{
+			Log("%3d", iPos);
+			Log("  %c\n", Seq[iPos]);
+			}
+		}
+
+#define CheckOffset(Offset)	\
+	{ \
+	iPos = int(Pos1) + Offset; \
+	if (iPos >= 0 && Seq[iPos + 2] == 'R') \
+		return uint(iPos); \
+	}
+
+	CheckOffset(-6)
+	CheckOffset(-5)
+	CheckOffset(-4)
+
+#undef CheckOffset
+
+	if (Pos1 <= 5)
+		return Pos1 - 5;
+
+	return UINT_MAX;
 	}

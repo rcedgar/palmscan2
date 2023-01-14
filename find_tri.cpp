@@ -8,7 +8,7 @@ void cmd_find_tri()
 	const string &FN = opt_find_tri;
 
 	ChainReader CR;
-	CR.Open(FN, false);
+	CR.Open(FN);
 
 	TriFinder TF;
 	TF.SetSigmas(2.0);

@@ -3,17 +3,16 @@
 
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 
-void ChainReader::Open(const string &FileName, bool SaveAtoms)
+void ChainReader::Open(const string &FileName)
 	{
 	Clear();
 
 	m_FileName = FileName;
-	m_SaveAtoms = SaveAtoms;
 
 	if (EndsWith(m_FileName, ".files"))
 		{
 		ReadLinesFromFile(FileName, m_FileNames);
-		ReadChains(m_FileNames, m_FilesChains, SaveAtoms);
+		ReadChains(m_FileNames, m_FilesChains);
 		m_FilesChainIndex = 0;
 		m_Type = CR_Files;
 		}
@@ -76,26 +75,6 @@ bool ChainReader::GetNext_CAL(PDBChain &Chain)
 	return true;
 	}
 
-bool ChainReader::KeepPDBAtomLine(const string &Line)
-	{
-	if (strncmp(Line.c_str(), "REMARK PALMPRINT", 16) == 0)
-		return true;
-	if (strncmp(Line.c_str(), "TITLE ", 6) == 0)
-		return true;
-	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
-		return true;
-	if (strncmp(Line.c_str(), "HETATM", 6) == 0)
-		{
-		string AtomName = Line.substr(12, 4);
-		StripWhiteSpace(AtomName);
-		if (AtomName == "CA")
-			return true;
-		else
-			return false;
-		}
-	return false;
-	}
-
 bool ChainReader::GetNext_PDB(PDBChain &Chain)
 	{
 	string Label;
@@ -116,7 +95,7 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 		const string &Line = m_Lines[m_LineIndex++];
 		if (Line == "TER   ")
 			break;
-		if (!KeepPDBAtomLine(Line))
+		if (!PDBChain::IsATOMLine(Line))
 			continue;
 		char ChainChar = PDBChain::GetChainCharFromATOMLine(Line);
 		if (CurrentChainChar == 0)
@@ -128,7 +107,7 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 				--m_LineIndex;
 				if (CurrentChainChar != 0)
 					Label += CurrentChainChar;
-				char ChainChar2 = Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
+				char ChainChar2 = Chain.FromPDBLines(Label, Lines);
 				asserta(ChainChar2 == CurrentChainChar);
 				return true;
 				}
@@ -141,9 +120,8 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 		return false;
 		}
 
-	if (CurrentChainChar != 0)
-		Label += CurrentChainChar;
-	Chain.FromPDBLines(Label, Lines, m_SaveAtoms);
+	PDBChain::AppendChainToLabel(Label, CurrentChainChar);
+	Chain.FromPDBLines(Label, Lines);
 	return true;
 	}
 

@@ -81,8 +81,7 @@ void cmd_ppcontactmap_pssm()
 		RSs[i].Init(Model);
 
 	ChainReader CR;
-	CR.m_SaveAtoms = true;
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(CR, Qs, RSs);

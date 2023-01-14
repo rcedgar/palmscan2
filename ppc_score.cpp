@@ -14,7 +14,7 @@ void cmd_ppc_score()
 	const string &InputFileName = opt_ppc_score;
 
 	ChainReader CR;
-	CR.Open(InputFileName, false);
+	CR.Open(InputFileName);
 
 	Pf(g_ftsv, "Label");
 	Pf(g_ftsv, "\tScore");

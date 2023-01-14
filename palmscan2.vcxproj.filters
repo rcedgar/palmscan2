@@ -410,6 +410,15 @@
     <ClCompile Include="gspalign.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cdinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cddata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cdp_train.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -636,6 +645,12 @@
     </ClInclude>
     <ClInclude Include="gspaligner.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cdinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cddata.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

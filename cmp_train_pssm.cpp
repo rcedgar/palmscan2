@@ -234,20 +234,20 @@ void cmd_cmp_train_pssm()
 	RS.Init(Model);
 
 	ChainReader CR;
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 	CMP Prof;
 	Train(CR, RS, Prof);
 	Prof.ToFile(opt_output);
 
 	CR.Clear();
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 	CMPSearcher CS;
 	CS.m_DistMx = &Prof.m_RefMeans;
 	CS.m_StdDevs = &Prof.m_StdDevs;
 
 	CR.Clear();
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 	Test(CR, RS, CS);
 	}

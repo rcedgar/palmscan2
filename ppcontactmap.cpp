@@ -119,8 +119,7 @@ void cmd_ppcontactmap()
 	uint HitCount = 0;
 
 	ChainReader CR;
-	CR.m_SaveAtoms = true;
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(CR, MotifCoordsVec, Labels, LabelToIndex);

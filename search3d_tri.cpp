@@ -77,7 +77,7 @@ void cmd_search3d_tri()
 		TSHitMgr &HM = HMs[ThreadIndex];
 
 		const string &QueryFileName = QueryFileNames[iQ];
-		PDBChain::ReadChainsFromFile(QueryFileName, QVec, false);
+		PDBChain::ReadChainsFromFile(QueryFileName, QVec);
 		uint ChainCount = SIZE(QVec);
 		for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 			{

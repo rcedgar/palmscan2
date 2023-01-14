@@ -42,7 +42,7 @@ void cmd_pdb_pp()
 	FILE *fOut = CreateStdioFile(opt_output);
 
 	vector<PDBChain *> Chains;
-	ReadChains(FN, Chains, true);
+	ReadChains(FN, Chains);
 	uint FlankSize = 0;
 	if (optset_flanks)
 		FlankSize = opt_flanks;

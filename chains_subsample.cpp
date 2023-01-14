@@ -38,7 +38,7 @@ void cmd_chains_subsample()
 	asserta(SampleSize > 0);
 
 	vector<PDBChain *> Chains;
-	ReadChains(InputFileName, Chains, false);
+	ReadChains(InputFileName, Chains);
 	const uint N = min(SIZE(Chains), SampleSize);
 	if (N < SampleSize)
 		Warning("sample_size > input");

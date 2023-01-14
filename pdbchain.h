@@ -8,6 +8,7 @@ public:
 	vector<double> m_Xs;
 	vector<double> m_Ys;
 	vector<double> m_Zs;
+	vector<int> m_ResNrs;
 	vector<vector<string> > m_ATOMs;
 	vector<uint> m_MotifPosVec;
 	string m_SS;
@@ -20,6 +21,7 @@ public:
 		m_Xs.clear();
 		m_Ys.clear();
 		m_Zs.clear();
+		m_ResNrs.clear();
 		m_MotifPosVec.clear();
 		m_ATOMs.clear();
 		m_SS.clear();
@@ -29,7 +31,7 @@ public:
 	uint GetSeqLength() const;
 	void PrintSeqCoords(FILE *f) const;
 	char FromPDBLines(const string &Label,
-	  const vector<string> &Lines, bool SaveAtoms);
+	  const vector<string> &Lines);
 	void FromCal(const string &FileName);
 	void FromCalLines(const vector<string> &Lines);
 	void ParseCalLabelLine(const string &Line);
@@ -96,14 +98,14 @@ public:
 	static void GetPalmCoreCoords(uint PosA, uint PosC, uint L,
 	  uint &Lo, uint &Hi);
 	static void ChainsFromLines(const string &Label,
-	  const vector<string> &Lines, vector<PDBChain *> &Chains,
-	  bool SaveAstoms);
+	  const vector<string> &Lines, vector<PDBChain *> &Chains);
 	static void ReadChainsFromFile(const string &FileName,
-	  vector<PDBChain *> &Chains, bool SaveAtoms);
+	  vector<PDBChain *> &Chains);
 	static void AppendChainToLabel(string &Label, char Chain);
 	static char GetChainCharFromATOMLine(const string &Line);
 	static bool IsATOMLine(const string &Line);
 	static int GetResidueNrFromATOMLine(const string &Line);
+	static void HackHETAMLine(string &Line);
 	static void GetAtomNameFromATOMLine(const string &Line,
 	  string &AtomName);
 	static void SetResidueNrInATOMLine(const string &InputLine,
@@ -112,11 +114,13 @@ public:
 	  double &x, double &y, double &z);
 	static void SetXYZInATOMLine(const string &InputLine,
 	  double x, double y, double z, string &OutputLine);
+	static void GetFieldsFromResidueATOMLines(const vector<string> &Lines,
+	  double &X, double &Y, double &Z, char &aa, int &ResNr);
 	};
 
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 void ReadChains(const string &FileName,
-  vector<PDBChain *> &Structures, bool SaveAtoms = false);
+  vector<PDBChain *> &Structures);
 void ReadChains(const vector<string> &FileNames,
-  vector<PDBChain *> &Structures, bool SaveAtoms);
+  vector<PDBChain *> &Structures);
 void GetLabelFromFileName(const string &FileName, string &Label);

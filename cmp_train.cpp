@@ -418,18 +418,18 @@ void cmd_cmp_train()
 	PDBChain Q;
 
 	ChainReader CR;
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 	CMP Prof;
 	Train(CR, Labels, LabelToIndex, MotifCoordsVec, Prof);
 	Prof.ToFile(opt_output);
 
 	CR.Clear();
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 	CMPSearcher CS;
 	CR.Clear();
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 	CS.m_DistMx = &Prof.m_RefMeans;
 	CS.m_StdDevs = &Prof.m_StdDevs;
 	Test(CR, Labels, LabelToIndex, MotifCoordsVec, CS);

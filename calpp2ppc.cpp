@@ -9,7 +9,7 @@ void cmd_calpp2ppc()
 	const string &InputFN = opt_calpp2ppc;
 
 	vector<PDBChain *> Chains;
-	ReadChains(InputFN, Chains, false);
+	ReadChains(InputFN, Chains);
 
 	const uint N = SIZE(Chains);
 	for (uint i = 0; i < N; ++i)

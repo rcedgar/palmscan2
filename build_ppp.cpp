@@ -13,7 +13,7 @@ void cmd_build_ppp()
 	FILE *fOut = CreateStdioFile(opt_output);
 
 	ChainReader CR;
-	CR.Open(InputFileName, false);
+	CR.Open(InputFileName);
 
 	uint ChainCount = 0;
 	PDBChain Chain;

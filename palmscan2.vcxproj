@@ -281,6 +281,9 @@
     <ClCompile Include="build_rdrp_model.cpp" />
     <ClCompile Include="cal2fa.cpp" />
     <ClCompile Include="calreader.cpp" />
+    <ClCompile Include="cddata.cpp" />
+    <ClCompile Include="cdinfo.cpp" />
+    <ClCompile Include="cdp_train.cpp" />
     <ClCompile Include="chainreader.cpp" />
     <ClCompile Include="chains_subsample.cpp" />
     <ClCompile Include="checkppc.cpp" />
@@ -412,6 +415,8 @@
     <ClInclude Include="alpha.h" />
     <ClInclude Include="calreader.h" />
     <ClInclude Include="cavity.h" />
+    <ClInclude Include="cddata.h" />
+    <ClInclude Include="cdinfo.h" />
     <ClInclude Include="cmds.h" />
     <ClInclude Include="conncomp.h" />
     <ClInclude Include="diagbox.h" />

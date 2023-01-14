@@ -311,10 +311,11 @@ void PDBChain::GetCAAtomLine(uint Pos, string &Line) const
 
 int PDBChain::GetResidueNr(uint Pos) const
 	{
-	string CALine;
-	GetCAAtomLine(Pos, CALine);
-	int ResNr = GetResidueNrFromATOMLine(CALine);
-	return ResNr;
+	//string CALine;
+	//GetCAAtomLine(Pos, CALine);
+	//int ResNr = GetResidueNrFromATOMLine(CALine);
+	asserta(Pos < SIZE(m_ResNrs));
+	return m_ResNrs[Pos];
 	}
 
 void PDBChain::GetResidueRange(uint PosLo, uint ResidueCount,
@@ -374,8 +375,26 @@ void PDBChain::SetResidueNrInATOMLine(const string &InputLine,
 	asserta(SIZE(OutputLine) == SIZE(InputLine));
 	}
 
+void PDBChain::HackHETAMLine(string &Line)
+	{
+	if (strncmp(Line.c_str(), "HETATM", 6) == 0 &&
+		Line.substr(17, 3) == "MSE")
+		{
+		Line[0] = 'A';
+		Line[1] = 'T';
+		Line[2] = 'O';
+		Line[3] = 'M';
+		Line[4] = ' ';
+		Line[5] = ' ';
+
+		Line[17] = 'M';
+		Line[18] = 'E';
+		Line[19] = 'T';
+		}
+	}
+
 char PDBChain::FromPDBLines(const string &Label,
-  const vector<string> &Lines, bool SaveAtoms)
+  const vector<string> &Lines)
 	{
 	Clear();
 
@@ -389,57 +408,10 @@ char PDBChain::FromPDBLines(const string &Label,
 		string Line = Lines[LineNr];
 		const size_t L = Line.size();
 
-		if (strncmp(Line.c_str(), "HETATM", 6) == 0 &&
-		  Line.substr(17, 3) == "MSE")
-			{
-			Line[0] = 'A';
-			Line[1] = 'T';
-			Line[2] = 'O';
-			Line[3] = 'M';
-			Line[4] = ' ';
-			Line[5] = ' ';
-
-			Line[17] = 'M';
-			Line[18] = 'E';
-			Line[19] = 'T';
-			}
-
+		HackHETAMLine(Line);
 		if (strncmp(Line.c_str(), "ATOM  ", 6) != 0)
 			continue;
-
-		if (SaveAtoms)
-			{
-		// 23 - 26 residue nr.
-			int ResidueNumber = 0;
-			int Sign = 1;
-			for (uint i = 22; i < 26; ++i)
-				{
-				char c = Line[i];
-				if (c == '-')
-					{
-					Sign = -1;
-					continue;
-					}
-				if (!isspace(c) && !isdigit(c))
-					Die("Invalid character in residue number field (cols 23-26): %s\n",
-					  Line.c_str());
-				if (isdigit(c))
-					ResidueNumber = ResidueNumber*10 + (c - '0');
-				}
-			ResidueNumber *= Sign;
-			if (ResidueNumber != CurrentResidueNumber)
-				{
-				CurrentResidueNumber = ResidueNumber;
-				++ResidueCount;
-				m_ATOMs.resize(ResidueCount);
-				}
-			asserta(SIZE(m_ATOMs) > 0);
-			m_ATOMs.back().push_back(Line);
-			}
-
-		string AtomName = Line.substr(12, 4);
-		StripWhiteSpace(AtomName);
-		if (AtomName != "CA")
+		if (Line[26] != ' ') // Insertion code
 			continue;
 
 		char LineChain = Line[21];
@@ -448,29 +420,74 @@ char PDBChain::FromPDBLines(const string &Label,
 		else if (Chain != LineChain)
 			Die("PDBChain::FromLines() two chains %c, %c",
 			  Chain, LineChain);
-		string AAA = Line.substr(17, 3);
-		char aa = GetOneFromThree(AAA);
+
+		int ResidueNumber = GetResidueNrFromATOMLine(Line);
+		if (ResidueNumber != CurrentResidueNumber)
+			{
+			CurrentResidueNumber = ResidueNumber;
+			++ResidueCount;
+			m_ATOMs.resize(ResidueCount);
+			}
+		asserta(SIZE(m_ATOMs) > 0);
+		m_ATOMs.back().push_back(Line);
+		}
+
+	AppendChainToLabel(m_Label, Chain);
+
+	const uint L = SIZE(m_ATOMs);
+	for (uint i = 0; i < L; ++i)
+		{
+		char aa;
+		double X, Y, Z;
+		int ResNr;
+		GetFieldsFromResidueATOMLines(m_ATOMs[i], X, Y, Z, aa, ResNr);
+
 		m_Seq.push_back(aa);
-
-		string sX, sY, sZ;
-		sX = Line.substr(30, 8);
-		sY = Line.substr(38, 8);
-		sZ = Line.substr(46, 8);
-
-		StripWhiteSpace(sX);
-		StripWhiteSpace(sY);
-		StripWhiteSpace(sZ);
-
-		double X = StrToFloat(sX);
-		double Y = StrToFloat(sY);
-		double Z = StrToFloat(sZ);
-
 		m_Xs.push_back(X);
 		m_Ys.push_back(Y);
 		m_Zs.push_back(Z);
+		m_ResNrs.push_back(ResNr);
 		}
-	AppendChainToLabel(m_Label, Chain);
+
 	return Chain;
+	}
+
+void PDBChain::GetFieldsFromResidueATOMLines(const vector<string> &Lines,
+  double &X, double &Y, double &Z, char &aa, int &ResNr)
+	{
+	aa = 'X';
+	ResNr = -999;
+	X = -999;
+	Y = -999;
+	Z = -999;
+	const uint N = SIZE(Lines);
+	for (uint i = 0; i < SIZE(Lines); ++i)
+		{
+		const string &Line = Lines[i];
+		string AtomName = Line.substr(12, 4);
+		StripWhiteSpace(AtomName);
+		if (AtomName == "CA")
+			{
+			string AAA = Line.substr(17, 3);
+			aa = GetOneFromThree(AAA);
+
+			string sX, sY, sZ;
+			sX = Line.substr(30, 8);
+			sY = Line.substr(38, 8);
+			sZ = Line.substr(46, 8);
+
+			StripWhiteSpace(sX);
+			StripWhiteSpace(sY);
+			StripWhiteSpace(sZ);
+
+			X = StrToFloat(sX);
+			Y = StrToFloat(sY);
+			Z = StrToFloat(sZ);
+
+			ResNr = GetResidueNrFromATOMLine(Line);
+			break;
+			}
+		}
 	}
 
 void PDBChain::GetSubSeq(uint Pos, uint n, string &s) const
@@ -766,8 +783,7 @@ void PDBChain::GetSubSeq(uint MotifStartPos, uint n,
 	}
 
 void PDBChain::ChainsFromLines(const string &Label,
-  const vector<string> &Lines, vector<PDBChain *> &Chains,
-  bool SaveAtoms)
+  const vector<string> &Lines, vector<PDBChain *> &Chains)
 	{
 	Chains.clear();
 	const uint N = SIZE(Lines);
@@ -788,7 +804,7 @@ void PDBChain::ChainsFromLines(const string &Label,
 				if (AnyAtoms && !ChainLines.empty())
 					{
 					PDBChain *Chain = new PDBChain;
-					char ChainChar = Chain->FromPDBLines(Label, ChainLines, SaveAtoms);
+					char ChainChar = Chain->FromPDBLines(Label, ChainLines);
 					if (ChainChar != 0)
 						Chains.push_back(Chain);
 					ChainLines.clear();
@@ -804,18 +820,18 @@ void PDBChain::ChainsFromLines(const string &Label,
 	if (!ChainLines.empty() && AnyAtoms)
 		{
 		PDBChain *Chain = new PDBChain;
-		Chain->FromPDBLines(Label, ChainLines, SaveAtoms);
+		Chain->FromPDBLines(Label, ChainLines);
 		ChainLines.clear();
 		Chains.push_back(Chain);
 		}
 	}
 
 void PDBChain::ReadChainsFromFile(const string &FileName,
-  vector<PDBChain *> &Chains, bool SaveAtoms)
+  vector<PDBChain *> &Chains)
 	{
 	vector<string> Lines;
 	ReadLinesFromFile(FileName, Lines);
-	ChainsFromLines(FileName, Lines, Chains, SaveAtoms);
+	ChainsFromLines(FileName, Lines, Chains);
 	}
 
 void PDBChain::GetTriFormChain_DGD(PDBChain &XChain) const
@@ -953,7 +969,7 @@ void PDBChain::AppendChainToLabel(string &Label, char Chain)
 
 	string _X = "_";
 	_X += Chain;
-	if (!EndsWith(Label, _X))
+	if (Label.find(_X) == string::npos)
 		{
 		Label += "_";
 		Label += Chain;
@@ -1141,6 +1157,8 @@ void PDBChain::GetPPC(PDBChain &PPC) const
 
 bool PDBChain::IsATOMLine(const string &Line)
 	{
+	if (Line[26] != ' ') // insertion code
+		return false;
 	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
 	if (strncmp(Line.c_str(), "HETATM", 6) == 0)

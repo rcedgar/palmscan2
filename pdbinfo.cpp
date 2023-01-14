@@ -7,7 +7,7 @@ void cmd_pdbinfo()
 	const string &InputFileName = opt_pdbinfo;
 
 	ChainReader CR;
-	CR.Open(InputFileName, false);
+	CR.Open(InputFileName);
 
 	PDBChain Chain;
 	uint ChainCount = 0;

@@ -87,7 +87,6 @@ void cmd_cm_search()
 	CMSearcher::ProfsFromFile(DBFileName);
 
 	ChainReader CR;
-	CR.m_SaveAtoms = true;
 	CR.Open(QueryFN, false);
 
 	uint ThreadCount = GetRequestedThreadCount();

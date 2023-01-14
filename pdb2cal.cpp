@@ -8,7 +8,7 @@ void cmd_pdb2cal()
 	const string &FN = opt_pdb2cal;
 
 	ChainReader CR;
-	CR.Open(FN, false);
+	CR.Open(FN);
 
 	PDBChain Chain;
 	uint Count = 0;

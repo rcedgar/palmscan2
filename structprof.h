@@ -6,21 +6,21 @@ class StructProf
 	{
 public:
 	const PDBChain *m_Chain = 0;
-	uint m_MinPos = UINT_MAX;
-	uint m_MaxPos = UINT_MAX;
+	//uint m_MinPos = UINT_MAX;
+	//uint m_MaxPos = UINT_MAX;
 	vector<double> m_CavityCenterPt;
 
 public:
 	void Clear()
 		{
 		m_Chain = 0;
-		m_MinPos = UINT_MAX;
-		m_MaxPos = UINT_MAX;
+		//m_MinPos = UINT_MAX;
+		//m_MaxPos = UINT_MAX;
 		m_CavityCenterPt.clear();
 		}
 
 	void SetChain(const PDBChain &Chain);
-	void SetMinMaxPos(uint MinPos, uint MaxPos);
+	//void SetMinMaxPos(uint MinPos, uint MaxPos);
 	void SetCavityCenterPt();
 	void GetHSE(uint Pos, double Radius,
 	  uint &NU, uint &ND) const;

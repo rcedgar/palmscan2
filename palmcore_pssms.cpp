@@ -15,7 +15,7 @@ void cmd_palmcore_pssms()
 	Model.FromModelFile(ModelFileName);
 
 	vector<PDBChain *> Chains;
-	ReadChains(InputFN, Chains, true);
+	ReadChains(InputFN, Chains);
 
 	const uint ChainCount = SIZE(Chains);
 	uint PermutedCount = 0;

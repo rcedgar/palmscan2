@@ -14,7 +14,7 @@ void cmd_search_ppp()
 	bool DGD = true;
 
 	ChainReader CR;
-	CR.Open(QueryFileName, false);
+	CR.Open(QueryFileName);
 
 	uint ChainCount = 0;
 	PDBChain Chain;

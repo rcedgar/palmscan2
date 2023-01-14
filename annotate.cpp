@@ -20,8 +20,7 @@ void cmd_annotate()
 	Prof.FromFile(ModelFileName);
 
 	ChainReader CR;
-	CR.m_SaveAtoms = true;
-	CR.Open(QueryFN, true);
+	CR.Open(QueryFN);
 
 	CMPSearcher CS;
 	CS.SetProf(Prof);

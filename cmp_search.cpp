@@ -101,8 +101,7 @@ void cmd_cmp_search()
 	Prof.FromFile(ModelFileName);
 
 	ChainReader CR;
-	CR.m_SaveAtoms = true;
-	CR.Open(QueryFN, false);
+	CR.Open(QueryFN);
 
 	uint ThreadCount = GetRequestedThreadCount();
 

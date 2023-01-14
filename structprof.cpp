@@ -18,18 +18,18 @@ void StructProf::SetChain(const PDBChain &Chain)
 	{
 	Clear();
 	m_Chain = &Chain;
-	m_MinPos = 0;
+	//m_MinPos = 0;
 	uint L = Chain.GetSeqLength();
 	asserta(L > 0);
-	m_MaxPos = L - 1;
+	//m_MaxPos = L - 1;
 	}
 
-void StructProf::SetMinMaxPos(uint MinPos, uint MaxPos)
-	{
-	asserta(MinPos <= MaxPos && MaxPos < m_Chain->GetSeqLength());
-	m_MinPos = MinPos;
-	m_MaxPos = MaxPos;
-	}
+//void StructProf::SetMinMaxPos(uint MinPos, uint MaxPos)
+//	{
+//	asserta(MinPos <= MaxPos && MaxPos < m_Chain->GetSeqLength());
+//	m_MinPos = MinPos;
+//	m_MaxPos = MaxPos;
+//	}
 
 void StructProf::SetCavityCenterPt()
 	{
@@ -120,9 +120,10 @@ void StructProf::GetSphere(const vector<double> &CenterPt,
 	{
 	PosVec.clear();
 	const uint L = m_Chain->GetSeqLength();
-	asserta(m_MinPos <= m_MaxPos && m_MaxPos < L);
+	//asserta(m_MinPos <= m_MaxPos && m_MaxPos < L);
 	vector<double> Pt;
-	for (uint Pos2 = m_MinPos; Pos2 <= m_MaxPos; ++Pos2)
+	//for (uint Pos2 = m_MinPos; Pos2 <= m_MaxPos; ++Pos2)
+	for (uint Pos2 = 0; Pos2 < L; ++Pos2)
 		{
 		m_Chain->GetPt(Pos2, Pt);
 		double d = GetDist(CenterPt, Pt);
@@ -293,7 +294,7 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 		Motif = 'D';
 	if (Pos == g_EPos)
 		Motif = 'E';
-	if (Pos == g_FPos)
+	if (Pos == g_F2Pos)
 		Motif = 'F';
 
 	fprintf(f, "%s", Label);
@@ -335,7 +336,7 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 
 	StructProf SP;
 	SP.SetChain(Chain);
-	SP.SetMinMaxPos(MinPos, MaxPos);
+	//SP.SetMinMaxPos(MinPos, MaxPos);
 	SP.SetCavityCenterPt();
 	SP.WriteGSProf(g_fgsprof_out);
 	SP.WriteTsv(g_fmotifs);
@@ -344,9 +345,9 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 	g_EPos = UINT_MAX;
 	if (g_DPos != UINT_MAX)
 		g_EPos = SP.FindMofifE_Hueuristics(g_DPos);
-	g_FPos = UINT_MAX;
+	g_F2Pos = UINT_MAX;
 	if (g_APos > 25)
-		g_FPos = SP.FindMofifF2_Hueuristics(g_APos);
+		g_F2Pos = SP.FindMofifF2_Hueuristics(g_APos);
 
 	for (uint Pos = MinPos; Pos <= MaxPos; ++Pos)
 		DoStructProfPos(f, SP, Pos);
@@ -365,55 +366,76 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 			fprintf(g_fpml, "cmd.select(\"motifA\", \"%s and resi %u-%u\")\n",
 			  Label.c_str(), Res1, Res2);
 			fprintf(g_fpml, "color tv_blue, motifA\n");
+
+			fprintf(g_fpml, "cmd.select(\"motifA_D\", \"%s and resi %d and name CA\")\n",
+			  Label.c_str(), Res1+3);
+			fprintf(g_fpml, "show sphere, motifA_D\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
 		if (g_BPos != UINT_MAX)
 			{
-			uint Res1 = Chain.GetResidueNr(g_BPos);
-			uint Res2 = Chain.GetResidueNr(g_BPos + BL - 1);
-			fprintf(g_fpml, "cmd.select(\"motifB\", \"%s and resi %u-%u\")\n",
+			int Res1 = Chain.GetResidueNr(g_BPos);
+			int Res2 = Chain.GetResidueNr(g_BPos + BL - 1);
+			fprintf(g_fpml, "cmd.select(\"motifB\", \"%s and resi %d-%d\")\n",
 			  Label.c_str(), Res1, Res2);
 			fprintf(g_fpml, "color tv_green, motifB\n");
+
+			fprintf(g_fpml, "cmd.select(\"motifB_G\", \"%s and resi %d and name CA\")\n",
+			  Label.c_str(), Res1+1);
+			fprintf(g_fpml, "show sphere, motifB_G\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
 		if (g_CPos != UINT_MAX)
 			{
-			uint Res1 = Chain.GetResidueNr(g_CPos);
-			uint Res2 = Chain.GetResidueNr(g_CPos + CL - 1);
-			fprintf(g_fpml, "cmd.select(\"motifC\", \"%s and resi %u-%u\")\n",
+			int Res1 = Chain.GetResidueNr(g_CPos);
+			int Res2 = Chain.GetResidueNr(g_CPos + CL - 1);
+			fprintf(g_fpml, "cmd.select(\"motifC\", \"%s and resi %d-%d\")\n",
 			  Label.c_str(), Res1, Res2);
 			fprintf(g_fpml, "color tv_red, motifC\n");
+
+			fprintf(g_fpml, "cmd.select(\"motifC_D\", \"%s and resi %d and name CA\")\n",
+			  Label.c_str(), Res1+3);
+			fprintf(g_fpml, "show sphere, motifC_D\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
 		if (g_DPos != UINT_MAX)
 			{
-			int Res = (int) Chain.GetResidueNr(g_DPos);
-			int Res1 = Res - 2;
-			int Res2 = Res + 2;
-			if (Res1 <= 0)
-				Res1 = 1;
+			int Res1 = Chain.GetResidueNr(g_DPos);
+			int Res2 = Chain.GetResidueNr(g_DPos + 6);
 			fprintf(g_fpml, "cmd.select(\"motifD\", \"%s and resi %u-%u\")\n",
 			  Label.c_str(), Res1, Res2);
 			fprintf(g_fpml, "color yellow, motifD\n");
+
+			fprintf(g_fpml, "cmd.select(\"motifD_X\", \"%s and resi %d and name CA\")\n",
+			  Label.c_str(), Res1+3);
+			fprintf(g_fpml, "show sphere, motifD_X\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
 		if (g_EPos != UINT_MAX)
 			{
-			int Res = (int) Chain.GetResidueNr(g_EPos);
-			int Res1 = Res - 2;
-			int Res2 = Res + 2;
-			if (Res1 <= 0)
-				Res1 = 1;
+			int Res1 = Chain.GetResidueNr(g_EPos);
+			int Res2 = Chain.GetResidueNr(g_EPos + 6);
 			fprintf(g_fpml, "cmd.select(\"motifE\", \"%s and resi %u-%u\")\n",
 			  Label.c_str(), Res1, Res2);
 			fprintf(g_fpml, "color orange, motifE\n");
+
+			fprintf(g_fpml, "cmd.select(\"motifE_X\", \"%s and resi %d and name CA\")\n",
+			  Label.c_str(), Res1+3);
+			fprintf(g_fpml, "show sphere, motifE_X\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
-		if (g_FPos != UINT_MAX)
+		if (g_F2Pos != UINT_MAX)
 			{
-			int Res = (int) Chain.GetResidueNr(g_FPos);
-			int Res1 = Res - 2;
-			int Res2 = Res + 2;
-			if (Res1 <= 0)
-				Res1 = 1;
+			int Res1 = Chain.GetResidueNr(g_F2Pos);
+			int Res2 = Chain.GetResidueNr(g_F2Pos + 6);
 			fprintf(g_fpml, "cmd.select(\"motifF\", \"%s and resi %u-%u\")\n",
 			  Label.c_str(), Res1, Res2);
 			fprintf(g_fpml, "color cyan, motifF\n");
+
+			fprintf(g_fpml, "cmd.select(\"motifF_R\", \"%s and resi %d and name CA\")\n",
+			  Label.c_str(), Res1+2);
+			fprintf(g_fpml, "show sphere, motifF_R\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
 		fprintf(g_fpml, "deselect\n");
 		}
@@ -458,20 +480,18 @@ void StructProf::WriteTsv(FILE *f) const
 	uint PosE = FindMofifE_Hueuristics(PosD);
 	uint PosF = FindMofifF2_Hueuristics(PosA);
 
-	if (PosF < 4)
-		PosF = UINT_MAX;
-	if (PosD + 3 > L)
+	if (PosD + 7 > L)
 		PosE = UINT_MAX;
-	if (PosE + 4 > L)
+	if (PosE + 7 > L)
 		PosE = UINT_MAX;
 
 	fprintf(f, "%s", Chain.m_Label.c_str());
 	WriteMotifTsv(f, PosA, AL);
 	WriteMotifTsv(f, PosB, BL);
-	WriteMotifTsv(f, PosC, CL);
-	WriteMotifTsv(f, PosD-3, 7);
-	WriteMotifTsv(f, PosE-3, 7);
-	WriteMotifTsv(f, PosF-4, 11);
+	WriteMotifTsv(f, PosC, CL+2);
+	WriteMotifTsv(f, PosD, 7);
+	WriteMotifTsv(f, PosE, 7);
+	WriteMotifTsv(f, PosF, 7);
 	fprintf(f, "\n");
 	}
 
@@ -502,7 +522,8 @@ void StructProf::WriteGSProf(FILE *f) const
 	vector<double> Dist5Vec;
 	vector<double> CNVec;
 
-	for (uint Pos = m_MinPos; Pos <= m_MaxPos; ++Pos)
+	//for (uint Pos = m_MinPos; Pos <= m_MaxPos; ++Pos)
+	for (uint Pos = 0; Pos < L; ++Pos)
 		{
 		double DistA = Chain.GetDist(Pos, Pos_aD);
 		double DistB = Chain.GetDist(Pos, Pos_bG);
@@ -564,7 +585,7 @@ void cmd_struct_prof()
 	CS.SetProf(Prof);
 
 	ChainReader CR;
-	CR.Open(InputFN, true);
+	CR.Open(InputFN);
 
 	PDBChain Chain;
 	while (CR.GetNext(Chain))
