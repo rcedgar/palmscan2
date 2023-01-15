@@ -419,6 +419,12 @@
     <ClCompile Include="cdp_train.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cdsearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cdtemplate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -649,8 +655,14 @@
     <ClInclude Include="cdinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cdsearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="cddata.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cdtemplate.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

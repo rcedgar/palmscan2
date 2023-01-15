@@ -5,7 +5,7 @@ void CDInfo::LogMe() const
 	{
 	Log("%u motifs: \n", m_MotifCount);
 	for (uint i = 0; i < m_MotifCount; ++i)
-		Log(" %s(%s)",
+		Log(" %s(%u)",
 		  m_MotifNames[i].c_str(),
 		  m_MotifLengths[i]);
 	}
@@ -22,9 +22,10 @@ void CDInfo::Init(const vector<string> &MotifNames,
 	for (uint i = 0; i < m_MotifCount; ++i)
 		{
 		uint ML = m_MotifLengths[i];
-		m_Offsets.push_back(ML);
+		m_Offsets.push_back(Offset);
 		Offset += ML;
 		}
+	m_Offsets.push_back(Offset);
 
 	uint Size = GetSize();
 	for (uint Ix = 0; Ix < Size; ++Ix)
@@ -40,8 +41,7 @@ void CDInfo::GetCoord(uint Ix, uint &MotifIndex, uint &i) const
 	{
 	for (MotifIndex = 0; ; ++MotifIndex)
 		{
-		if (MotifIndex + 1 == m_MotifCount ||
-		  Ix < m_Offsets[MotifIndex+1])
+		if (Ix < m_Offsets[MotifIndex+1])
 			{
 			i = Ix - m_Offsets[MotifIndex];
 			return;
@@ -96,9 +96,21 @@ void CDInfo::FromTsv(FILE *f)
 		}
 	}
 
+const char *CDInfo::GetMotifName(uint MotifIndex) const
+	{
+	asserta(MotifIndex < SIZE(m_MotifNames));
+	return m_MotifNames[MotifIndex].c_str();
+	}
+
+uint CDInfo::GetMotifLength(uint MotifIndex) const
+	{
+	asserta(MotifIndex < SIZE(m_MotifLengths));
+	return m_MotifLengths[MotifIndex];
+	}
+
 uint CDInfo::GetSize() const
 	{
-	assert(m_MotifCount > 0 && SIZE(m_Offsets) == m_MotifCount);
+	assert(m_MotifCount > 0 && SIZE(m_Offsets) == m_MotifCount+1);
 	uint ML = m_MotifLengths[m_MotifCount-1];
 	uint Off = m_Offsets[m_MotifCount-1];
 	uint Size = ML + Off;

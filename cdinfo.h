@@ -31,4 +31,7 @@ public:
 	void ToTsv(FILE *f) const;
 	void FromTsv(FILE *f);
 	uint GetSize() const;
+	uint GetMotifCount() const { return m_MotifCount; }
+	uint GetMotifLength(uint MotifIndex) const;
+	const char *GetMotifName(uint MotifIndex) const;
 	};
