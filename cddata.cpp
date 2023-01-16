@@ -22,7 +22,7 @@ void CDData::ToTsv(const string &Name, FILE *f) const
 			double Value = GetByIx(Ix1, Ix2);
 			const string &MotifName2 =
 			  m_Info->m_MotifNames[MotifIndex2];
-			fprintf(f, "%s\t%u\t%s\t%u\t%.1f\n",
+			fprintf(f, "%s\t%u\t%s\t%u\t%.4g\n",
 			  MotifName1.c_str(), i1,
 			  MotifName2.c_str(), i2,
 			  Value);
@@ -36,6 +36,13 @@ void CDData::FromTsv(const CDInfo &Info, FILE *f)
 
 	string Line;
 	vector<string> Fields;
+
+	bool Ok = ReadLineStdioFile(f, Line);
+	asserta(Ok);
+	Split(Line, Fields, '\t');
+	asserta(SIZE(Fields) == 3);
+	asserta(Fields[0] == "cddata");
+
 	const uint Size = m_Info->GetSize();
 	for (uint Ix1 = 0; Ix1 < Size; ++Ix1)
 		{

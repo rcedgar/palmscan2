@@ -9,36 +9,12 @@ void CDSearcher::LogHits() const
 	{
 	Log("\n");
 	Log(">%s\n", m_Query->m_Label.c_str());
-	const uint MotifCount = m_Info->GetMotifCount();
-	asserta(SIZE(m_MotifIndexToHits) == MotifCount);
-	asserta(SIZE(m_MotifIndexToScores) == MotifCount);
-	for (uint MotifIndex = 0; MotifIndex < MotifCount; ++MotifIndex)
-		{
-		const vector<uint> &Hits = m_MotifIndexToHits[MotifIndex];
-		const vector<double> &Scores = m_MotifIndexToScores[MotifIndex];
-		uint n = SIZE(Hits);
-		asserta(SIZE(Scores) == n);
-		Log("  %2s", m_Info->GetMotifName(MotifIndex));
-		Log("  [%3u]", n);
-		for (uint i = 0; i < n; ++i)
-			Log("  %u=%.4f", Hits[i], Scores[i]);
-		Log("\n");
-		}
+	Die("TODO");
 	}
 
 void CDSearcher::ClearSearch()
 	{
 	m_Query = 0;
-	m_MotifStarts.clear();
-	m_MotifScores.clear();
-	m_MotifIndexToHits.clear();
-	m_MotifIndexToScores.clear();
-
-	const uint MotifCount = m_Info->GetMotifCount();
-	m_MotifStarts.resize(MotifCount, UINT_MAX);
-	m_MotifScores.resize(MotifCount, 0);
-	m_MotifIndexToHits.resize(MotifCount);
-	m_MotifIndexToScores.resize(MotifCount);
 	}
 
 void CDSearcher::Init(const CDInfo &Info, const CDData &Dists,
@@ -72,6 +48,7 @@ double CDSearcher::GetScore(
 			double Observed_d = m_Query->GetDist(SeqPos1+i, SeqPos2+j);
 			double Mu = Dists.GetByIx(Ix1 + i, Ix2 + j);
 			double Sigma = StdDevs.GetByIx(Ix1 + i, Ix2 + j);
+			assert(Sigma > 0);
 			double y = GetNormal(Mu, XS*Sigma, Observed_d);
 			double Max = GetNormal(Mu, XS*Sigma, Mu);
 			double Ratio = y/Max;
@@ -85,73 +62,51 @@ double CDSearcher::GetScore(
 	}
 
 /***
-Minimum start position of next motif is:
+Minimum start position of motif is:
 	{Position of lowest hit to previous motif} +
-	  {minimum number of AAs to next motif}
+	  {minimum number of AAs from previous motif}
 
-Maximum start position of next motif is:
+Maximum start position of motif is:
 	{Position of highest hit to previous motif} +
-	  {maximum number of AAs to next motif}
+	  {maximum number of AAs from previous motif}
 ***/
-void CDSearcher::GetRangeNext(uint NextMotifIndex, uint &Lo, uint &Hi) const
+void CDSearcher::GetRange(uint MotifIndex, 
+  uint PrevLo, uint PrevHi, uint &Lo, uint &Hi) const
 	{
 	Lo = UINT_MAX;
 	Hi = UINT_MAX;
 
 	uint QL = m_Query->GetSeqLength();
-	if (NextMotifIndex == 0)
+	uint MinAAEnd = m_Template->GetMinAAsSeqEnd(MotifIndex);
+	uint Hi_end = QL - MinAAEnd;
+	if (MotifIndex == 0 || PrevLo == UINT_MAX)
 		{
-		uint n = m_Template->GetMinAAsSeqEnd(0);
-		if (n > QL)
-			return;
-		Lo = 0;
-		Hi = QL - n;
-#if TRACE
-		Log("  GetRange(0) 0 .. QL-n=%u\n", Hi);
-#endif
+		assert(PrevHi = UINT_MAX);
+		if (MinAAEnd < QL)
+			{
+			Lo = 0;
+			Hi = Hi_end;
+			}
 		return;
 		}
 
-	uint PrevMotifIndex = NextMotifIndex-1;
-	const vector<uint> &Hits = m_MotifIndexToHits[PrevMotifIndex];
-#if TRACE
-	Log("  GetRange(%u), %u prev hits\n", NextMotifIndex, SIZE(Hits));
-#endif
-	if (Hits.empty())
-		return;
+	assert(PrevLo <= PrevHi);
+	uint MinAA = m_Template->GetMinAAsNext(MotifIndex-1);
+	uint MaxAA = m_Template->GetMaxAAsNext(MotifIndex-1);
 
-	uint FirstHit = Hits.front();
-	uint LastHit = Hits.back();
-#if TRACE
-	Log("  First %u, last %u\n", FirstHit, LastHit);
-#endif
-
-	uint MinAAsNext = 
-	  m_Template->GetMinAAsNext(PrevMotifIndex);
-#if TRACE
-	Log("  MinAAsNext %u\n", MinAAsNext);
-#endif
-	if (MinAAsNext == UINT_MAX)
-		return;
-
-	uint ML = m_Info->GetMotifLength(NextMotifIndex);
-	Lo = FirstHit + MinAAsNext;
-	if (Lo + ML >= QL)
+	Lo = PrevLo + MinAA;
+	Hi = PrevHi + MaxAA;
+	if (Hi >= Hi_end)
+		Hi = Hi_end;
+	if (Hi < Lo)
 		{
 		Lo = UINT_MAX;
-		return;
+		Hi = UINT_MAX;
 		}
-
-	Hi = LastHit + m_Template->GetMaxAAsNext(PrevMotifIndex);
-	if (Hi + ML >= QL)
-		Hi = QL - ML;
-#if TRACE
-	Log("  Hi %u\n", Hi);
-#endif
 	}
 
 void CDSearcher::Search1(uint MotifIndex, uint Lo, uint Hi,
-  vector<uint> &Hits, vector<double> &Scores)
+  vector<uint> &Hits, vector<double> &Scores) const
 	{
 	const char AnchorAA = m_Template->m_AnchorAAs[MotifIndex];
 	const uint AnchorAAOffset = m_Template->m_AnchorAAOffsets[MotifIndex];
@@ -197,22 +152,39 @@ void CDSearcher::Search1(uint MotifIndex, uint Lo, uint Hi,
 		}
 	}
 
-void CDSearcher::Search(const PDBChain &Q)
+void CDSearcher::InitSearch(const PDBChain &Query)
+	{
+	ClearSearch();
+	m_Query = &Query;
+	}
+
+uint CDSearcher::GetSeqLength() const
+	{
+	return m_Query->GetSeqLength();
+	}
+
+void CDSearcher::SearchMotifs(const vector<uint> &MotifIndexes,
+  vector<uint> &TopHit)
 	{
 #if TRACE
 	Log("\n");
-	Log("Search(%s)\n", Q.m_Label.c_str());
+	Log("SearchMotifs(%s)\n", Q.m_Label.c_str());
 #endif
-	ClearSearch();
+	TopHit.clear();
+	const uint QL = GetSeqLength();
+	const uint NM = SIZE(MotifIndexes);
+	asserta(NM > 0);
 
-	m_Query = &Q;
-	const uint QL = Q.GetSeqLength();
-	const uint MotifCount = m_Info->GetMotifCount();
-
-	for (uint MotifIndex = 0; MotifIndex < MotifCount; ++MotifIndex)
+	vector<vector<uint> > HitVecRagged;
+	uint PrevLo = UINT_MAX;
+	uint PrevHi = UINT_MAX;
+	for (uint m = 0; m < NM; ++m)
 		{
+		const uint MotifIndex = MotifIndexes[m];
+
 		uint Lo, Hi;
-		GetRangeNext(MotifIndex, Lo, Hi);
+		GetRange(MotifIndex, PrevLo, PrevHi, Lo, Hi);
+
 #if TRACE
 		{
 		const char *Name = m_Info->GetMotifName(MotifIndex);
@@ -222,9 +194,10 @@ void CDSearcher::Search(const PDBChain &Q)
 		if (Lo == UINT_MAX)
 			return;
 
-		vector<uint> &Hits = m_MotifIndexToHits[MotifIndex];
-		vector<double> &Scores = m_MotifIndexToScores[MotifIndex];
+		vector<uint> Hits;
+		vector<double> Scores;
 		Search1(MotifIndex, Lo, Hi, Hits, Scores);
+		const uint HitCount = SIZE(Hits);
 #if TRACE
 		{
 		Log("  %u hits ", SIZE(Hits));
@@ -233,7 +206,302 @@ void CDSearcher::Search(const PDBChain &Q)
 		Log("\n");
 		}
 #endif
-		if (Hits.empty())
+		if (HitCount == 0)
 			return;
+
+		HitVecRagged.push_back(Hits);
+		PrevLo = Hits.front();
+		PrevHi = Hits.back();
 		}
+
+	vector<vector<uint> > HitVec;
+	ExpandHitVec(HitVecRagged, HitVec);
+
+#if TRACE
+	{
+	Log("\n");
+	Log("Combined hits (%u) >%s\n",
+	  SIZE(HitVec), m_Query->m_Label.c_str());
+	for (uint i = 0; i < SIZE(HitVec); ++i)
+		{
+		Log("[%u]  ", SIZE(HitVec[i]));
+		for (uint m = 0; m < SIZE(HitVec[i]); ++m)
+			Log("  %4u", HitVec[i][m]);
+		double Score = GetScoreHit(MotifIndexes, HitVec[i]);
+		Log("  %.4f\n", Score);
+		}
+	}
+#endif
+
+	double TopScore = 0;
+	for (uint i = 0; i < SIZE(HitVec); ++i)
+		{
+		double Score = GetScoreHit(MotifIndexes, HitVec[i]);
+		if (Score > TopScore)
+			{
+			TopHit = HitVec[i];
+			TopScore = Score;
+			}
+		}
+
+#if TRACE
+	{
+	Log("\n");
+	if (TopHit.empty())
+		{
+		Log("No hit >%s\n", m_Query->m_Label.c_str());
+		return;
+		}
+
+	Log("Top hit >%s %.4f\n", m_Query->m_Label.c_str(), TopScore);
+	asserta(SIZE(TopHit) == NM);
+	for (uint m = 0; m < NM; ++m)
+		{
+		Log(" %u", TopHit[m]);
+		}
+	Log("\n");
+	}
+#endif
+	}
+
+double CDSearcher::GetScoreHit(const vector<uint> &MotifIndexes,
+  const vector<uint> &Hit) const
+	{
+	const uint NM = SIZE(MotifIndexes);
+	asserta(SIZE(Hit) == NM);
+
+	double Sum = 0;
+	uint PairCount = 0;
+	for (uint mi = 0; mi < NM; ++mi)
+		{
+		uint Motifi = MotifIndexes[mi];
+		uint Posi = Hit[mi];
+		uint Ixi = m_Info->GetIx(Motifi, 0);
+		uint Li = m_Info->GetMotifLength(Motifi);
+		for (uint mj = 0; mj < NM; ++mj)
+			{
+			uint Motifj = MotifIndexes[mj];
+			uint Posj = Hit[mj];
+			uint Ixj = m_Info->GetIx(Motifj, 0);
+			uint Lj = m_Info->GetMotifLength(Motifj);
+			double Score = GetScore(Posi, Posj, Ixi, Ixj, Li, Lj);
+			Sum += Score;
+			++PairCount;
+			}
+		}
+	return Sum/PairCount;
+	}
+
+bool CDSearcher::EnumIndexesNext(const vector<uint> &Sizes,
+  vector<uint> &Indexes) const
+	{
+	const uint N = SIZE(Sizes);
+	if (Indexes.empty())
+		{
+		for (uint i = 0; i < N; ++i)
+			{
+			if (Sizes[i] == 0)
+				return false;
+			Indexes.push_back(0);
+			}
+		return true;
+		}
+
+	asserta(SIZE(Indexes) == N);
+	for (uint i = 0; i < N; ++i)
+		{
+		++Indexes[i];
+		if (Indexes[i] < Sizes[i])
+			return true;
+		Indexes[i] = 0;
+		}
+
+	return false;
+	}
+
+void CDSearcher::ExpandHitVec(const vector<vector<uint> > &HitVecRagged,
+  vector<vector<uint> > &HitVec)
+	{
+	HitVec.clear();
+	const uint M = SIZE(HitVecRagged);
+	if (M == 0)
+		return;
+
+	vector<uint> Sizes;
+	for (uint m = 0; m < M; ++m)
+		{
+		uint Size = SIZE(HitVecRagged[m]);
+		Sizes.push_back(Size);
+		}
+
+	vector<uint> Indexes;
+	while (EnumIndexesNext(Sizes, Indexes))
+		{
+		vector<uint> Hits;
+		asserta(SIZE(Indexes) == M);
+		for (uint m = 0; m < M; ++m)
+			{
+			uint Ix = Indexes[m];
+			Hits.push_back(HitVecRagged[m][Ix]);
+			}
+		HitVec.push_back(Hits);
+		}
+	}
+
+void CDSearcher::AddMotif(
+  const vector<uint> &MotifIndexes,
+  const vector<uint> &Hits,
+  uint MotifIndex, uint &TopHit, double &TopScore) const
+	{
+	TopHit = UINT_MAX;
+	TopScore = 0;
+
+	const uint QL = GetSeqLength();
+	uint NM = SIZE(MotifIndexes);
+	asserta(NM > 0);
+
+	uint Lo = UINT_MAX;
+	uint Hi = UINT_MAX;
+	vector<uint> MotifIndexesX;
+	vector<uint> HitsX;
+	uint MI = UINT_MAX;
+	const uint ML = m_Info->GetMotifLength(MotifIndex);
+	if (MotifIndex + 1 == MotifIndexes[0])
+		{
+		uint MinAAsNext = m_Template->GetMinAAsNext(MotifIndex);
+		if (MinAAsNext > Hits[0])
+			return;
+		Hi = Hits[0] - MinAAsNext;
+		uint MinAAsStart = m_Template->GetMinAAsSeqStart(MotifIndex);
+		Lo = MinAAsStart;
+		if (Lo > Hi)
+			return;
+		MotifIndexesX.push_back(MotifIndex);
+		HitsX.push_back(UINT_MAX);
+		for (uint i = 0; i < NM; ++i)
+			{
+			MotifIndexesX.push_back(MotifIndexes[i]);
+			HitsX.push_back(Hits[i]);
+			}
+		MI = 0;
+		}
+	else if (MotifIndexes[NM-1] + 1 == MotifIndex)
+		{
+		uint MinAAsNext = m_Template->GetMinAAsNext(MotifIndexes[NM-1]);
+		Lo = Hits[NM-1] + MinAAsNext;
+		if (Lo >= QL)
+			return;
+		uint MaxAAsNext = m_Template->GetMaxAAsNext(MotifIndexes[NM-1]);
+		Hi = Hits[NM-1] + MaxAAsNext;
+		if (Hi + ML >= QL)
+			Hi = QL - ML - 1;
+		MotifIndexesX = MotifIndexes;
+		HitsX = Hits;
+		MotifIndexesX.push_back(MotifIndex);
+		HitsX.push_back(UINT_MAX);
+		MI = NM;
+		}
+	else
+		asserta(false);
+	if (Lo + ML >= QL)
+		return;
+
+	const char AnchorAA = m_Template->m_AnchorAAs[MotifIndex];
+	const uint AnchorAAOffset = m_Template->m_AnchorAAOffsets[MotifIndex];
+	double MinScore = m_Template->m_MinScores[MotifIndex];
+#if TRACE
+	Log("AddMotif(Mf=%u, Lo=%u, Hi=%u) aa=%c(%u)\n",
+	  MotifIndex, Lo, Hi, AnchorAA, AnchorAAOffset);
+#endif
+	const string &Seq = m_Query->m_Seq;
+	const uint Ix = m_Info->GetIx(MotifIndex, 0);
+	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+		{
+		if (AnchorAA != 'x' && Seq[Pos+AnchorAAOffset] != AnchorAA)
+			continue;
+
+		double Score1 = GetScore(Pos, Pos, Ix, Ix, ML, ML);
+#if TRACE
+		Log("Mf=%u Pos=%u, score1=%.4f\n",
+			MotifIndex, Pos, Score1);
+#endif
+		if (Score1 >= MinScore)
+			{
+			HitsX[MI] = Pos;
+			double Score = GetScoreHit(MotifIndexesX, HitsX);
+#if TRACE
+			Log("Mf=%u Pos=%u, score1=%.4f score=%.4f\n",
+				MotifIndex, Pos, Score1, Score);
+#endif
+			if (Score > TopScore)
+				{
+				TopScore = Score;
+				TopHit = Pos;
+				}
+			}
+		}
+	}
+
+double CDSearcher::SearchPalm(const PDBChain &Query,
+  vector<uint> &Hit)
+	{
+	InitSearch(Query);
+
+	vector<uint> MotifsABC;
+	MotifsABC.push_back(1);
+	MotifsABC.push_back(2);
+	MotifsABC.push_back(3);
+
+	vector<uint> TopHitABC;
+	SearchMotifs(MotifsABC, TopHitABC);
+	if (TopHitABC.empty())
+		return 0;
+
+	uint HitF2 = UINT_MAX;
+	double ScoreF2 = 0;
+	AddMotif(MotifsABC, TopHitABC, 0, HitF2, ScoreF2);
+	if (HitF2 == UINT_MAX)
+		return 0;
+
+	vector<uint> MotifsF2ABC;
+	MotifsF2ABC.push_back(0);
+	MotifsF2ABC.push_back(1);
+	MotifsF2ABC.push_back(2);
+	MotifsF2ABC.push_back(3);
+
+	vector<uint> TopHitF2ABC;
+	TopHitF2ABC.push_back(HitF2);
+	TopHitF2ABC.push_back(TopHitABC[0]);
+	TopHitF2ABC.push_back(TopHitABC[1]);
+	TopHitF2ABC.push_back(TopHitABC[2]);
+
+	uint HitD = UINT_MAX;
+	double ScoreD = 0;
+	AddMotif(MotifsF2ABC, TopHitF2ABC, 4, HitD, ScoreD);
+	if (HitD == UINT_MAX)
+		return 0;
+
+	vector<uint> MotifsF2ABCD;
+	MotifsF2ABCD.push_back(0);
+	MotifsF2ABCD.push_back(1);
+	MotifsF2ABCD.push_back(2);
+	MotifsF2ABCD.push_back(3);
+	MotifsF2ABCD.push_back(4);
+
+	vector<uint> TopHitF2ABCD;
+	TopHitF2ABCD.push_back(TopHitF2ABC[0]);
+	TopHitF2ABCD.push_back(TopHitF2ABC[1]);
+	TopHitF2ABCD.push_back(TopHitF2ABC[2]);
+	TopHitF2ABCD.push_back(TopHitF2ABC[3]);
+	TopHitF2ABCD.push_back(HitD);
+
+	uint HitE = UINT_MAX;
+	double ScoreE = 0;
+	AddMotif(MotifsF2ABCD, TopHitF2ABCD, 5, HitE, ScoreE);
+	if (HitE == UINT_MAX)
+		return 0;
+
+	Hit = TopHitF2ABCD;
+	Hit.push_back(HitE);
+	return ScoreE;
 	}

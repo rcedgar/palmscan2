@@ -425,6 +425,9 @@
     <ClCompile Include="cdtemplate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cdp_search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

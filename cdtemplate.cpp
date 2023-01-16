@@ -49,3 +49,17 @@ uint CDTemplate::GetMinAAsSeqEnd(uint MotifIndex) const
 		}
 	return Sum;
 	}
+
+// Minimum number of amino acids in interval
+//   [first aa in sequence, first aa in motif].
+uint CDTemplate::GetMinAAsSeqStart(uint MotifIndex) const
+	{
+	const uint MotifCount = m_Info->GetMotifCount();
+	uint Sum = 0;
+	for (uint i = 0; i < MotifIndex; ++i)
+		{
+		uint n = m_MinAAsNext[i];
+		Sum += n + 1;
+		}
+	return Sum;
+	}

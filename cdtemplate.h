@@ -47,4 +47,5 @@ public:
 	uint GetMinAAsNext(uint MotifIndex) const;
 	uint GetMaxAAsNext(uint MotifIndex) const;
 	uint GetMinAAsSeqEnd(uint MotifIndex) const;
+	uint GetMinAAsSeqStart(uint MotifIndex) const;
 	};

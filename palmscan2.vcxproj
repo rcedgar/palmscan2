@@ -283,6 +283,7 @@
     <ClCompile Include="calreader.cpp" />
     <ClCompile Include="cddata.cpp" />
     <ClCompile Include="cdinfo.cpp" />
+    <ClCompile Include="cdp_search.cpp" />
     <ClCompile Include="cdsearcher.cpp" />
     <ClCompile Include="cdp_train.cpp" />
     <ClCompile Include="cdtemplate.cpp" />

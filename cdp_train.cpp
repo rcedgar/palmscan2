@@ -3,11 +3,10 @@
 #include "outputfiles.h"
 #include "cddata.h"
 #include "cdsearcher.h"
-#include "cmp.h"
 #include "quarts.h"
 #include <map>
 
-static void SetTpl(const CDInfo &Info, CDTemplate &Tpl)
+void SetPalmTemplate(const CDInfo &Info, CDTemplate &Tpl)
 	{
 	Tpl.Clear();
 
@@ -33,7 +32,7 @@ F2  minaa  51  maxaa  74  minscore 0.8094
 	MaxAAsNext.push_back(MaxNext); \
 	MinScores.push_back(MinScore);
 
-	S('R', 2, 30, 100, 0.7);
+	S('R', 2, 30, 100, 0.6);
 	S('D', 3, 30, 150, 0.55);
 	S('G', 1, 20, 100, 0.6);
 	S('D', 3, 10, 70, 0.6);
@@ -259,6 +258,44 @@ static void UpdateMinMax(const vector<uint> &MotifCoords,
 		}
 	}
 
+void LogCDHit(const string &Msg, const CDSearcher &CS,
+  const PDBChain &Q, const vector<uint> &MotifCoords)
+	{
+	Log("%16.16s", Q.m_Label.c_str());
+	Log("  %8.8s", Msg.c_str());
+	if (MotifCoords.empty())
+		{
+		Log("  (empty)\n");
+		return;
+		}
+	const uint MotifCount = CS.m_Info->GetMotifCount();
+	asserta(SIZE(MotifCoords) == MotifCount);
+	vector<uint> MotifIndexes;
+	bool All = true;
+	for (uint MotifIndex = 0; MotifIndex < MotifCount; ++MotifIndex)
+		{
+		MotifIndexes.push_back(MotifIndex);
+		uint ML = CS.m_Info->GetMotifLength(MotifIndex);
+		uint Pos = MotifCoords[MotifIndex];
+		if (Pos == UINT_MAX)
+			{
+			All = false;
+			Log("  %4.4s  %*.*s", "", ML, ML, "");
+			continue;
+			}
+
+		string Seq;
+		Q.GetSubSeq(Pos, ML, Seq);
+		Log("  %4u  %*.*s", Pos+1, ML, ML, Seq.c_str());
+		}
+	if (All)
+		{
+		double Score = CS.GetScoreHit(MotifIndexes, MotifCoords);
+		Log("  %6.4f", Score);
+		}
+	Log("\n");
+	}
+
 void cmd_cdp_train()
 	{
 	const string &InputFN = opt_cdp_train;
@@ -318,13 +355,21 @@ void cmd_cdp_train()
 		DataStdDev.ToTsv("stddev", g_ftsv);
 		}
 
+	vector<uint> MotifsABC;
+	MotifsABC.push_back(1);
+	MotifsABC.push_back(2);
+	MotifsABC.push_back(3);
+
 //////////////////////////////////////////////////////
-//  Test on training coordinates
+//  Test
 //////////////////////////////////////////////////////
 	CDSearcher CS;
 	CS.Init(Info, DataAvg, DataStdDev);
 
-	vector<double> MotifIndexToMinScore(MotifCount, 1.0);
+	CDTemplate Tpl;
+	SetPalmTemplate(Info, Tpl);
+	CS.m_Template = &Tpl;
+
 	for (uint i = 0; i < N; ++i)
 		{
 		const PDBChain &Q = *Chains[i];
@@ -339,52 +384,33 @@ void cmd_cdp_train()
 		const vector<uint> &MotifCoords = MotifCoordsVec[Index];
 		const vector<string> &MotifSeqs = MotifSeqsVec[Index];
 
+		vector<uint> PalmHit;
+		CS.SearchPalm(Q, PalmHit);
+
 		Log("\n");
-		Log(">%s\n", Label.c_str());
-		for (uint MotifIndex = 0; MotifIndex < MotifCount;
-		  ++MotifIndex)
+		LogCDHit("Train", CS, Q, MotifCoords);
+		LogCDHit("Test", CS, Q, PalmHit);
+		char *Result = "Agree";
+		if (PalmHit.empty())
+			Result = "(train negative)";
+		else
 			{
-			uint Pos = MotifCoords[MotifIndex];
-			if (Pos == UINT_MAX)
-				continue;
-			double Score = 0;
-			uint BestPos = GetBestFit(CS, MotifIndex, Pos, Score);
-			MotifIndexToMinScore[MotifIndex] = 
-			  min(MotifIndexToMinScore[MotifIndex], Score);
-
-			asserta(BestPos != UINT_MAX);
-			uint ML = Info.GetMotifLength(MotifIndex);
-			string MotifSeq;
-			Q.GetSubSeq(BestPos, ML, MotifSeq);
-			Log("  %2s", Info.m_MotifNames[MotifIndex].c_str());
-			Log("  %4u", Pos);
-			Log("  %4u", BestPos);
-			Log("  %6.4f", Score);
-			Log("  %s", MotifSeq.c_str());
-			Log("\n");
+			for (uint i = 0; i < MotifCount; ++i)
+				{
+				uint p1 = MotifCoords[i];
+				uint p2 = PalmHit[i];
+				if (p1 == UINT_MAX || p2 == UINT_MAX)
+					{
+					Result = "(missing motif)";
+					break;
+					}
+				else if (p1 != p2)
+					{
+					Result = "DIFF";
+					break;
+					}
+				}
 			}
-		}
-
-//////////////////////////////////////////////////////
-//  Search de novo
-//////////////////////////////////////////////////////
-	CDTemplate Tpl;
-	SetTpl(Info, Tpl);
-	CS.m_Template = &Tpl;
-
-	for (uint i = 0; i < N; ++i)
-		{
-		const PDBChain &Q = *Chains[i];
-		CS.Search(Q);
-		CS.LogHits();
-		}
-
-	for (uint MotifIndex = 0; MotifIndex < MotifCount; ++MotifIndex)
-		{
-		uint Min = MotifIndexToMinAAs[MotifIndex];
-		uint Max = MotifIndexToMaxAAs[MotifIndex];
-		double MinScore = MotifIndexToMinScore[MotifIndex];
-		Log("%2s  minaa %3u  maxaa %3u  minscore %.4f\n",
-		  Info.GetMotifName(MotifIndex), Min, Max, MinScore);
+		Log(" -- %s\n", Result);
 		}
 	}

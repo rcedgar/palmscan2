@@ -62,7 +62,7 @@ void CDInfo::ToTsv(FILE *f) const
 	{
 	if (f == 0)
 		return;
-	fprintf(f, "cdinfo\t%u", m_MotifCount);
+	fprintf(f, "cdinfo\t%u\n", m_MotifCount);
 	for (uint i = 0; i < m_MotifCount; ++i)
 		fprintf(f, "%u\t%u\t%s\n",
 		  i,
@@ -72,7 +72,6 @@ void CDInfo::ToTsv(FILE *f) const
 
 void CDInfo::FromTsv(FILE *f)
 	{
-	Clear();
 	string Line;
 	vector<string> Fields;
 	bool Ok = ReadLineStdioFile(f, Line);
@@ -80,9 +79,11 @@ void CDInfo::FromTsv(FILE *f)
 	Split(Line, Fields, '\t');
 	asserta(SIZE(Fields) == 2);
 	asserta(Fields[0] == "cdinfo");
-	m_MotifCount = StrToUint(Fields[0]);
-	asserta(m_MotifCount > 0 && m_MotifCount < 99);
-	for (uint i = 0; i < m_MotifCount; ++i)
+	uint MotifCount = StrToUint(Fields[1]);
+	asserta(MotifCount > 0 && MotifCount < 99);
+	vector<string> Names;
+	vector<uint> Lengths;
+	for (uint i = 0; i < MotifCount; ++i)
 		{
 		Ok = ReadLineStdioFile(f, Line);
 		asserta(Ok);
@@ -91,9 +92,10 @@ void CDInfo::FromTsv(FILE *f)
 		asserta(StrToUint(Fields[0]) == i);
 		uint ML = StrToUint(Fields[1]);
 		asserta(ML > 0 && ML < 99);
-		m_MotifLengths.push_back(ML);
-		m_MotifNames.push_back(Fields[2]);
+		Lengths.push_back(ML);
+		Names.push_back(Fields[2]);
 		}
+	Init(Names, Lengths);
 	}
 
 const char *CDInfo::GetMotifName(uint MotifIndex) const
