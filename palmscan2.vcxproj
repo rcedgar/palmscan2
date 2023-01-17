@@ -407,6 +407,8 @@
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xbasis.cpp" />
+    <ClCompile Include="xprof.cpp" />
+    <ClCompile Include="xprof.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abcxyz.h" />

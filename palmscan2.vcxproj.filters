@@ -428,6 +428,12 @@
     <ClCompile Include="cdp_search.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xprof.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xprof.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

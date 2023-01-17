@@ -59,5 +59,6 @@ C(struct_prof)
 C(gspalign)
 C(cdp_train)
 C(cdp_search)
+C(xprof)
 
 #undef C
