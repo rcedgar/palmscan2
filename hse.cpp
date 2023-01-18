@@ -5,7 +5,7 @@
 #include "outputfiles.h"
 #include <map>
 
-static void LogVec(const string &Name, const vector<double> &v)
+void StaticLogVec(const string &Name, const vector<double> &v)
 	{
 	asserta(SIZE(v) == 3);
 	Log("  x=%8.3f,  y=%8.3f,  z=%8.3f  %s\n", v[X], v[Y], v[Z], Name.c_str());

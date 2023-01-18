@@ -215,6 +215,19 @@ byte *RevCompAlloc(const byte *Seq, unsigned L)
 	return RCSeq;
 	}
 
+void StripGaps(string &Seq)
+	{
+	string Seq2;
+	unsigned L = SIZE(Seq);
+	for (uint i = 0; i < L; ++i)
+		{
+		char c = Seq[i];
+		if (!isgap(c))
+			Seq2 += c;
+		}
+	Seq = Seq2;
+	}
+
 void RevCompSeq(string &Seq)
 	{
 	unsigned L = SIZE(Seq);

@@ -22,8 +22,16 @@ HDRS = \
   alnparams.h \
   alpha.h \
   calreader.h \
+  cavity.h \
+  cddata.h \
+  cdinfo.h \
+  cdsearcher.h \
+  cdtemplate.h \
   chainreader.h \
   cmds.h \
+  cmp.h \
+  cmpsearcher.h \
+  cmsearcher.h \
   conncomp.h \
   diagbox.h \
   fastaseqsource.h \
@@ -31,6 +39,8 @@ HDRS = \
   fastqrec.h \
   fileseqsource.h \
   gobuff.h \
+  gspaligner.h \
+  gsprof.h \
   heuristics.h \
   hsp.h \
   linereader.h \
@@ -76,6 +86,8 @@ HDRS = \
   seqsource.h \
   sfasta.h \
   sort.h \
+  spher.h \
+  structprof.h \
   timers.h \
   timing.h \
   tma.h \
@@ -89,6 +101,8 @@ HDRS = \
   viterbi.h \
   xdpmem.h \
   xlat.h \
+  xprof.h \
+  xtrainer.h \
 
 OBJS = \
   $(OBJDIR)/abcxyz.o \
@@ -97,12 +111,19 @@ OBJS = \
   $(OBJDIR)/alloc.o \
   $(OBJDIR)/alpha.o \
   $(OBJDIR)/alpha2.o \
+  $(OBJDIR)/annotate.o \
   $(OBJDIR)/blosum.o \
   $(OBJDIR)/blosum62.o \
   $(OBJDIR)/buildpsm.o \
   $(OBJDIR)/build_rdrp_model.o \
   $(OBJDIR)/cal2fa.o \
   $(OBJDIR)/calreader.o \
+  $(OBJDIR)/cddata.o \
+  $(OBJDIR)/cdinfo.o \
+  $(OBJDIR)/cdp_search.o \
+  $(OBJDIR)/cdsearcher.o \
+  $(OBJDIR)/cdp_train.o \
+  $(OBJDIR)/cdtemplate.o \
   $(OBJDIR)/chainreader.o \
   $(OBJDIR)/chains_subsample.o \
   $(OBJDIR)/checkppc.o \
@@ -111,24 +132,49 @@ OBJS = \
   $(OBJDIR)/clusters2model.o \
   $(OBJDIR)/cluster_motifs.o \
   $(OBJDIR)/cluster_ppc.o \
+  $(OBJDIR)/findcavity.o \
+  $(OBJDIR)/gspalign.o \
+  $(OBJDIR)/gspaligner.o \
+  $(OBJDIR)/gsprof.o \
+  $(OBJDIR)/hse.o \
+  $(OBJDIR)/hse_cmp.o \
+  $(OBJDIR)/hse_train.o \
+  $(OBJDIR)/palmcator.o \
+  $(OBJDIR)/pseudo_cb_angles.o \
+  $(OBJDIR)/kabsch.o \
+  $(OBJDIR)/palmcore.o \
+  $(OBJDIR)/palmcore_cmp.o \
+  $(OBJDIR)/palmcore_pssms.o \
+  $(OBJDIR)/pml.o \
+  $(OBJDIR)/ppcontactmap.o \
   $(OBJDIR)/find_tri.o \
   $(OBJDIR)/getchains.o \
   $(OBJDIR)/cfilter.o \
   $(OBJDIR)/pdbinfo.o \
+  $(OBJDIR)/pdb_pp.o \
   $(OBJDIR)/ppcalignertm.o \
+  $(OBJDIR)/ppcontactmap_pssm.o \
   $(OBJDIR)/ppcprofile.o \
   $(OBJDIR)/ppcsearcher.o \
   $(OBJDIR)/build_ppp.o \
   $(OBJDIR)/ppc_score.o \
+  $(OBJDIR)/ppfeatures.o \
   $(OBJDIR)/ppp.o \
+  $(OBJDIR)/ppsearcher_permuted.o \
+  $(OBJDIR)/cmp.o \
+  $(OBJDIR)/cmsearcher.o \
+  $(OBJDIR)/cm_search.o \
+  $(OBJDIR)/cmp_train.o \
+  $(OBJDIR)/cmp_search.o \
+  $(OBJDIR)/cmp_train_pssm.o \
   $(OBJDIR)/readppc.o \
+  $(OBJDIR)/removehidden.o \
   $(OBJDIR)/remove_dupes.o \
   $(OBJDIR)/cluster_cl.o \
   $(OBJDIR)/diagbox.o \
   $(OBJDIR)/fastaseqsource.o \
   $(OBJDIR)/fastqrec.o \
   $(OBJDIR)/fileseqsource.o \
-  $(OBJDIR)/getseg.o \
   $(OBJDIR)/getss.o \
   $(OBJDIR)/help.o \
   $(OBJDIR)/invertmx.o \
@@ -142,7 +188,7 @@ OBJS = \
   $(OBJDIR)/ntmx.o \
   $(OBJDIR)/objmgr.o \
   $(OBJDIR)/one2three.o \
-  $(OBJDIR)/output.o \
+  $(OBJDIR)/pssm_output.o \
   $(OBJDIR)/outputfiles.o \
   $(OBJDIR)/palmscan2_main.o \
   $(OBJDIR)/palmsketch.o \
@@ -150,7 +196,8 @@ OBJS = \
   $(OBJDIR)/pdbchaincal.o \
   $(OBJDIR)/ppcaligner.o \
   $(OBJDIR)/readchains.o \
-  $(OBJDIR)/rotate.o \
+  $(OBJDIR)/gddgateprob.o \
+  $(OBJDIR)/calpp2ppc.o \
   $(OBJDIR)/search3d_tri.o \
   $(OBJDIR)/pdbchain.o \
   $(OBJDIR)/psms.o \
@@ -168,7 +215,10 @@ OBJS = \
   $(OBJDIR)/searchtriangle.o \
   $(OBJDIR)/segs.o \
   $(OBJDIR)/smooth.o \
+  $(OBJDIR)/spher.o \
   $(OBJDIR)/split_train_test.o \
+  $(OBJDIR)/structprof.o \
+  $(OBJDIR)/structprofheuristics.o \
   $(OBJDIR)/test_pssms.o \
   $(OBJDIR)/seqdb.o \
   $(OBJDIR)/seqinfo.o \
@@ -190,9 +240,13 @@ OBJS = \
   $(OBJDIR)/tshit.o \
   $(OBJDIR)/tshitmgr.o \
   $(OBJDIR)/tsoutput.o \
+  $(OBJDIR)/cmpsearcher.o \
   $(OBJDIR)/validate.o \
   $(OBJDIR)/viterbifastmem.o \
   $(OBJDIR)/xbasis.o \
+  $(OBJDIR)/xprof.o \
+  $(OBJDIR)/xprof_train.o \
+  $(OBJDIR)/xtrainer.o \
 
 .PHONY: clean
 

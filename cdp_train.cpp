@@ -390,7 +390,7 @@ void cmd_cdp_train()
 		Log("\n");
 		LogCDHit("Train", CS, Q, MotifCoords);
 		LogCDHit("Test", CS, Q, PalmHit);
-		char *Result = "Agree";
+		const char *Result = "Agree";
 		if (PalmHit.empty())
 			Result = "(train negative)";
 		else

@@ -35,5 +35,8 @@ F(right_cab)
 F(pml)
 F(palmcator)
 F(gsprof_out)
+F(tsv_true)
+F(tsv_false)
+F(tsv_dot)
 
 #undef F

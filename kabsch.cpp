@@ -343,4 +343,4 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 	*rms = rms1;
 	return true;
 	}
-#endif 0
+#endif  // 0

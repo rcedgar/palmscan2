@@ -382,6 +382,7 @@
     <ClCompile Include="split_train_test.cpp" />
     <ClCompile Include="structprof.cpp" />
     <ClCompile Include="structprofheuristics.cpp" />
+    <ClCompile Include="sw.cpp" />
     <ClCompile Include="test_pssms.cpp" />
     <ClCompile Include="seqdb.cpp" />
     <ClCompile Include="seqinfo.cpp" />
@@ -409,6 +410,8 @@
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
     <ClCompile Include="xprof.h" />
+    <ClCompile Include="xprof_train.cpp" />
+    <ClCompile Include="xtrainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abcxyz.h" />
@@ -490,6 +493,7 @@
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />
     <ClInclude Include="xlat.h" />
+    <ClInclude Include="xtrainer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

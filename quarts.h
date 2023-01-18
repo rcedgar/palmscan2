@@ -32,6 +32,17 @@ struct Quarts
 		Total = 0;
 		Avg = 0;
 		}
+
+	void LogMe() const
+		{
+		Log("Min=%u", Min);
+		Log(", LoQ=%u", LoQ);
+		Log(", Med=%u", Med);
+		Log(", HiQ=%u", HiQ);
+		Log(", Max=%u", Max);
+		Log(", Avg=%.1f", Avg);
+		Log("\n");
+		}
 	};
 
 struct QuartsDouble
@@ -67,6 +78,18 @@ struct QuartsDouble
 		Total = 0;
 		Avg = 0;
 		StdDev = 0;
+		}
+
+	void LogMe() const
+		{
+		Log("Min=%.3g", Min);
+		Log(", LoQ=%.3g", LoQ);
+		Log(", Med=%.3g", Med);
+		Log(", HiQ=%.3g", HiQ);
+		Log(", Max=%.3g", Max);
+		Log(", Avg=%.3g", Avg);
+		Log(", StdDev=%.3g", StdDev);
+		Log("\n");
 		}
 	};
 

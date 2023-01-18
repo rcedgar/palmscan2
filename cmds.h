@@ -60,5 +60,6 @@ C(gspalign)
 C(cdp_train)
 C(cdp_search)
 C(xprof)
+C(xprof_train)
 
 #undef C

@@ -1,4 +1,7 @@
-#pragma once
+#ifndef pdbchain_h
+#define pdbchain_h
+
+#include "myutils.h"
 
 class PDBChain
 	{
@@ -124,3 +127,5 @@ void ReadChains(const string &FileName,
 void ReadChains(const vector<string> &FileNames,
   vector<PDBChain *> &Structures);
 void GetLabelFromFileName(const string &FileName, string &Label);
+
+#endif // pdbchain_h

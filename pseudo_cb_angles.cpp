@@ -3,7 +3,7 @@
 #include "abcxyz.h"
 #include "outputfiles.h"
 
-static void LogVec(const string &Name, const vector<double> &v)
+static void StaticLogVec(const string &Name, const vector<double> &v)
 	{
 	asserta(SIZE(v) == 3);
 	Log("  x=%8.3f,  y=%8.3f,  z=%8.3f  %s\n", v[X], v[Y], v[Z], Name.c_str());
@@ -49,12 +49,12 @@ static void HSETest(const PDBChain &Chain, vector<double> &Angles)
 
 #if TRACE
 		Log("Pos [%4u] %c\n", Pos, c);
-		LogVec("CA", PtCA);
-		LogVec("CB", PtCB);
-		LogVec("PrevCA", PtPrevCA);
-		LogVec("NextCA", PtNextCA);
-		LogVec("norm(d1+d2)", VecPAB);
-		LogVec("norm(CA->CB)", VecAB);
+		StaticLogVec("CA", PtCA);
+		StaticLogVec("CB", PtCB);
+		StaticLogVec("PrevCA", PtPrevCA);
+		StaticLogVec("NextCA", PtNextCA);
+		StaticLogVec("norm(d1+d2)", VecPAB);
+		StaticLogVec("norm(CA->CB)", VecAB);
 		Log(" theta = %.1f\n", degrees(Theta));
 		Log("\n");
 		Log("\n");
