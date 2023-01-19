@@ -4,6 +4,8 @@
 #include "xprof.h"
 #include "outputfiles.h"
 
+float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path);
+
 static char ScoreChar(double Score, double MaxScore)
 	{
 	asserta(Score <= MaxScore);
@@ -62,6 +64,8 @@ void cmd_xprof_train()
 		}
 
 	XT.Train();
+	XTrainer::LogOddsToTsv(opt_logodds,
+	  XT.m_FeatureIndexToLogOddsMx);
 
 	Log("\n\n");
 	for (uint i = 0; i < FeatureCount; ++i)
@@ -78,27 +82,69 @@ void cmd_xprof_train()
 
 	XT.LogFinal();
 
-	vector<vector<double> > Mx;
-	XT.GetScoreMx(0, 1, Mx);
-
 	const uint L0 = XT.m_Chains[0]->GetSeqLength();
 	const uint L1 = XT.m_Chains[1]->GetSeqLength();
-	double MaxScore = 0;
-	for (uint i = 0; i < L0; ++i)
-		for (uint j = 0; j < L1; ++j)
-			MaxScore = max(MaxScore, Mx[i][j]);
+
+	vector<vector<double> > StdMx;
+	XT.GetScoreMx(0, 1, StdMx);
 
 	if (g_ftsv_dot != 0)
 		{
 		FILE *f = g_ftsv_dot;
+
+		double MaxScore = 0;
+		for (uint i = 0; i < L0; ++i)
+			for (uint j = 0; j < L1; ++j)
+				MaxScore = max(MaxScore, StdMx[i][j]);
+
 		fprintf(f, "%u\t%u\n", L0, L1);
 		for (uint i = 0; i < L0; ++i)
 			{
 			for (uint j = 0; j < L1; ++j)
 				{
-				double Score = Mx[i][j];
+				double Score = StdMx[i][j];
 				fprintf(f, "%.3f\n", Score/MaxScore);
 				}
 			}
 		}
+
+	Mx<float> SMx;
+	XT.GetScoreMx2(0, 1, SMx);
+
+	uint Start0, Start1;
+	string Path;
+	float Score = SW(SMx, Start0, Start1, Path);
+	uint Cols = SIZE(Path);
+	Log("Score = %.1f, Cols=%u, Path = %s\n", Score, Cols, Path.c_str());
+
+	const string &A = Chains[0]->m_Seq;
+	const string &B = Chains[1]->m_Seq;
+	const uint ColCount = SIZE(Path);
+	uint i = Start0;
+	uint j = Start1;
+	string ARow;
+	string BRow;
+	for (uint Col = 0; Col < ColCount; ++Col)
+		{
+		char c = Path[Col];
+		if (c == 'M' || c == 'D')
+			{
+			ARow += A[i];
+			++i;
+			}
+		else
+			ARow += '-';
+
+		if (c == 'M' || c == 'I')
+			{
+			BRow += B[j];
+			++j;
+			}
+		else
+			BRow += '-';
+		}
+	Log("A  >%s\n", Chains[0]->m_Label.c_str());
+	Log("B  >%s\n", Chains[1]->m_Label.c_str());
+	Log("A  %s\n", ARow.c_str());
+	Log("B  %s\n", BRow.c_str());
 	}

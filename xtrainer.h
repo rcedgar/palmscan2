@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include "mx.h"
 
 class XProf;
 class PDBChain;
@@ -50,6 +51,14 @@ public:
 	double CorrelFeatures(uint FeatureIndex1, uint FeatureIndex2) const;
 	void GetScoreMx(uint ChainIndex1, uint ChainIndex2,
 	  vector<vector<double> > &Mx) const;
+	void GetScoreMx2(uint ChainIndex1, uint ChainIndex2,
+	  Mx<float> &SMx) const;
 	double GetScorePosPair(uint ChainIndex1, uint Pos1, 
 	  uint ChainIndex2, uint Pos2) const;
+
+public:
+	static void LogOddsToTsv(const string &FileName,
+	  vector<vector<vector<double> > > &FeatureIndexToLogOddsMx);
+	static void LogOddsFromTsv(const string &FileName,
+	  vector<vector<vector<double> > > &FeatureIndexToLogOddsMx);
 	};

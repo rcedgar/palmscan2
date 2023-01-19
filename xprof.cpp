@@ -19,9 +19,11 @@ void cmd_xprof()
 	PDBChain Chain;
 	while (CR.GetNext(Chain))
 		{
+		Progress("%s\r", Chain.m_Label.c_str());
 		XP.Init(Chain);
-		XP.ToTsv(g_ftsv);
+		XP.ToCfv(g_fcfv);
 		}
+	Progress("\n");
 	}
 
 void XProf::Init(const PDBChain &Chain)
@@ -30,33 +32,59 @@ void XProf::Init(const PDBChain &Chain)
 	m_L = m_Chain->GetSeqLength();
 	}
 
-void XProf::PosToTsv(FILE *f, uint Pos) const
+void XProf::PosToCfv(FILE *f, uint Pos) const
 	{
-	fprintf(f, "%s\t%u", m_Chain->m_Label.c_str(), Pos+1);
+	if (f == 0)
+		return;
+
+	fprintf(f, "%u\t%c", Pos+1, m_Chain->m_Seq[Pos]);
+
+	double x = m_Chain->m_Xs[Pos];
+	double y = m_Chain->m_Ys[Pos];
+	double z = m_Chain->m_Zs[Pos];
+
+	fprintf(f, "\t%.1f\t%.1f\t%.1f", x, y, z);
+
 	const uint FeatureCount = GetFeatureCount();
 	for (uint FeatureIndex = 0; FeatureIndex < FeatureCount;
 	  ++FeatureIndex)
 		{
 		double Value;
 		uint iValue;
-		GetFeature(Pos, FeatureIndex, Value, iValue);
+		GetFeature(FeatureIndex, Pos, Value, iValue);
 		if (Value == DBL_MAX)
-			fprintf(f, "\t0");
+			fprintf(f, "\t.");
 		else
 			fprintf(f, "\t%.3g", Value);
-		if (Value == UINT_MAX)
-			fprintf(f, "\t0");
+		if (iValue == UINT_MAX)
+			fprintf(f, "\t.");
 		else
 			fprintf(f, "\t%u", iValue);
 		}
 	fprintf(f, "\n");
 	}
 
-void XProf::ToTsv(FILE *f) const
+void XProf::ToCfv(FILE *f) const
 	{
+	if (f == 0)
+		return;
+
 	const uint L = GetSeqLength();
+	const char *Label = m_Chain->m_Label.c_str();
+	const uint FeatureCount = GetFeatureCount();
+
+	fprintf(f, ">\t%s", Label);
+	fprintf(f, "\t%u", L);
+	fprintf(f, "\t%u", FeatureCount);
+	for (uint i = 0; i < FeatureCount; ++i)
+		{
+		const char *Name = GetFeatureName(i);
+		fprintf(f, "\t%s", Name);
+		}
+	fprintf(f, "\n");
+
 	for (uint Pos = 0; Pos < L; ++Pos)
-		PosToTsv(f, Pos);
+		PosToCfv(f, Pos);
 	}
 
 uint XProf::GetSphereNr(uint Pos, double Radius) const

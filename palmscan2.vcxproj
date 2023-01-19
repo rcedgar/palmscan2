@@ -391,6 +391,7 @@
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="rdrpmodel.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="test_sw.cpp" />
     <ClCompile Include="timing.cpp" />
     <ClCompile Include="tma.cpp" />
     <ClCompile Include="tmscore.cpp" />
@@ -407,9 +408,11 @@
     <ClCompile Include="cmpsearcher.cpp" />
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
+    <ClCompile Include="xalign.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
-    <ClCompile Include="xprof.h" />
+    <ClInclude Include="xprof.h" />
+    <ClCompile Include="xprofdata.cpp" />
     <ClCompile Include="xprof_train.cpp" />
     <ClCompile Include="xtrainer.cpp" />
   </ItemGroup>
@@ -421,6 +424,7 @@
     <ClInclude Include="alnheuristics.h" />
     <ClInclude Include="alnparams.h" />
     <ClInclude Include="alpha.h" />
+    <ClInclude Include="best.h" />
     <ClInclude Include="calreader.h" />
     <ClInclude Include="cavity.h" />
     <ClInclude Include="cddata.h" />
@@ -493,6 +497,7 @@
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />
     <ClInclude Include="xlat.h" />
+    <ClInclude Include="xprofdata.h" />
     <ClInclude Include="xtrainer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -72,6 +72,7 @@ STR_OPT(psm)
 STR_OPT(psm1)
 STR_OPT(psm2)
 STR_OPT(spec)
+STR_OPT(logodds)
 
 STR_OPT(fw_name)
 STR_OPT(psm_fw)

@@ -14,8 +14,9 @@ public:
 
 public:
 	void Init(const PDBChain &Chain);
-	void ToTsv(FILE *f) const;
-	void PosToTsv(FILE *f, uint Pos) const;
+	void ToCfv(FILE *f) const;
+	void PosToCfv(FILE *f, uint Pos) const;
+
 	uint GetSeqLength() const { return m_Chain->GetSeqLength(); }
 
 	void GetFeature(uint FeatureIndex, uint Pos,

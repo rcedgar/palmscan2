@@ -475,3 +475,106 @@ void XTrainer::GetScoreMx(uint ChainIndex1, uint ChainIndex2,
 		asserta(SIZE(Mx[Pos1]) == L2);
 		}
 	}
+
+void XTrainer::GetScoreMx2(uint ChainIndex1, uint ChainIndex2,
+  Mx<float> &SMx) const
+	{
+	const PDBChain &Chain1 = *m_Chains[ChainIndex1];
+	const PDBChain &Chain2 = *m_Chains[ChainIndex2];
+	const uint L1 = Chain1.GetSeqLength();
+	const uint L2 = Chain2.GetSeqLength();
+	SMx.Alloc("SMx", L1, L2);
+
+	for (uint Pos1 = 0; Pos1 < L1; ++Pos1)
+		{
+		for (uint Pos2 = 0; Pos2 < L2; ++Pos2)
+			{
+			float Score = (float)
+			  GetScorePosPair(ChainIndex1, Pos1, ChainIndex2, Pos2);
+			SMx.Put(Pos1, Pos2, Score);
+			}
+		}
+	}
+
+void XTrainer::LogOddsToTsv(const string &FileName,
+  vector<vector<vector<double> > > &FeatureIndexToLogOddsMx)
+	{
+	if (FileName == "")
+		return;
+	FILE *f = CreateStdioFile(FileName);
+	const uint FeatureCount = XProf::GetFeatureCount();
+	fprintf(f, "logodds\t%u\n", FeatureCount);
+	for (uint FeatureIndex = 0; FeatureIndex < FeatureCount;
+	   ++FeatureIndex)
+		{
+		const char *Name = XProf::GetFeatureName(FeatureIndex);
+	
+		fprintf(f, "logodds1\t%u\t%u\t%s\n",
+		  FeatureIndex, XBINS, Name);
+
+		asserta(FeatureIndex < SIZE(FeatureIndexToLogOddsMx));
+		const vector<vector<double> > &LogOddsMx =
+		  FeatureIndexToLogOddsMx[FeatureIndex];
+		asserta(SIZE(LogOddsMx) == XBINS);
+		for (uint i = 0; i < XBINS; ++i)
+			{
+			fprintf(f, "%u", i);
+			const vector<double> &Row = LogOddsMx[i];
+			for (uint j = 0; j <= i; ++j)
+				fprintf(f, "\t%.4g", Row[j]);
+			fprintf(f, "\n");
+			}
+		}
+	}
+
+void XTrainer::LogOddsFromTsv(const string &FileName,
+  vector<vector<vector<double> > > &FeatureIndexToLogOddsMx)
+	{
+	FeatureIndexToLogOddsMx.clear();
+
+	FILE *f = OpenStdioFile(FileName);
+	string Line;
+	vector<string> Fields;
+	bool Ok = ReadLineStdioFile(f, Line);
+	Split(Line, Fields, '\t');
+	asserta(SIZE(Fields) == 2);
+	asserta(Fields[0] == "logodds");
+	uint FeatureCount = StrToUint(Fields[1]);
+	asserta(FeatureCount == XProf::GetFeatureCount());
+
+	for (uint FeatureIndex = 0; FeatureIndex < FeatureCount;
+	   ++FeatureIndex)
+		{
+		const string &Name = XProf::GetFeatureName(FeatureIndex);
+
+		Ok = ReadLineStdioFile(f, Line);
+		asserta(Ok);
+		Split(Line, Fields, '\t');
+		asserta(SIZE(Fields) == 4);
+		asserta(Fields[0] == "logodds1");
+		asserta(StrToUint(Fields[1]) == FeatureIndex);
+		uint xb = StrToUint(Fields[2]);
+		asserta(xb == XBINS);
+		asserta(Fields[3] == Name);
+
+		vector<vector<double> > LogOddsMx(xb);
+		for (uint i = 0; i < xb; ++i)
+			LogOddsMx[i].resize(xb, DBL_MAX);
+
+		for (uint i = 0; i < xb; ++i)
+			{
+			Ok = ReadLineStdioFile(f, Line);
+			asserta(Ok);
+			Split(Line, Fields, '\t');
+			asserta(SIZE(Fields) == i+2);
+			asserta(StrToUint(Fields[0]) == i);
+			for (uint j = 0; j <= i; ++j)
+				{
+				double Score = StrToFloat(Fields[j+1]);
+				LogOddsMx[i][j] = Score;
+				LogOddsMx[j][i] = Score;
+				}
+			}
+		FeatureIndexToLogOddsMx.push_back(LogOddsMx);
+		}
+	}
