@@ -449,6 +449,9 @@
     <ClCompile Include="xprofdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tmhack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

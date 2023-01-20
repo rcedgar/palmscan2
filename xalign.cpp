@@ -3,6 +3,7 @@
 #include "xprof.h"
 #include "xprofdata.h"
 #include "xtrainer.h"
+#include "outputfiles.h"
 
 float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path);
 
@@ -51,7 +52,6 @@ static void XAlign(const XProfData &Prof1, const XProfData &Prof2,
 	string Path;
 	float Score = SW(SMx, Start0, Start1, Path);
 	uint Cols = SIZE(Path);
-	Log("Score = %.1f, Cols=%u, Path = %s\n", Score, Cols, Path.c_str());
 
 	const string &A = Prof1.m_Seq;
 	const string &B = Prof2.m_Seq;
@@ -79,10 +79,26 @@ static void XAlign(const XProfData &Prof1, const XProfData &Prof2,
 		else
 			BRow += '-';
 		}
-	Log("A  >%s\n", Prof1.m_Label.c_str());
-	Log("B  >%s\n", Prof2.m_Label.c_str());
-	Log("A  %s\n", ARow.c_str());
-	Log("B  %s\n", BRow.c_str());
+	//Log("A  >%s\n", Prof1.m_Label.c_str());
+	//Log("B  >%s\n", Prof2.m_Label.c_str());
+	//Log("A  %s\n", ARow.c_str());
+	//Log("B  %s\n", BRow.c_str());
+
+	if (g_ftsv)
+		{
+		FILE *f = g_ftsv;
+		fprintf(f, "%.1f", Score);
+		fprintf(f, "\t%s", Prof1.m_Label.c_str());
+		fprintf(f, "\t%s", Prof2.m_Label.c_str());
+		fprintf(f, "\t%u", ColCount);
+		fprintf(f, "\t%.2f", Score/ColCount);
+		if (!opt_norows)
+			{
+			fprintf(f, "\t%s", ARow.c_str());
+			fprintf(f, "\t%s", BRow.c_str());
+			}
+		fprintf(f, "\n");
+		}
 	}
 
 void cmd_xalign()
@@ -109,13 +125,16 @@ void cmd_xalign()
 
 	XProfData QP;
 	FILE *fQ = OpenStdioFile(QueryFileName);
+	uint Counter = 0;
 	for (;;)
 		{
 		bool Ok = QP.FromCfv(fQ);
 		if (!Ok)
 			break;
 
-		Progress("%s\r", QP.m_Label.c_str());
+		++Counter;
+		if (Counter%100 == 0)
+			Progress("%u %s\r", Counter, QP.m_Label.c_str());
 		for (uint i = 0; i < DBN; ++i)
 			{
 			const XProfData &DP = *DBXDs[i];

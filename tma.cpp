@@ -151,7 +151,7 @@ double TMA::TMscore8_search(double** r1, double** r2, double** xtm, double** ytm
 		}
 
 	score_max = -1;
-	//find the maximum score starting from local structures superposition
+//find the maximum score starting from local structures superposition
 //    int i_ali[kmax], n_cut;
 	int n_cut;
 	int* i_ali = myalloc(int, kmax);
@@ -479,7 +479,7 @@ double TMA::detailed_search(double** r1, double** r2, double** xtm, double** ytm
 
 double TMA::detailed_search_standard(double** r1, double** r2,
 	double** xtm, double** ytm, double** xt, double** x, double** y,
-	int xlen, int ylen, int invmap0[], double t[3], double u[3][3],
+	int xlen, int ylen, const int invmap0[], double t[3], double u[3][3],
 	int simplify_step, int score_sum_method, double local_d0_search,
 	const bool& bNormalize, double Lnorm, double score_d8, double d0)
 	{
@@ -1507,6 +1507,7 @@ int TMA::TMalign_main(double** xa, double** ya,
 	int n_ali = 0;
 	int n_ali8 = 0;
 
+	TM2 = 0;
 
 	////////////////////////////////////////////////////////
 	double D0_MIN;        //for d0
@@ -1787,6 +1788,18 @@ int TMA::TMalign_main(double** xa, double** ya,
 	m2 = new int[ylen]; //alignd index in y
 	do_rotation(xa, xt, xlen, t, u);
 	k = 0;
+
+	{//@@
+	Log("invmap0[%d]: ", ylen);
+	for (int j = 0; j < ylen; ++j)
+		{
+		Log(" %d", invmap0[j]);
+		if (j%20 == 0)
+			Log("\n");
+		}
+	Log("\n");
+	}//@@
+
 	for (int j = 0; j < ylen; j++)
 		{
 		i = invmap0[j];
@@ -1820,7 +1833,9 @@ int TMA::TMalign_main(double** xa, double** ya,
 		}
 	n_ali8 = k;
 
-	Kabsch(r1, r2, n_ali8, 0, &rmsd0, t, u);// rmsd0 is used for final output, only recalculate rmsd0, not t & u
+	Kabsch(r1, r2, n_ali8, 0, &rmsd0, t, u);
+
+// rmsd0 is used for final output, only recalculate rmsd0, not t & u
 	rmsd0 = sqrt(rmsd0 / n_ali8);
 
 	//****************************************//
@@ -1840,14 +1855,14 @@ int TMA::TMalign_main(double** xa, double** ya,
 	TM1 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t0, u0, simplify_step,
 		score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
 	TM_0 = TM1;
-
+#if 0
 	//normalized by length of structure B
 	parameter_set4final(xlen + 0.0, D0_MIN, Lnorm, d0, d0_search, mol_type);
 	d0B = d0;
 	local_d0_search = d0_search;
 	TM2 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t, u, simplify_step,
 		score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
-
+#endif
 	/* derive alignment from superposition */
 	int ali_len = xlen + ylen; //maximum length of alignment
 	seqxA.assign(ali_len, '-');
@@ -1856,6 +1871,19 @@ int TMA::TMalign_main(double** xa, double** ya,
 
 	//do_rotation(xa, xt, xlen, t, u);
 	do_rotation(xa, xt, xlen, t0, u0);
+
+#if 1
+	{
+	Log("\n");
+	Log("Rotation:\n");
+	for (int i = 0; i < xlen; ++i)
+		{
+		Log("[%4u]  %6.2f  %6.2f  %6.2f  =>   %6.2f  %6.2f  %6.2f\n",
+		  i, xa[i][0], xa[i][1], xa[i][2],
+		  xt[i][0], xt[i][1], xt[i][2]);
+		}
+	}
+#endif
 
 	int kk = 0, i_old = 0, j_old = 0;
 	d = 0;
@@ -1919,17 +1947,51 @@ int TMA::TMalign_main(double** xa, double** ya,
 	return 0; // zero for no exception
 	}
 
-void TMA::LogAln(
+void TMA::WriteAln(FILE *f,
 	const int xlen, const int ylen,
 	const double TM1, const double TM2,
 	double d0A, double d0B,
 	const string& seqM, const string& seqxA, const string& seqyA) const
 	{
-	Log("%s\n", seqxA.c_str());
-	Log("%s\n", seqM.c_str());
-	Log("%s\n", seqyA.c_str());
-	Log("TM-score= %5.3f (QL=%d, dQ=%.2f)\n", TM2, xlen, d0B);
-	Log("TM-score= %5.3f (RL=%d, dR=%.2f)\n", TM1, ylen, d0A);
+	if (f == 0)
+		return;
+
+	const uint ColCount = SIZE(seqxA);
+	asserta(SIZE(seqyA) == ColCount);
+	asserta(SIZE(seqM) == ColCount);
+
+	fprintf(f, "\n");
+	fprintf(g_faln, "____________________________\n");
+	fprintf(f, ">%s\n", m_Q->m_Label.c_str());
+	fprintf(f, ">%s\n", m_R->m_Label.c_str());
+	fprintf(f, "\n");
+
+	const char *Q = seqxA.c_str();
+	const char *R = seqyA.c_str();
+	const char *M = seqM.c_str();
+
+	uint ColStart = 0;
+	for (;;)
+		{
+		uint ColEnd = ColStart + 100;
+		if (ColEnd >= ColCount)
+			ColEnd = ColCount;
+		asserta(ColEnd > ColStart);
+		uint n = ColEnd - ColStart;
+
+		fprintf(f, "Q  %*.*s\n", n, n, Q + ColStart);
+		fprintf(f, "   %*.*s\n", n, n, M + ColStart);
+		fprintf(f, "R  %*.*s\n", n, n, R + ColStart);
+		fprintf(f, "\n");
+
+		ColStart = ColEnd;
+		if (ColStart >= ColCount)
+			break;
+		}
+
+	fprintf(f, "\n");
+//	fprintf(f, "TM-score= %5.3f (QL=%d, dQ=%.2f)\n", TM2, xlen, d0B);
+	fprintf(f, "TM-score= %5.3f (RL=%d, dR=%.2f)\n", TM1, ylen, d0A);
 	}
 
 /**************************************************************************
@@ -2781,6 +2843,9 @@ uint TMA::ReadCal(const string &FileName, char *Seq, double **a)
 
 double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 	{
+	m_Q = &Q;
+	m_R = &R;
+
 	const uint QL = Q.GetSeqLength();
 	const uint RL = R.GetSeqLength();
 
@@ -2819,6 +2884,18 @@ double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 	string seqM, seqxA, seqyA;
 	int iResult = TMalign_main(xa, ya, seqx, seqy, TM1, TM2, d0A, d0B,
 	  seqM, seqxA, seqyA, xlen, ylen);
+	if (iResult == 0)
+		WriteAln(g_faln, xlen, ylen, TM1, TM2, d0A, d0B, seqM, seqxA, seqyA);
+	else
+		{
+		if (g_faln != 0)
+			{
+			fprintf(g_faln, "\n");
+			fprintf(g_faln, "____________________________\n");
+			fprintf(g_faln, ">%s\n", m_Q->m_Label.c_str());
+			fprintf(g_faln, "no alignment to >%s\n", m_R->m_Label.c_str());
+			}
+		}
 
 	DeleteArray(&xa, QL);
 	DeleteArray(&ya, RL);

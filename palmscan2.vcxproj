@@ -394,6 +394,7 @@
     <ClCompile Include="test_sw.cpp" />
     <ClCompile Include="timing.cpp" />
     <ClCompile Include="tma.cpp" />
+    <ClCompile Include="tmhack.cpp" />
     <ClCompile Include="tmscore.cpp" />
     <ClCompile Include="tm_ppc.cpp" />
     <ClCompile Include="tracebackbitmem.cpp" />

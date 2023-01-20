@@ -5,8 +5,8 @@
 class TMA
 	{
 public:
-	PDBChain *m_Q = 0;
-	PDBChain *m_R = 0;
+	const PDBChain *m_Q = 0;
+	const PDBChain *m_R = 0;
 
 public:
 	void NWDP_TM1(double **score, bool **path, double **val,
@@ -78,7 +78,7 @@ public:
 
 	double detailed_search_standard(double** r1, double** r2,
 		double** xtm, double** ytm, double** xt, double** x, double** y,
-		int xlen, int ylen, int invmap0[], double t[3], double u[3][3],
+		int xlen, int ylen, const int invmap0[], double t[3], double u[3][3],
 		int simplify_step, int score_sum_method, double local_d0_search,
 		const bool& bNormalize, double Lnorm, double score_d8, double d0);
 
@@ -128,7 +128,7 @@ public:
 		string& seqM, string& seqxA, string& seqyA,
 		const int xlen, const int ylen);
 
-	void LogAln(
+	void WriteAln(FILE *f,
 		const int xlen, const int ylen,
 		const double TM1, const double TM2,
 		double d0A, double d0B,

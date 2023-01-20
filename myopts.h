@@ -153,6 +153,7 @@ FLAG_OPT(dgd)
 FLAG_OPT(top_hit_only)
 FLAG_OPT(refs)
 FLAG_OPT(first_only)
+FLAG_OPT(norows)
 
 #undef FLAG_OPT
 #undef UNS_OPT

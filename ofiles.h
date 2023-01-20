@@ -39,5 +39,6 @@ F(tsv_true)
 F(tsv_false)
 F(tsv_dot)
 F(cfv)
+F(aln)
 
 #undef F
