@@ -17,9 +17,11 @@ void cmd_xprof()
 
 	XProf XP;
 	PDBChain Chain;
+	uint Counter = 0;
 	while (CR.GetNext(Chain))
 		{
-		Progress("%s\r", Chain.m_Label.c_str());
+		if (++Counter%100 == 0)
+			Progress("%s\r", Chain.m_Label.c_str());
 		XP.Init(Chain);
 		XP.ToCfv(g_fcfv);
 		}

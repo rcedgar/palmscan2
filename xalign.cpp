@@ -4,8 +4,19 @@
 #include "xprofdata.h"
 #include "xtrainer.h"
 #include "outputfiles.h"
+#include "omplock.h"
 
-float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path);
+float SW(const Mx<float> &SMx, 
+  Mx<float> &a_FwdM,
+  Mx<float> &a_FwdD,
+  Mx<float> &a_FwdI,
+  Mx<char> &a_TBM,
+  Mx<char> &a_TBD,
+  Mx<char> &a_TBI,
+  uint &Starti, uint &Startj, string &Path);
+
+static uint g_QueryCount;
+static uint g_HitCount;
 
 static double GetScorePosPair(
   const XProfData &XD1, uint Pos1, 
@@ -29,10 +40,17 @@ static double GetScorePosPair(
 	return Sum/FeatureCount;
 	}
 
-static void XAlign(const XProfData &Prof1, const XProfData &Prof2,
-  const vector<vector<vector<double> > > &FeatureIndexToLogOddsMx)
+static void XAlign(Mx<float> &SMx, 
+  Mx<float> &a_FwdM,
+  Mx<float> &a_FwdD,
+  Mx<float> &a_FwdI,
+  Mx<char> &a_TBM,
+  Mx<char> &a_TBD,
+  Mx<char> &a_TBI,
+  const XProfData &Prof1, const XProfData &Prof2,
+  const vector<vector<vector<double> > > &FeatureIndexToLogOddsMx,
+  double MinScore)
 	{
-	Mx<float> SMx;
 	const uint L1 = Prof1.GetSeqLength();
 	const uint L2 = Prof2.GetSeqLength();
 	SMx.Alloc("SMx", L1, L2);
@@ -50,7 +68,11 @@ static void XAlign(const XProfData &Prof1, const XProfData &Prof2,
 
 	uint Start0, Start1;
 	string Path;
-	float Score = SW(SMx, Start0, Start1, Path);
+	float Score = SW(SMx, a_FwdM, a_FwdD, a_FwdI,
+	  a_TBM, a_TBD, a_TBI, Start0, Start1, Path);
+	if (Score < MinScore)
+		return;
+	++g_HitCount;
 	uint Cols = SIZE(Path);
 
 	const string &A = Prof1.m_Seq;
@@ -79,13 +101,10 @@ static void XAlign(const XProfData &Prof1, const XProfData &Prof2,
 		else
 			BRow += '-';
 		}
-	//Log("A  >%s\n", Prof1.m_Label.c_str());
-	//Log("B  >%s\n", Prof2.m_Label.c_str());
-	//Log("A  %s\n", ARow.c_str());
-	//Log("B  %s\n", BRow.c_str());
 
 	if (g_ftsv)
 		{
+		Lock();
 		FILE *f = g_ftsv;
 		fprintf(f, "%.1f", Score);
 		fprintf(f, "\t%s", Prof1.m_Label.c_str());
@@ -98,6 +117,47 @@ static void XAlign(const XProfData &Prof1, const XProfData &Prof2,
 			fprintf(f, "\t%s", BRow.c_str());
 			}
 		fprintf(f, "\n");
+		Unlock();
+		}
+	}
+
+static void Thread(FILE *fQ, double MinScore,
+  const vector<XProfData *> &DBXDs,
+  const vector<vector<vector<double> > > &FeatureIndexToLogOddsMx)
+	{
+	const uint DBN = SIZE(DBXDs);
+	Mx<float> SMx;
+	Mx<float> a_FwdM;
+	Mx<float> a_FwdD;
+	Mx<float> a_FwdI;
+	Mx<char> a_TBM;
+	Mx<char> a_TBD;
+	Mx<char> a_TBI;
+
+	 XProfData QP;
+	for (;;)
+		{
+		bool Ok;
+#pragma omp critical
+		{
+		Ok = QP.FromCfv(fQ);
+		}
+		if (!Ok)
+			return;
+
+#pragma omp critical
+		{
+		++g_QueryCount;
+		if (g_QueryCount%1 == 0)
+			Progress("%u queries, %u hits\r", g_QueryCount, g_HitCount);
+		}
+		for (uint i = 0; i < DBN; ++i)
+			{
+			const XProfData &DP = *DBXDs[i];
+			XAlign(SMx, a_FwdM, a_FwdD, a_FwdI,
+			  a_TBM, a_TBD, a_TBI,
+				QP, DP, FeatureIndexToLogOddsMx, MinScore);
+			}
 		}
 	}
 
@@ -106,7 +166,12 @@ void cmd_xalign()
 	const string &QueryFileName = opt_xalign;
 	const string &DBFileName = opt_db;
 
+	double MinScore = 100;
+	if (optset_minscore)
+		MinScore = opt_minscore;
+
 	vector<XProfData *> DBXDs;
+	Progress("Reading db... ");
 	FILE *fDB = OpenStdioFile(DBFileName);
 	for (;;)
 		{
@@ -119,27 +184,32 @@ void cmd_xalign()
 	CloseStdioFile(fDB);
 	fDB = 0;
 	const uint DBN = SIZE(DBXDs);
+	Progress(" %u profiles\n", DBN);
 
 	vector<vector<vector<double> > > FeatureIndexToLogOddsMx;
 	XTrainer::LogOddsFromTsv(opt_logodds, FeatureIndexToLogOddsMx);
 
 	XProfData QP;
 	FILE *fQ = OpenStdioFile(QueryFileName);
-	uint Counter = 0;
-	for (;;)
-		{
-		bool Ok = QP.FromCfv(fQ);
-		if (!Ok)
-			break;
 
-		++Counter;
-		if (Counter%100 == 0)
-			Progress("%u %s\r", Counter, QP.m_Label.c_str());
-		for (uint i = 0; i < DBN; ++i)
-			{
-			const XProfData &DP = *DBXDs[i];
-			XAlign(QP, DP, FeatureIndexToLogOddsMx);
-			}
-		}
-	Progress("\n");
+	uint ThreadCount = GetRequestedThreadCount();
+#pragma omp parallel num_threads(ThreadCount)
+	Thread(fQ, MinScore, DBXDs, FeatureIndexToLogOddsMx);
+
+	//for (;;)
+	//	{
+	//	bool Ok = QP.FromCfv(fQ);
+	//	if (!Ok)
+	//		break;
+
+	//	++g_QueryCount;
+	//	if (g_QueryCount%1 == 0)
+	//		Progress("%u queries, %u hits\r", g_QueryCount, g_HitCount);
+	//	for (uint i = 0; i < DBN; ++i)
+	//		{
+	//		const XProfData &DP = *DBXDs[i];
+	//		XAlign(QP, DP, FeatureIndexToLogOddsMx, MinScore);
+	//		}
+	//	}
+	ProgressLog("%u queries, %u hits\n", g_QueryCount, g_HitCount);
 	}

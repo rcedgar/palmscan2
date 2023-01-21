@@ -108,6 +108,13 @@ bool ChainReader::GetNext_PDB(PDBChain &Chain)
 				if (CurrentChainChar != 0)
 					Label += CurrentChainChar;
 				char ChainChar2 = Chain.FromPDBLines(Label, Lines);
+				if (ChainChar2 == 0)
+					{
+					CurrentChainChar = ChainChar;
+					Lines.clear();
+					Lines.push_back(Line);
+					continue;
+					}
 				asserta(ChainChar2 == CurrentChainChar);
 				return true;
 				}

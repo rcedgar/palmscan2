@@ -9,13 +9,20 @@ static const float TransMI = -5.0f;
 static const float TransDD = -0.5f;
 static const float TransII = -0.5f;
 
-#define		m(x)	static Mx<float> g_Fwd##x; static Mx<char> g_TB##x;
-	m(M)
-	m(D)
-	m(I)
-#undef m
+//#define		m(x)	static Mx<float> g_Fwd##x; static Mx<char> g_TB##x;
+//	m(M)
+//	m(D)
+//	m(I)
+//#undef m
 
-float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path)
+float SW(const Mx<float> &SMx,
+  Mx<float> &a_FwdM,
+  Mx<float> &a_FwdD,
+  Mx<float> &a_FwdI,
+  Mx<char> &a_TBM,
+  Mx<char> &a_TBD,
+  Mx<char> &a_TBI,
+  uint &Starti, uint &Startj, string &Path)
 	{
 	Path.clear();
 	const float * const *SimMx = SMx.GetData();
@@ -23,10 +30,10 @@ float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path)
 	const uint LA = SMx.m_RowCount;
 	const uint LB = SMx.m_ColCount;
 
-#define		m(x)	g_Fwd##x.Alloc("SAff_Fwd"#x, LA+1, LB+1);	\
-					g_TB##x.Alloc("SWAff_TB"#x, LA+1, LB+1);	\
-					float **Fwd##x = g_Fwd##x.GetData();											\
-					char **TB##x = g_TB##x.GetData();
+#define		m(x)	a_Fwd##x.Alloc("SAff_Fwd"#x, LA+1, LB+1);	\
+					a_TB##x.Alloc("SWAff_TB"#x, LA+1, LB+1);	\
+					float **Fwd##x = a_Fwd##x.GetData();											\
+					char **TB##x = a_TB##x.GetData();
 	m(M)
 	m(D)
 	m(I)
@@ -98,12 +105,12 @@ float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path)
 	if (opt_trace)
 		{
 		SMx.LogMe();
-		g_FwdM.LogMe();
-		g_FwdD.LogMe();
-		g_FwdI.LogMe();
-		g_TBM.LogMe();
-		g_TBD.LogMe();
-		g_TBI.LogMe();
+		a_FwdM.LogMe();
+		a_FwdD.LogMe();
+		a_FwdI.LogMe();
+		a_TBM.LogMe();
+		a_TBD.LogMe();
+		a_TBI.LogMe();
 		}
 
 	if (Besti == UINT_MAX)

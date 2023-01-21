@@ -4,6 +4,7 @@
 
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 
+// $d/data/pdb/a0/pdb1a04.ent
 void GetLabelFromFileNamePDBEnt(const string &FileName, string &Label)
 	{
 	vector<string> Fields;
@@ -27,24 +28,22 @@ void GetLabelFromFileNamePDBEnt(const string &FileName, string &Label)
 
 void GetLabelFromFileName(const string &FileName, string &Label)
 	{
-	if (opt_pdb_ent)
+	if (EndsWith(FileName, ".ent"))
 		{
 		GetLabelFromFileNamePDBEnt(FileName, Label);
 		return;
 		}
+
 	vector<string> Fields;
 	Split(FileName, Fields, '/');
 	uint FieldCount = SIZE(Fields);
 	asserta(FieldCount > 0);
 	Label = Fields[FieldCount-1];
-	if (EndsWith(Label, ".pdb"))
-		{
-		uint n = SIZE(Label);
-		if (n > 4)
-			Label = Label.substr(0, n-4);
-		}
+	const uint n = SIZE(Label);
 
-	if (Label.size() == 6 && Label[4] == '_')
+	if (n > 4 && EndsWith(Label, ".pdb"))
+		Label = Label.substr(0, n-4);
+	else if (n == 6 && Label[4] == '_')
 		Label = Label.substr(0, 4);
 	}
 

@@ -127,12 +127,8 @@ void cmd_cdp_search()
 	DataAvg.FromTsv(Info, f);
 	DataStdDev.FromTsv(Info, f);
 
-	//CDSearcher CS;
-	//CS.Init(Info, DataAvg, DataStdDev);
-
 	CDTemplate Tpl;
 	SetPalmTemplate(Info, Tpl);
-	//CS.m_Template = &Tpl;
 
 	ChainReader CR;
 	CR.Open(InputFN);
@@ -140,26 +136,6 @@ void cmd_cdp_search()
 
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(CR, Info, Tpl, DataAvg, DataStdDev);
-
-	//PDBChain Q;
-	//uint DoneCount = 0;
-	//uint HitCount = 0;
-	//while (CR.GetNext(Q))
-	//	{
-	//	vector<uint> PalmHit;
-	//	CS.SearchPalm(Q, PalmHit);
-	//	if (!PalmHit.empty())
-	//		++HitCount;
-	//	if (++DoneCount%100 == 0)
-	//		{
-	//		string sPct;
-	//		CR.GetStrPctDone(sPct);
-	//		Progress("%s%% done, %u / %u hits\r",
-	//		  sPct.c_str(), HitCount, DoneCount);
-	//		}
-
-	//	LogCDHit("", CS, Q, PalmHit);
-	//	}
 
 	ProgressLog("100.0%% done, %u / %u hits\n",
 	  g_HitCount, g_DoneCount);

@@ -1,7 +1,15 @@
 #include "myutils.h"
 #include "mx.h"
 
-float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path);
+float SW(const Mx<float> &SMx,
+  Mx<float> &a_FwdM,
+  Mx<float> &a_FwdD,
+  Mx<float> &a_FwdI,
+  Mx<char> &a_TBM,
+  Mx<char> &a_TBD,
+  Mx<char> &a_TBI,
+  uint &Starti, uint &Startj, string &Path);
+
 float GetBlosum62Score(char a, char b);
 
 void cmd_test_sw()
@@ -16,6 +24,13 @@ void cmd_test_sw()
 	SMx.Alloc("SMx", LA, LB);
 	float **Sim = SMx.GetData();
 
+	Mx<float> a_FwdM;
+	Mx<float> a_FwdD;
+	Mx<float> a_FwdI;
+	Mx<char> a_TBM;
+	Mx<char> a_TBD;
+	Mx<char> a_TBI;
+
 	for (unsigned i = 0; i < LA; ++i)
 		{
 		char a = A[i];
@@ -29,7 +44,9 @@ void cmd_test_sw()
 
 	uint Starti, Startj;
 	string Path;
-	float Score = SW(SMx, Starti, Startj, Path);
+	float Score = SW(SMx, a_FwdM, a_FwdD, a_FwdI,
+	  a_TBM, a_TBD, a_TBI,
+	  Starti, Startj, Path);
 
 	Log("Score = %.3g, Path %s\n", Score, Path.c_str());
 

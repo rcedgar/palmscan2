@@ -29,3 +29,27 @@ void cmd_pdb2cal()
 		}
 	Progress("100.0%% done, %u converted\n", Count);
 	}
+
+void cmd_pdb2cal_files()
+	{
+	const string &FN = opt_pdb2cal_files;
+
+	vector<string> Paths;
+	ReadLinesFromFile(FN, Paths);
+
+	const uint N = SIZE(Paths);
+	for (uint i = 0; i < N; ++i)
+		{
+		ProgressStep(i, N, "Converting");
+
+		const string &FileName = Paths[i];
+
+		vector<PDBChain *> Chains;
+		ReadChains(FileName, Chains);
+		for (uint j = 0; j < SIZE(Chains); ++j)
+			{
+			Chains[j]->ToCal(g_fcal);
+			delete Chains[j];
+			}
+		}
+	}

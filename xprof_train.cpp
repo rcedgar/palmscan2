@@ -4,7 +4,14 @@
 #include "xprof.h"
 #include "outputfiles.h"
 
-float SW(const Mx<float> &SMx, uint &Starti, uint &Startj, string &Path);
+float SW(const Mx<float> &SMx, 
+  Mx<float> &a_FwdM,
+  Mx<float> &a_FwdD,
+  Mx<float> &a_FwdI,
+  Mx<char> &a_TBM,
+  Mx<char> &a_TBD,
+  Mx<char> &a_TBI,
+  uint &Starti, uint &Startj, string &Path);
 
 static char ScoreChar(double Score, double MaxScore)
 	{
@@ -113,7 +120,14 @@ void cmd_xprof_train()
 
 	uint Start0, Start1;
 	string Path;
-	float Score = SW(SMx, Start0, Start1, Path);
+	Mx<float> a_FwdM;
+	Mx<float> a_FwdD;
+	Mx<float> a_FwdI;
+	Mx<char> a_TBM;
+	Mx<char> a_TBD;
+	Mx<char> a_TBI;
+	float Score = SW(SMx, a_FwdM, a_FwdD, a_FwdI,
+	  a_TBM, a_TBD, a_TBI, Start0, Start1, Path);
 	uint Cols = SIZE(Path);
 	Log("Score = %.1f, Cols=%u, Path = %s\n", Score, Cols, Path.c_str());
 

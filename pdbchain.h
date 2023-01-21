@@ -117,7 +117,7 @@ public:
 	  double &x, double &y, double &z);
 	static void SetXYZInATOMLine(const string &InputLine,
 	  double x, double y, double z, string &OutputLine);
-	static void GetFieldsFromResidueATOMLines(const vector<string> &Lines,
+	static bool GetFieldsFromResidueATOMLines(const vector<string> &Lines,
 	  double &X, double &Y, double &Z, char &aa, int &ResNr);
 	};
 

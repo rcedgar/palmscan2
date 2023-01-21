@@ -440,7 +440,10 @@ char PDBChain::FromPDBLines(const string &Label,
 		char aa;
 		double X, Y, Z;
 		int ResNr;
-		GetFieldsFromResidueATOMLines(m_ATOMs[i], X, Y, Z, aa, ResNr);
+		bool CAFound = 
+		  GetFieldsFromResidueATOMLines(m_ATOMs[i], X, Y, Z, aa, ResNr);
+		if (!CAFound)
+			continue;
 
 		m_Seq.push_back(aa);
 		m_Xs.push_back(X);
@@ -452,7 +455,7 @@ char PDBChain::FromPDBLines(const string &Label,
 	return Chain;
 	}
 
-void PDBChain::GetFieldsFromResidueATOMLines(const vector<string> &Lines,
+bool PDBChain::GetFieldsFromResidueATOMLines(const vector<string> &Lines,
   double &X, double &Y, double &Z, char &aa, int &ResNr)
 	{
 	aa = 'X';
@@ -485,9 +488,10 @@ void PDBChain::GetFieldsFromResidueATOMLines(const vector<string> &Lines,
 			Z = StrToFloat(sZ);
 
 			ResNr = GetResidueNrFromATOMLine(Line);
-			break;
+			return true;
 			}
 		}
+	return false;
 	}
 
 void PDBChain::GetSubSeq(uint Pos, uint n, string &s) const
