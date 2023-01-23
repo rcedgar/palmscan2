@@ -361,6 +361,7 @@
     <ClCompile Include="readchains.cpp" />
     <ClCompile Include="gddgateprob.cpp" />
     <ClCompile Include="calpp2ppc.cpp" />
+    <ClCompile Include="scop40.cpp" />
     <ClCompile Include="search3d_tri.cpp" />
     <ClCompile Include="pdbchain.cpp" />
     <ClCompile Include="psms.cpp" />

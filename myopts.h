@@ -94,6 +94,7 @@ UNS_OPT(report_topn,		32,			1,			UINT_MAX)
 UNS_OPT(maxx,				10,			1,			UINT_MAX)
 UNS_OPT(refn,				10,			1,			UINT_MAX)
 UNS_OPT(minflanklen,		10,			1,			UINT_MAX)
+UNS_OPT(scoretype,			10,			1,			UINT_MAX)
 
 UNS_OPT(secs,				60,			1,			UINT_MAX)
 UNS_OPT(flanks,				60,			1,			UINT_MAX)
@@ -154,6 +155,7 @@ FLAG_OPT(top_hit_only)
 FLAG_OPT(refs)
 FLAG_OPT(first_only)
 FLAG_OPT(norows)
+FLAG_OPT(calctps)
 
 #undef FLAG_OPT
 #undef UNS_OPT

@@ -65,5 +65,6 @@ C(xprof_train)
 C(test_sw)
 C(xalign)
 C(tmhack)
+C(scop40)
 
 #undef C
