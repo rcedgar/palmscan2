@@ -65,3 +65,41 @@ bool XProfData::FromCfv(FILE *f)
 		}
 	return true;
 	}
+
+void XProfData::Shuffle()
+	{
+	const uint L = GetSeqLength();
+	string Seq;
+	vector<double> Xs;
+	vector<double> Ys;
+	vector<double> Zs;
+	vector<vector<double> > PosToFeatureVec;
+	vector<vector<uint> > PosToIntFeatureVec;
+
+	vector<uint> Order;
+	for (uint i = 0; i < L; ++i)
+		Order.push_back(L-i-1);
+//	random_shuffle(Order.begin(), Order.end());
+
+	for (uint i = 0; i < L; ++i)
+		{
+		uint k = Order[i];
+#define K(name)	name.push_back(m_##name[k])
+		K(Seq);
+		K(Xs);
+		K(Ys);
+		K(Zs);
+		K(PosToFeatureVec);
+		K(PosToIntFeatureVec);
+#undef K		
+		}
+
+#define K(name)	m_##name = name
+		K(Seq);
+		K(Xs);
+		K(Ys);
+		K(Zs);
+		K(PosToFeatureVec);
+		K(PosToIntFeatureVec);
+#undef K
+	}

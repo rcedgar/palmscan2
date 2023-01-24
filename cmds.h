@@ -66,5 +66,7 @@ C(test_sw)
 C(xalign)
 C(tmhack)
 C(scop40)
+C(xalign_calibrate)
+C(gumbel)
 
 #undef C

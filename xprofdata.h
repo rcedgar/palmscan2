@@ -31,4 +31,5 @@ public:
 		assert(FeatureIndex < SIZE(m_PosToIntFeatureVec[Pos]));
 		return m_PosToIntFeatureVec[Pos][FeatureIndex];
 		}
+	void Shuffle();
 	};

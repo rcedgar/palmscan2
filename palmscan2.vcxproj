@@ -299,6 +299,7 @@
     <ClCompile Include="gspalign.cpp" />
     <ClCompile Include="gspaligner.cpp" />
     <ClCompile Include="gsprof.cpp" />
+    <ClCompile Include="gumbel.cpp" />
     <ClCompile Include="hse.cpp" />
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
@@ -411,6 +412,7 @@
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xalign.cpp" />
+    <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
     <ClInclude Include="xprof.h" />

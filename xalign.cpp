@@ -40,7 +40,7 @@ static double GetScorePosPair(
 	return Sum/FeatureCount;
 	}
 
-static void XAlign(Mx<float> &SMx, 
+double XAlign(Mx<float> &SMx, 
   Mx<float> &a_FwdM,
   Mx<float> &a_FwdD,
   Mx<float> &a_FwdI,
@@ -71,7 +71,7 @@ static void XAlign(Mx<float> &SMx,
 	float Score = SW(SMx, a_FwdM, a_FwdD, a_FwdI,
 	  a_TBM, a_TBD, a_TBI, Start0, Start1, Path);
 	if (Score < MinScore)
-		return;
+		return Score;
 	++g_HitCount;
 	uint Cols = SIZE(Path);
 
@@ -119,6 +119,7 @@ static void XAlign(Mx<float> &SMx,
 		fprintf(f, "\n");
 		Unlock();
 		}
+	return Score;
 	}
 
 static void Thread(FILE *fQ, double MinScore,
@@ -134,7 +135,7 @@ static void Thread(FILE *fQ, double MinScore,
 	Mx<char> a_TBD;
 	Mx<char> a_TBI;
 
-	 XProfData QP;
+	XProfData QP;
 	for (;;)
 		{
 		bool Ok;
@@ -142,6 +143,7 @@ static void Thread(FILE *fQ, double MinScore,
 		{
 		Ok = QP.FromCfv(fQ);
 		}
+
 		if (!Ok)
 			return;
 
@@ -151,6 +153,7 @@ static void Thread(FILE *fQ, double MinScore,
 		if (g_QueryCount%1 == 0)
 			Progress("%u queries, %u hits\r", g_QueryCount, g_HitCount);
 		}
+
 		for (uint i = 0; i < DBN; ++i)
 			{
 			const XProfData &DP = *DBXDs[i];
@@ -196,20 +199,5 @@ void cmd_xalign()
 #pragma omp parallel num_threads(ThreadCount)
 	Thread(fQ, MinScore, DBXDs, FeatureIndexToLogOddsMx);
 
-	//for (;;)
-	//	{
-	//	bool Ok = QP.FromCfv(fQ);
-	//	if (!Ok)
-	//		break;
-
-	//	++g_QueryCount;
-	//	if (g_QueryCount%1 == 0)
-	//		Progress("%u queries, %u hits\r", g_QueryCount, g_HitCount);
-	//	for (uint i = 0; i < DBN; ++i)
-	//		{
-	//		const XProfData &DP = *DBXDs[i];
-	//		XAlign(QP, DP, FeatureIndexToLogOddsMx, MinScore);
-	//		}
-	//	}
 	ProgressLog("%u queries, %u hits\n", g_QueryCount, g_HitCount);
 	}
