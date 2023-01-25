@@ -66,6 +66,7 @@ C(test_sw)
 C(xalign)
 C(tmhack)
 C(scop40)
+C(scop40_firstfp)
 C(xalign_calibrate)
 C(gumbel)
 

@@ -363,6 +363,7 @@
     <ClCompile Include="gddgateprob.cpp" />
     <ClCompile Include="calpp2ppc.cpp" />
     <ClCompile Include="scop40.cpp" />
+    <ClCompile Include="scop40_firstfp.cpp" />
     <ClCompile Include="search3d_tri.cpp" />
     <ClCompile Include="pdbchain.cpp" />
     <ClCompile Include="psms.cpp" />

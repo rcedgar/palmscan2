@@ -37,7 +37,10 @@ static double GetScorePosPair(
 			Sum += Score;
 			}
 		}
-	return Sum/FeatureCount;
+	double FinalScore = Sum/FeatureCount;
+	const double BIAS = 0.5;
+	FinalScore += BIAS;
+	return FinalScore;
 	}
 
 double XAlign(Mx<float> &SMx, 
@@ -169,7 +172,7 @@ void cmd_xalign()
 	const string &QueryFileName = opt_xalign;
 	const string &DBFileName = opt_db;
 
-	double MinScore = 100;
+	double MinScore = 50;
 	if (optset_minscore)
 		MinScore = opt_minscore;
 
