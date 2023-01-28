@@ -464,6 +464,12 @@
     <ClCompile Include="scop40_firstfp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dali.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="distmx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

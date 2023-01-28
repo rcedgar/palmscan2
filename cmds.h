@@ -69,5 +69,7 @@ C(scop40)
 C(scop40_firstfp)
 C(xalign_calibrate)
 C(gumbel)
+C(dali)
+C(distmx)
 
 #undef C

@@ -295,6 +295,8 @@
     <ClCompile Include="clusters2model.cpp" />
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
+    <ClCompile Include="dali.cpp" />
+    <ClCompile Include="distmx.cpp" />
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="gspalign.cpp" />
     <ClCompile Include="gspaligner.cpp" />
