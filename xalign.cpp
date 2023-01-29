@@ -6,6 +6,16 @@
 #include "outputfiles.h"
 #include "omplock.h"
 
+void GetPosVecs(const string &QRow, const string &TRow,
+  vector<uint> &PosQs, vector<uint> &PosTs);
+
+double GetDALIScore_Cols_Band(const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs,
+  uint Radius, vector<double> &ColScores);
+
+double GetDALIZ(const PDBChain &Q, const PDBChain &T,
+  const string &QRow, const string &TRow);
+
 float SW(const Mx<float> &SMx, 
   Mx<float> &a_FwdM,
   Mx<float> &a_FwdD,
@@ -43,6 +53,92 @@ static double GetScorePosPair(
 	return FinalScore;
 	}
 
+static void WriteAln(FILE *f,
+  const XProfData &ProfQ, const XProfData &ProfT,
+  const string &RowQ, const string &RowT)
+	{
+	if (f == 0)
+		return;
+
+	const char *LabelQ = ProfQ.m_Label.c_str();
+	const char *LabelT = ProfT.m_Label.c_str();
+
+	vector<uint> PosQs;
+	vector<uint> PosTs;
+	GetPosVecs(RowQ, RowT, PosQs, PosTs);
+
+	vector<double> ColScores;
+	GetDALIScore_Cols_Band(ProfQ, ProfT, PosQs, PosTs, 5, ColScores);
+	const uint uColCount = SIZE(ColScores);
+	asserta(SIZE(PosTs) == uColCount);
+	asserta(SIZE(PosQs) == uColCount);
+	const string &SeqQ = ProfQ.m_Seq;
+	const string &SeqT = ProfT.m_Seq;
+	Log("\n");
+	Log("___________________________________________\n");
+	Log(">%s, %s\n", LabelQ, LabelT);
+	for (uint Col = 0; Col < uColCount; ++Col)
+		{
+		uint PosQ = PosQs[Col];
+		uint PosT = PosTs[Col];
+		asserta(PosQ < SIZE(SeqQ));
+		asserta(PosT < SIZE(SeqT));
+		char q = SeqQ[PosQ];
+		char t = SeqT[PosT];
+		Log("%c\t%c\t%8.3g\n", q, t, ColScores[Col]);
+		}
+
+	Lock();
+	fprintf(f, "\n");
+	fprintf(f, "____________________________________________________\n");
+
+	fprintf(f, ">%s, %s\n", LabelQ, LabelT);
+
+	const int ColCount = (int) SIZE(RowQ);
+	asserta(SIZE(RowT) == (uint) ColCount);
+
+	const int BLOCKSIZE = 100;
+	int ColsRemaining = ColCount;
+	int ColStart = 0;
+	for (;;)
+		{
+		asserta(ColsRemaining >= 0);
+		if (ColsRemaining == 0)
+			break;
+		int n = ColsRemaining;
+		if (n > BLOCKSIZE)
+			 n = BLOCKSIZE;
+
+		string Annot;
+		for (int Col = ColStart; Col < ColStart + n; ++Col)
+			{
+			double Score = ColScores[Col];
+			char c = ' ';
+			if (Score > 0.05)
+				c = '*';
+			else if (Score > 0.025)
+				c = '+';
+			else if (Score > 0)
+				c = '.';
+			else if (Score < 0.025)
+				c = '#';
+			Annot += c;
+			}
+
+		fprintf(f, "\n");
+		fprintf(f, "%*.*s", n, n, RowQ.c_str() + ColStart);
+		fprintf(f, "  %s\n", LabelQ);
+		fprintf(f, "%s\n", Annot.c_str());
+		fprintf(f, "%*.*s", n, n, RowT.c_str() + ColStart);
+		fprintf(f, "  %s\n", LabelT);
+
+		ColStart += n;
+		ColsRemaining -= n;
+		}
+
+	Unlock();
+	}
+
 double XAlign(Mx<float> &SMx, 
   Mx<float> &a_FwdM,
   Mx<float> &a_FwdD,
@@ -78,6 +174,7 @@ double XAlign(Mx<float> &SMx,
 	++g_HitCount;
 	uint Cols = SIZE(Path);
 
+	vector<double> ScoreRow;
 	const string &A = Prof1.m_Seq;
 	const string &B = Prof2.m_Seq;
 	const uint ColCount = SIZE(Path);
@@ -91,10 +188,15 @@ double XAlign(Mx<float> &SMx,
 		if (c == 'M' || c == 'D')
 			{
 			ARow += A[i];
+			double Score = SMx.Get(i, j);
+			ScoreRow.push_back(Score);
 			++i;
 			}
 		else
+			{
 			ARow += '-';
+			ScoreRow.push_back(0);
+			}
 
 		if (c == 'M' || c == 'I')
 			{
@@ -105,6 +207,8 @@ double XAlign(Mx<float> &SMx,
 			BRow += '-';
 		}
 
+	double Z = GetDALIZ(Prof1, Prof2, ARow, BRow);
+
 	if (g_ftsv)
 		{
 		Lock();
@@ -113,7 +217,7 @@ double XAlign(Mx<float> &SMx,
 		fprintf(f, "\t%s", Prof1.m_Label.c_str());
 		fprintf(f, "\t%s", Prof2.m_Label.c_str());
 		fprintf(f, "\t%u", ColCount);
-		fprintf(f, "\t%.2f", Score/ColCount);
+		fprintf(f, "\t%.2f", Z);
 		if (!opt_norows)
 			{
 			fprintf(f, "\t%s", ARow.c_str());
@@ -122,6 +226,9 @@ double XAlign(Mx<float> &SMx,
 		fprintf(f, "\n");
 		Unlock();
 		}
+
+	WriteAln(g_faln, Prof1, Prof2, ARow, BRow);
+
 	return Score;
 	}
 

@@ -1,24 +1,11 @@
 #include "myutils.h"
 #include "pdbchain.h"
 #include "outputfiles.h"
+#include "abcxyz.h"
 #include <map>
-
-// Holm2019 eq(A3)
-static double Getm(double L)
-	{
-	if (L > 400)
-		return Getm(400) + L - 400;
-
-	double y = 7.95;
-	y += 0.71*L;
-	y += 0.000259*L*L;
-	y += 0.00000192*L*L*L;
-	return y;
-	}
 
 /***
 DaliLite v5
-===========================
 comparemodules.f, line 1436
 ===========================
         enveloperadius=20.0
@@ -36,8 +23,6 @@ static double Weight(double y)
 	}
 
 /***
-DaliLite v5
-===========================
 comparemodules.f, line 1397
   a, b are integer distances in units of 1/10 Angstrom,
   so multiply by 10 to get Angstroms.
@@ -85,15 +70,118 @@ static double dpscorefun(double a, double b)
 	return Score;
 	}
 
-// Holm2019 eq(A1)
-double GetDALI(const PDBChain &Q, const PDBChain &T,
+static double GetDALIScore_Col_Band(
+  const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs,
+  uint Col, uint Radius)
+	{
+	const int Lali = (int) SIZE(PosQs);
+	asserta(SIZE(PosTs) == (uint) Lali);
+
+	const double Theta = 0.2;
+	double Sum = 0;
+	uint PosQi = PosQs[Col];
+	uint PosTi = PosTs[Col];
+	int LoCol = int(Col) - int(Radius);
+	int HiCol = int(Col) + int(Radius);
+	if (LoCol < 0)
+		LoCol = 0;
+	if (HiCol >= Lali)
+		HiCol = Lali - 1;
+	for (int Col2 = LoCol; Col2 <= HiCol; ++Col2)
+		{
+		if ((int) Col == Col2)
+			Sum += Theta;
+		else
+			{
+			uint PosQj = PosQs[Col2];
+			uint PosTj = PosTs[Col2];
+
+			double dij_Q = Q.GetDist(PosQi, PosQj);
+			double dij_T = T.GetDist(PosTi, PosTj);
+			double x = dpscorefun(dij_Q, dij_T);
+			Sum += x;
+			}
+		}
+	int n = (HiCol - LoCol + 1);
+	asserta(n > 0);
+	double Score = Sum/n;
+	return Score;
+	}
+
+static double GetDALIScore_Col(
+  const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs,
+  uint Col)
+	{
+	const uint Lali = SIZE(PosQs);
+	asserta(SIZE(PosTs) == Lali);
+
+	const double Theta = 0.2;
+	double Sum = 0;
+	uint PosQi = PosQs[Col];
+	uint PosTi = PosTs[Col];
+	for (uint Col2 = 0; Col2 < Lali; ++Col2)
+		{
+		if (Col == Col2)
+			Sum += Theta;
+		else
+			{
+			uint PosQj = PosQs[Col2];
+			uint PosTj = PosTs[Col2];
+
+			double dij_Q = Q.GetDist(PosQi, PosQj);
+			double dij_T = T.GetDist(PosTi, PosTj);
+			double x = dpscorefun(dij_Q, dij_T);
+			Sum += x;
+			}
+		}
+	return Sum;
+	}
+
+double GetDALIScore_Cols_Band(const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs,
+  uint Radius, vector<double> &ColScores)
+	{
+	ColScores.clear();
+	const uint Lali = SIZE(PosQs);
+	asserta(SIZE(PosTs) == Lali);
+
+	double Sum = 0;
+	for (uint Col = 0; Col < Lali; ++Col)
+		{
+		double ColScore = GetDALIScore_Col_Band(Q, T, PosQs, PosTs, Col, Radius);
+		Sum += ColScore;
+		ColScores.push_back(ColScore);
+		}
+	return Sum;
+	}
+
+double GetDALIScore_Cols(const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs,
+  vector<double> &ColScores)
+	{
+	ColScores.clear();
+	const uint Lali = SIZE(PosQs);
+	asserta(SIZE(PosTs) == Lali);
+
+	double Sum = 0;
+	for (uint i = 0; i < Lali; ++i)
+		{
+		double ColScore = GetDALIScore_Col(Q, T, PosQs, PosTs, i);
+		Sum += ColScore;
+		ColScores.push_back(ColScore);
+		}
+	return Sum;
+	}
+
+static double GetDALIScore(const PDBChain &Q, const PDBChain &T,
   const vector<uint> &PosQs, const vector<uint> &PosTs)
 	{
 	const uint Lali = SIZE(PosQs);
 	asserta(SIZE(PosTs) == Lali);
 
 	const double Theta = 0.2;
-	const double D = 20;
 	double Sum = 0;
 	for (uint i = 0; i < Lali; ++i)
 		{
@@ -115,11 +203,19 @@ double GetDALI(const PDBChain &Q, const PDBChain &T,
 				}
 			}
 		}
+#if DEBUG
+	{
+	vector<double> ColScores;
+	double Sum2 = GetDALIScore_Cols(Q, T, PosQs, PosTs, ColScores);
+	asserta(feq(Sum2, Sum));
+	}
+#endif
 	return Sum;
 	}
 
 /***
 "./src/comparemodules.f" line 1473
+===========================
         function zscore(l1,l2,score) result(z)
         implicit none
         real z,score
@@ -139,7 +235,7 @@ c
 
 ***/
 
-static double GetDALIZ(double DALI, uint QL, uint TL)
+static double GetDALIZFromScoreAndLengths(double DALIScore, uint QL, uint TL)
 	{
 	double n12 = sqrt(QL*TL);
 	double x = min(n12, 400.0);
@@ -147,23 +243,11 @@ static double GetDALIZ(double DALI, uint QL, uint TL)
 	if (n12 > 400)
 		mean += n12 - 400.0;
 	double sigma = 0.5*mean;
-	double z = (DALI - mean)/max(1.0, sigma);
+	double z = (DALIScore - mean)/max(1.0, sigma);
 	return z;
 	}
 
-#if 0
-// Per Holm2019, source code is different
-double GetDALIZ(double DALI, uint QL, uint TL)
-	{
-	double L = sqrt(QL*TL);
-	double m = Getm(L);
-	double sigma = 0.5*m;
-	double Z = (DALI - m)/sigma;
-	return Z;
-	}
-#endif
-
-static void GetPosVecs(const string &QRow, const string &TRow,
+void GetPosVecs(const string &QRow, const string &TRow,
   vector<uint> &PosQs, vector<uint> &PosTs)
 	{
 	PosQs.clear();
@@ -191,9 +275,36 @@ static void GetPosVecs(const string &QRow, const string &TRow,
 		}
 	}
 
-void cmd_dali()
+double GetDALIZ(const PDBChain &Q, const PDBChain &T,
+  const string &QRow, const string &TRow)
 	{
-	const string &QFN = opt_dali;
+	const uint QL = Q.GetSeqLength();
+	const uint TL = T.GetSeqLength();
+
+	vector<uint> PosQs;
+	vector<uint> PosTs;
+	GetPosVecs(QRow, TRow, PosQs, PosTs);
+	double DALI = GetDALIScore(Q, T, PosQs, PosTs);
+	double Z = GetDALIZFromScoreAndLengths(DALI, QL, TL);
+	return Z;
+	}
+
+/***
+palmscan2
+  -daliz d:/a/res/daliz/data/palmprints.cal \
+  -ref d:/a/res/daliz/data/palmprints.tsv \
+  -fieldnrs 0,1,7,8 \
+  -tsv daliz.tsv
+
+palmprints.tsv from dali2tsv.py:
+   0       1       2      3   4   5  6  7 .. 8
+   Q       T       Z                    QRow .. TRow
+1hhs    4ieg    14.5    1.8 124 128 19  VATDVSDHDTFWPGW...
+***/
+
+void cmd_daliz()
+	{
+	const string &QFN = opt_daliz;
 	const string &TsvFN = opt_ref;
 
 	vector<PDBChain *> Chains;
@@ -236,17 +347,10 @@ void cmd_dali()
 		const PDBChain &T = *Chains[iT];
 		asserta(Q.m_Label == Query && T.m_Label == Target);
 
-		const uint QL = Q.GetSeqLength();
-		const uint TL = T.GetSeqLength();
-
 		const string &QRow = Fields[QRowfn];
 		const string &TRow = Fields[TRowfn];
 
-		vector<uint> PosQs;
-		vector<uint> PosTs;
-		GetPosVecs(QRow, TRow, PosQs, PosTs);
-		double DALI = GetDALI(Q, T, PosQs, PosTs);
-		double Z = GetDALIZ(DALI, QL, TL);
+		double Z = GetDALIZ(Q, T, QRow, TRow);
 		if (g_ftsv)
 			{
 			fprintf(g_ftsv, "%s", Q.m_Label.c_str());
