@@ -7,7 +7,8 @@
 #include "omplock.h"
 
 void GetPosVecs(const string &QRow, const string &TRow,
-  vector<uint> &PosQs, vector<uint> &PosTs);
+  vector<uint> &PosQs, vector<uint> &PosTs,
+  vector<uint> &MatchColToCol, vector<uint> &ColToMatchCol);
 
 double GetDALIScore_Cols_Band(const PDBChain &Q, const PDBChain &T,
   const vector<uint> &PosQs, const vector<uint> &PosTs,
@@ -15,6 +16,10 @@ double GetDALIScore_Cols_Band(const PDBChain &Q, const PDBChain &T,
 
 double GetDALIZ(const PDBChain &Q, const PDBChain &T,
   const string &QRow, const string &TRow);
+
+void XAlign2(
+  const XProfData &ProfQ, const XProfData &ProfT,
+  const string &RowQ, const string &RowT);
 
 float SW(const Mx<float> &SMx, 
   Mx<float> &a_FwdM,
@@ -48,8 +53,8 @@ static double GetScorePosPair(
 			}
 		}
 	double FinalScore = Sum/FeatureCount;
-	const double BIAS = 0.5;
-	FinalScore += BIAS;
+	//const double BIAS = -0.5;
+	//FinalScore += BIAS;
 	return FinalScore;
 	}
 
@@ -65,10 +70,12 @@ static void WriteAln(FILE *f,
 
 	vector<uint> PosQs;
 	vector<uint> PosTs;
-	GetPosVecs(RowQ, RowT, PosQs, PosTs);
+	vector<uint> MatchColToCol;
+	vector<uint> ColToMatchCol;
+	GetPosVecs(RowQ, RowT, PosQs, PosTs, MatchColToCol, ColToMatchCol);
 
 	vector<double> ColScores;
-	GetDALIScore_Cols_Band(ProfQ, ProfT, PosQs, PosTs, 5, ColScores);
+	GetDALIScore_Cols_Band(ProfQ, ProfT, PosQs, PosTs, 4, ColScores);
 	const uint uColCount = SIZE(ColScores);
 	asserta(SIZE(PosTs) == uColCount);
 	asserta(SIZE(PosQs) == uColCount);
@@ -112,7 +119,8 @@ static void WriteAln(FILE *f,
 		string Annot;
 		for (int Col = ColStart; Col < ColStart + n; ++Col)
 			{
-			double Score = ColScores[Col];
+			uint MatchCol = ColToMatchCol[Col];
+			double Score = MatchCol == UINT_MAX ? 0 : ColScores[MatchCol];
 			char c = ' ';
 			if (Score > 0.05)
 				c = '*';
@@ -146,22 +154,22 @@ double XAlign(Mx<float> &SMx,
   Mx<char> &a_TBM,
   Mx<char> &a_TBD,
   Mx<char> &a_TBI,
-  const XProfData &Prof1, const XProfData &Prof2,
+  const XProfData &ProfQ, const XProfData &ProfT,
   const vector<vector<vector<double> > > &FeatureIndexToLogOddsMx,
   double MinScore)
 	{
-	const uint L1 = Prof1.GetSeqLength();
-	const uint L2 = Prof2.GetSeqLength();
-	SMx.Alloc("SMx", L1, L2);
+	const uint QL = ProfQ.GetSeqLength();
+	const uint TL = ProfT.GetSeqLength();
+	SMx.Alloc("SMx", QL, TL);
 
-	for (uint Pos1 = 0; Pos1 < L1; ++Pos1)
+	for (uint PosQ = 0; PosQ < QL; ++PosQ)
 		{
-		for (uint Pos2 = 0; Pos2 < L2; ++Pos2)
+		for (uint PosT = 0; PosT < TL; ++PosT)
 			{
 			float Score = (float)
-			  GetScorePosPair(Prof1, Pos1, Prof2, Pos2,
+			  GetScorePosPair(ProfQ, PosQ, ProfT, PosT,
 				FeatureIndexToLogOddsMx);
-			SMx.Put(Pos1, Pos2, Score);
+			SMx.Put(PosQ, PosT, Score);
 			}
 		}
 
@@ -175,59 +183,59 @@ double XAlign(Mx<float> &SMx,
 	uint Cols = SIZE(Path);
 
 	vector<double> ScoreRow;
-	const string &A = Prof1.m_Seq;
-	const string &B = Prof2.m_Seq;
+	const string &SeqQ = ProfQ.m_Seq;
+	const string &SeqT = ProfT.m_Seq;
 	const uint ColCount = SIZE(Path);
 	uint i = Start0;
 	uint j = Start1;
-	string ARow;
-	string BRow;
+	string RowQ;
+	string RowT;
 	for (uint Col = 0; Col < ColCount; ++Col)
 		{
 		char c = Path[Col];
 		if (c == 'M' || c == 'D')
 			{
-			ARow += A[i];
+			RowQ += SeqQ[i];
 			double Score = SMx.Get(i, j);
 			ScoreRow.push_back(Score);
 			++i;
 			}
 		else
 			{
-			ARow += '-';
+			RowQ += '-';
 			ScoreRow.push_back(0);
 			}
 
 		if (c == 'M' || c == 'I')
 			{
-			BRow += B[j];
+			RowT += SeqT[j];
 			++j;
 			}
 		else
-			BRow += '-';
+			RowT += '-';
 		}
 
-	double Z = GetDALIZ(Prof1, Prof2, ARow, BRow);
+//	double Z = GetDALIZ(ProfQ, ProfT, RowQ, RowT);
 
 	if (g_ftsv)
 		{
 		Lock();
 		FILE *f = g_ftsv;
 		fprintf(f, "%.1f", Score);
-		fprintf(f, "\t%s", Prof1.m_Label.c_str());
-		fprintf(f, "\t%s", Prof2.m_Label.c_str());
+		fprintf(f, "\t%s", ProfQ.m_Label.c_str());
+		fprintf(f, "\t%s", ProfT.m_Label.c_str());
 		fprintf(f, "\t%u", ColCount);
-		fprintf(f, "\t%.2f", Z);
 		if (!opt_norows)
 			{
-			fprintf(f, "\t%s", ARow.c_str());
-			fprintf(f, "\t%s", BRow.c_str());
+			fprintf(f, "\t%s", RowQ.c_str());
+			fprintf(f, "\t%s", RowT.c_str());
 			}
 		fprintf(f, "\n");
 		Unlock();
 		}
 
-	WriteAln(g_faln, Prof1, Prof2, ARow, BRow);
+	WriteAln(g_faln, ProfQ, ProfT, RowQ, RowT);
+	XAlign2(ProfQ, ProfT, RowQ, RowT);
 
 	return Score;
 	}

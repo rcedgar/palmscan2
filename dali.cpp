@@ -157,6 +157,33 @@ double GetDALIScore_Cols_Band(const PDBChain &Q, const PDBChain &T,
 	return Sum;
 	}
 
+double GetDALIScore_LSB_Pair(const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs,
+  uint Lo1, uint Hi1, uint Lo2, uint Hi2)
+	{
+	double Sum = 0;
+	uint n = 0;
+	asserta(SIZE(PosQs) == SIZE(PosTs));
+	asserta(Hi1 < SIZE(PosQs));
+	asserta(Hi2 < SIZE(PosQs));
+	for (uint MatchCol1 = Lo1; MatchCol1 <= Hi1; ++MatchCol1)
+		{
+		uint PosQ1 = PosQs[MatchCol1];
+		uint PosT1 = PosTs[MatchCol1];
+		for (uint MatchCol2 = Lo2; MatchCol2 <= Hi2; ++MatchCol2)
+			{
+			uint PosQ2 = PosQs[MatchCol2];
+			uint PosT2 = PosTs[MatchCol2];
+			double dij_Q = Q.GetDist(PosQ1, PosQ2);
+			double dij_T = T.GetDist(PosT1, PosT2);
+			double x = dpscorefun(dij_Q, dij_T);
+			Sum += x;
+			++n;
+			}
+		}
+	return Sum/n;
+	}
+
 double GetDALIScore_Cols(const PDBChain &Q, const PDBChain &T,
   const vector<uint> &PosQs, const vector<uint> &PosTs,
   vector<double> &ColScores)
@@ -248,14 +275,18 @@ static double GetDALIZFromScoreAndLengths(double DALIScore, uint QL, uint TL)
 	}
 
 void GetPosVecs(const string &QRow, const string &TRow,
-  vector<uint> &PosQs, vector<uint> &PosTs)
+  vector<uint> &MatchColToPosQs, vector<uint> &MatchColToPosTs,
+  vector<uint> &MatchColToCol, vector<uint> &ColToMatchCol)
 	{
-	PosQs.clear();
-	PosTs.clear();
+	MatchColToPosQs.clear();
+	MatchColToPosTs.clear();
+	MatchColToCol.clear();
+	ColToMatchCol.clear();
 	uint ColCount = SIZE(QRow);
 	asserta(SIZE(TRow) == ColCount);
 	uint PosQ = 0;
 	uint PosT = 0;
+	uint MatchColCount = 0;
 	for (uint Col = 0; Col < ColCount; ++Col)
 		{
 		char q = QRow[Col];
@@ -264,15 +295,30 @@ void GetPosVecs(const string &QRow, const string &TRow,
 		if (q != '-' && t != '-' &&
 		  isupper(q) && isupper(t))
 			{
-			PosQs.push_back(PosQ);
-			PosTs.push_back(PosT);
+			MatchColToPosQs.push_back(PosQ);
+			MatchColToPosTs.push_back(PosT);
+			MatchColToCol.push_back(Col);
+			ColToMatchCol.push_back(MatchColCount);
+			++MatchColCount;
 			}
-
+		else
+			ColToMatchCol.push_back(UINT_MAX);
 		if (q != '-')
 			++PosQ;
 		if (t != '-')
 			++PosT;
 		}
+	}
+
+double GetDALIZ_PosVecs(const PDBChain &Q, const PDBChain &T,
+  const vector<uint> &PosQs, const vector<uint> &PosTs)
+	{
+	const uint QL = Q.GetSeqLength();
+	const uint TL = T.GetSeqLength();
+
+	double DALI = GetDALIScore(Q, T, PosQs, PosTs);
+	double Z = GetDALIZFromScoreAndLengths(DALI, QL, TL);
+	return Z;
 	}
 
 double GetDALIZ(const PDBChain &Q, const PDBChain &T,
@@ -283,7 +329,9 @@ double GetDALIZ(const PDBChain &Q, const PDBChain &T,
 
 	vector<uint> PosQs;
 	vector<uint> PosTs;
-	GetPosVecs(QRow, TRow, PosQs, PosTs);
+	vector<uint> MatchColToCol;
+	vector<uint> ColToMatchCol;
+	GetPosVecs(QRow, TRow, PosQs, PosTs, MatchColToCol, ColToMatchCol);
 	double DALI = GetDALIScore(Q, T, PosQs, PosTs);
 	double Z = GetDALIZFromScoreAndLengths(DALI, QL, TL);
 	return Z;

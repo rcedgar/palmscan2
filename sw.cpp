@@ -8,6 +8,7 @@ static const float TransMD = -5.0f;
 static const float TransMI = -5.0f;
 static const float TransDD = -0.5f;
 static const float TransII = -0.5f;
+static const float BIAS = -0.5f;
 
 //#define		m(x)	static Mx<float> g_Fwd##x; static Mx<char> g_TB##x;
 //	m(M)
@@ -70,7 +71,7 @@ float SW(const Mx<float> &SMx,
 			{
 		// xM
 			{
-			float Match = SimMxRow[j];
+			float Match = SimMxRow[j] + BIAS;
 			float MM = FwdM[i][j] + Match;
 			float DM = FwdD[i][j] + Match;
 			float IM = FwdI[i][j] + Match;

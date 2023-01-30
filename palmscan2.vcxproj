@@ -415,6 +415,7 @@
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="xalign.cpp" />
+    <ClCompile Include="xalign2.cpp" />
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />

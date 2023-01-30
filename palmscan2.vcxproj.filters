@@ -470,6 +470,9 @@
     <ClCompile Include="distmx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xalign2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
