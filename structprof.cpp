@@ -52,10 +52,10 @@ void StructProf::SetCavityCenterPt()
 	m_CavityCenterPt[Y] += -10.0*Basis[Z][Y];
 	m_CavityCenterPt[Z] += -10.0*Basis[Z][Z];
 
-	Log("Cavity center %.1f, %.1f, %.1f\n",
-	  m_CavityCenterPt[X],
-	  m_CavityCenterPt[Y],
-	  m_CavityCenterPt[Z]);//@@
+	//Log("Cavity center %.1f, %.1f, %.1f\n",
+	//  m_CavityCenterPt[X],
+	//  m_CavityCenterPt[Y],
+	//  m_CavityCenterPt[Z]);//@@
 	}
 
 uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,
@@ -67,7 +67,9 @@ uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,
 
 	const PDBChain &Chain = *m_Chain;
 	const uint L = Chain.GetSeqLength();
-	asserta(Lo < Hi && Hi < L);
+//	asserta(Lo < Hi && Hi < L);
+	if (Lo >= Hi || Hi >= L)
+		return UINT_MAX;
 	BestDist = (Maximize ? 0 : DBL_MAX);
 	uint BestPos = UINT_MAX;
 	for (uint Pos2 = Lo; Pos2 <= Hi; ++Pos2)
