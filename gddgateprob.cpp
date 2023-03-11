@@ -64,6 +64,8 @@ double CMP::GetRdRpProb_Gate(int Gate)
 
 double CMP::GetRdRpProb_GDD(const string &GDD)
 	{
+	if (GDD.size() != 3 || GDD.find('X') != string::npos)
+		return 0.5;
 	map<string, double>::const_iterator p = g_GDD_To_Rdrp_Prob.find(GDD);
 	if (p == g_GDD_To_Rdrp_Prob.end())
 		return 0.1;

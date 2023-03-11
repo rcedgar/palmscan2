@@ -2,7 +2,7 @@
 
 static double Gumbel(double Mu, double Beta, double x)
 	{
-
+	return 0;
 	}
 
 void cmd_gumbel()

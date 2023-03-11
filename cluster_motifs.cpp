@@ -12,7 +12,7 @@
 void SetBLOSUM62();
 
 extern float **g_SubstMx;
-uint MPCluster::m_LeftFlank_Core = 150;		// see also RdRpSearcher
+uint MPCluster::m_LeftFlank_Core = 149;		// see also RdRpSearcher
 uint MPCluster::m_RightFlank_Core = 150;	// see also RdRpSearcher
 
 void MPCluster::TrimLeft(string &Left)

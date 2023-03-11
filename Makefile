@@ -21,6 +21,7 @@ HDRS = \
   alnheuristics.h \
   alnparams.h \
   alpha.h \
+  best.h \
   calreader.h \
   cavity.h \
   cddata.h \
@@ -60,7 +61,11 @@ HDRS = \
   ofiles.h \
   omplock.h \
   outputfiles.h \
+  padbls.h \
+  paints.h \
   palmhit.h \
+  pamerger.h \
+  pastrs.h \
   pathinfo.h \
   pdbchain.h \
   pf.h \
@@ -100,8 +105,8 @@ HDRS = \
   usearch.h \
   viterbi.h \
   xdpmem.h \
-  xlat.h \
   xprof.h \
+  xprofdata.h \
   xtrainer.h \
 
 OBJS = \
@@ -132,13 +137,19 @@ OBJS = \
   $(OBJDIR)/clusters2model.o \
   $(OBJDIR)/cluster_motifs.o \
   $(OBJDIR)/cluster_ppc.o \
+  $(OBJDIR)/dali.o \
+  $(OBJDIR)/distmx.o \
+  $(OBJDIR)/fasta_xlat.o \
   $(OBJDIR)/findcavity.o \
   $(OBJDIR)/gspalign.o \
   $(OBJDIR)/gspaligner.o \
   $(OBJDIR)/gsprof.o \
+  $(OBJDIR)/gumbel.o \
   $(OBJDIR)/hse.o \
   $(OBJDIR)/hse_cmp.o \
   $(OBJDIR)/hse_train.o \
+  $(OBJDIR)/pamerger.o \
+  $(OBJDIR)/pamerge.o \
   $(OBJDIR)/palmcator.o \
   $(OBJDIR)/pseudo_cb_angles.o \
   $(OBJDIR)/kabsch.o \
@@ -198,6 +209,8 @@ OBJS = \
   $(OBJDIR)/readchains.o \
   $(OBJDIR)/gddgateprob.o \
   $(OBJDIR)/calpp2ppc.o \
+  $(OBJDIR)/scop40.o \
+  $(OBJDIR)/scop40_firstfp.o \
   $(OBJDIR)/search3d_tri.o \
   $(OBJDIR)/pdbchain.o \
   $(OBJDIR)/psms.o \
@@ -206,6 +219,7 @@ OBJS = \
   $(OBJDIR)/rdrpsearcher.o \
   $(OBJDIR)/search3d_cal.o \
   $(OBJDIR)/searchaatop.o \
+  $(OBJDIR)/searchc.o \
   $(OBJDIR)/search_ppp.o \
   $(OBJDIR)/search_pssms.o \
   $(OBJDIR)/searchgroup.o \
@@ -219,6 +233,7 @@ OBJS = \
   $(OBJDIR)/split_train_test.o \
   $(OBJDIR)/structprof.o \
   $(OBJDIR)/structprofheuristics.o \
+  $(OBJDIR)/sw.o \
   $(OBJDIR)/test_pssms.o \
   $(OBJDIR)/seqdb.o \
   $(OBJDIR)/seqinfo.o \
@@ -227,8 +242,10 @@ OBJS = \
   $(OBJDIR)/sort.o \
   $(OBJDIR)/rdrpmodel.o \
   $(OBJDIR)/test.o \
+  $(OBJDIR)/test_sw.o \
   $(OBJDIR)/timing.o \
   $(OBJDIR)/tma.o \
+  $(OBJDIR)/tmhack.o \
   $(OBJDIR)/tmscore.o \
   $(OBJDIR)/tm_ppc.o \
   $(OBJDIR)/tracebackbitmem.o \
@@ -243,8 +260,12 @@ OBJS = \
   $(OBJDIR)/cmpsearcher.o \
   $(OBJDIR)/validate.o \
   $(OBJDIR)/viterbifastmem.o \
+  $(OBJDIR)/xalign.o \
+  $(OBJDIR)/xalign2.o \
+  $(OBJDIR)/xalign_calibrate.o \
   $(OBJDIR)/xbasis.o \
   $(OBJDIR)/xprof.o \
+  $(OBJDIR)/xprofdata.o \
   $(OBJDIR)/xprof_train.o \
   $(OBJDIR)/xtrainer.o \
 

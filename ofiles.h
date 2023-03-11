@@ -3,6 +3,7 @@
 #endif
 
 F(tsv)
+F(fev)
 F(classify_tsv)
 F(cluster_tsv)
 F(ppcontactmap_tsv)

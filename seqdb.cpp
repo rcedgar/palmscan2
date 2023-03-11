@@ -3,6 +3,34 @@
 #include "sfasta.h"
 #include "alpha.h"
 
+void SeqDB::SetLabelToIndex()
+	{
+	m_LabelToIndex.clear();
+	const uint N = SIZE(m_Labels);
+	for (uint i = 0; i < N; ++i)
+		{
+		const string &Label = m_Labels[i];
+		m_LabelToIndex[Label] = i;
+		}
+	}
+
+bool SeqDB::GetSeqByLabel(const string &Label, string &Seq,
+  bool FailOnError) const
+	{
+	Seq.clear();
+	map<string, uint>::const_iterator p =
+	  m_LabelToIndex.find(Label);
+	if (p == m_LabelToIndex.end())
+		{
+		if (FailOnError)
+			Die("Not found >%s", Label.c_str());
+		return false;
+		}
+	uint Index = p->second;
+	Seq = GetSeq(Index);
+	return true;
+	}
+
 unsigned SeqDB::AddSeq(const string &Label, const string &Seq)
 	{
 	unsigned SeqIndex = SIZE(m_Seqs);

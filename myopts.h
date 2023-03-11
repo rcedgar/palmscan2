@@ -1,5 +1,5 @@
 #ifndef MY_VERSION
-#define MY_VERSION	"1.0"
+#define MY_VERSION	"2.0"
 #endif
 
 #define C(x)	STR_OPT(x)
@@ -112,6 +112,7 @@ UNS_OPT(sample_size,		16,			1,			UINT_MAX)
 UNS_OPT(topn,				16,			1,			UINT_MAX)
 
 FLT_OPT(minscore,			10.0,		-9e9,		+9e9)
+FLT_OPT(maxscore,			10.0,		-9e9,		+9e9)
 FLT_OPT(motif_cluster_minscore,			0.0,		-9e9,		+9e9)
 FLT_OPT(minscore1,			0.0,		-9e9,		+9e9)
 FLT_OPT(minscore2,			0.0,		-9e9,		+9e9)
@@ -157,6 +158,7 @@ FLAG_OPT(refs)
 FLAG_OPT(first_only)
 FLAG_OPT(norows)
 FLAG_OPT(calctps)
+FLAG_OPT(compact)
 
 #undef FLAG_OPT
 #undef UNS_OPT

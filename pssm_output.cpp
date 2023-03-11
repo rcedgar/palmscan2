@@ -26,6 +26,7 @@ void RdRpSearcher::WriteOutput() const
 	{
 	WriteReport(g_freport_pssms);
 	WriteTsv(g_ftsv);
+	WriteFev(g_ffev);
 	WritePalmprintFasta(g_ffasta_abc, g_ffasta_cab);
 	WritePalmprintFasta(g_ffasta, g_ffasta);
 	WriteFlankFasta(g_fleft_abc, g_fleft_cab, true);
@@ -273,15 +274,69 @@ bool RdRpSearcher::WriteCore(FILE *fABC, FILE *fCAB) const
 	GetGroupName(GroupIndex, GroupName);
 
 	string NewLabel = m_QueryLabel;
-	Psa(NewLabel, " A:%u:%s", PosA+1, SeqA.c_str());
-	Psa(NewLabel, " B:%u:%s", PosB+1, SeqB.c_str());
-	Psa(NewLabel, " C:%u:%s", PosC+1, SeqC.c_str());
+	Psa(NewLabel, " A:%u:%s", PosA+1-CoreLo, SeqA.c_str());
+	Psa(NewLabel, " B:%u:%s", PosB+1-CoreLo, SeqB.c_str());
+	Psa(NewLabel, " C:%u:%s", PosC+1-CoreLo, SeqC.c_str());
 	Psa(NewLabel, " PSSM:%s", GroupName.c_str());
 
 	const char *CoreStart = m_QuerySeq.c_str() + CoreLo;
 	SeqToFasta(Perm ? fCAB : fABC,
 	  NewLabel.c_str(), CoreStart, CoreL);
 	return true;
+	}
+
+void RdRpSearcher::GetCoreSeq(string &CoreSeq) const
+	{
+	CoreSeq.clear();
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+	if (PosA == UINT_MAX || PosB == UINT_MAX || PosC == UINT_MAX)
+		return;
+
+	uint QL = SIZE(m_QuerySeq);
+	uint LF = UINT_MAX;
+	uint RF = UINT_MAX;
+	bool Perm = m_TopPalmHit.m_Permuted;
+	if (Perm)
+		{
+		LF = PosC;
+		asserta(PosA < QL);
+		RF = QL - PosA - 1;
+		}
+	else
+		{
+		LF = PosA;
+		asserta(PosC < QL);
+		RF = QL - PosC - 1;
+		}
+	LF = min(LF, m_LeftFlank_Core);
+	RF = min(RF, m_RightFlank_Core);
+	if (LF < m_MinFlankLen)
+		return;
+	if (RF < m_MinFlankLen)
+		return;
+
+	uint CoreLo = UINT_MAX;
+	uint CoreHi = UINT_MAX;
+	if (Perm)
+		{
+		asserta(LF <= PosC);
+		CoreLo = PosC - LF;
+		CoreHi = PosA + RF;
+		}
+	else
+		{
+		asserta(LF <= PosA);
+		CoreLo = PosA - LF;
+		CoreHi = PosC + RF;
+		}
+	asserta(CoreHi < QL);
+	uint CoreL = CoreHi - CoreLo + 1;
+
+	const char *CoreStart = m_QuerySeq.c_str() + CoreLo;
+	for (uint i = 0; i < CoreL; ++i)
+		CoreSeq += CoreStart[i];
 	}
 
 void RdRpSearcher::WriteTsv(FILE *f) const
@@ -401,5 +456,85 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 	fprintf(f, "\t%s", SeqB.c_str());
 	fprintf(f, "\t%u", PosC);
 	fprintf(f, "\t%s", SeqC.c_str());
+	fprintf(f, "\n");
+	}
+
+void RdRpSearcher::WriteFev(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	if (m_TopPalmHit.m_Score <= 0)
+		return;
+
+	string QueryLabel = m_QueryLabel;
+	float Score = 0;
+	string GroupName = ".";
+	string SecondGroupName = ".";
+	float Diff2 = 0;
+	const char *ABC = ".";
+	uint QL = SIZE(m_QuerySeq);
+	uint Lo = 0;
+	uint Hi = 0;
+	uint PPL = 0;
+	uint Suff = 0;
+
+	if (m_TopPalmHit.m_Score > 0)
+		{
+		Score = m_TopPalmHit.m_Score;
+		uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+		GetGroupName(GroupIndex, GroupName);
+		if (m_TopPalmHit.m_Permuted)
+			ABC = "CAB";
+		else
+			ABC = "ABC";
+		GetSpan(Lo, Hi);
+		++Lo;
+		++Hi;
+		assert(Hi <= QL);
+		PPL = Hi - Lo + 1;
+		Suff = QL - Hi;
+		}
+
+	if (m_SecondPalmHit.m_Score > 0)
+		{
+		float SecondScore = m_SecondPalmHit.m_Score;
+		uint SecondGroupIndex = m_SecondPalmHit.m_GroupIndex;
+		GetGroupName(SecondGroupIndex, SecondGroupName);
+		Diff2 = Score - SecondScore;
+		}
+
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+
+	string SeqA;
+	string SeqB;
+	string SeqC;
+	GetMotifSeq(0, SeqA);
+	GetMotifSeq(1, SeqB);
+	GetMotifSeq(2, SeqC);
+
+	fprintf(f, "%s", QueryLabel.c_str());
+	fprintf(f, "\tpssm_score=%.1f", Score);
+	fprintf(f, "\tpssm_group=%s", GroupName.c_str());
+	fprintf(f, "\tpssm_group2=%s", SecondGroupName.c_str());
+	fprintf(f, "\tpssm_diff2=%+.1f", Diff2);
+	fprintf(f, "\tpssm_ABC=%s", ABC);
+	if (SeqA != "")
+		{
+		fprintf(f, "\tpssm_seqA=%s", SeqA.c_str());
+		fprintf(f, "\tpssm_posA=%u", PosA+1);
+		}
+	if (SeqB != "")
+		{
+		fprintf(f, "\tpssm_seqB=%s", SeqB.c_str());
+		fprintf(f, "\tpssm_posB=%u", PosB+1);
+		}
+	if (SeqC != "")
+		{
+		fprintf(f, "\tpssm_seqC=%s", SeqC.c_str());
+		fprintf(f, "\tpssm_posC=%u", PosC+1);
+		}
 	fprintf(f, "\n");
 	}

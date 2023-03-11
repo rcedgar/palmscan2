@@ -71,5 +71,8 @@ C(xalign_calibrate)
 C(gumbel)
 C(daliz)
 C(distmx)
+C(searchc)
+C(pamerge)
+C(fasta_xlat)
 
 #undef C

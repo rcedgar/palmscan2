@@ -1,6 +1,8 @@
 #ifndef seqdb_h
 #define seqdb_h
 
+#include <map>
+
 class SeqDB
 	{
 public:
@@ -10,6 +12,7 @@ public:
 	unsigned m_ColCount;
 	vector<string> m_Labels;
 	vector<string> m_Seqs;
+	map<string, uint> m_LabelToIndex;
 
 public:
 	SeqDB()
@@ -20,6 +23,10 @@ public:
 		m_ColCount = UINT_MAX;
 		}
 
+	void SetLabelToIndex();
+
+	bool GetSeqByLabel(const string &Label, string &Seq,
+	  bool FailOnError = true) const;
 	unsigned AddSeq(const string &Label, const string &Seq);
 	const string &GetSeq(unsigned SeqIndex) const;
 	void GetSeq_StripGaps(unsigned SeqIndex, string &Seq) const;

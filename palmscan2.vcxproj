@@ -297,6 +297,7 @@
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="distmx.cpp" />
+    <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="gspalign.cpp" />
     <ClCompile Include="gspaligner.cpp" />
@@ -305,6 +306,8 @@
     <ClCompile Include="hse.cpp" />
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
+    <ClCompile Include="pamerger.cpp" />
+    <ClCompile Include="pamerge.cpp" />
     <ClCompile Include="palmcator.cpp" />
     <ClCompile Include="pseudo_cb_angles.cpp" />
     <ClCompile Include="kabsch.cpp" />
@@ -374,6 +377,7 @@
     <ClCompile Include="rdrpsearcher.cpp" />
     <ClCompile Include="search3d_cal.cpp" />
     <ClCompile Include="searchaatop.cpp" />
+    <ClCompile Include="searchc.cpp" />
     <ClCompile Include="search_ppp.cpp" />
     <ClCompile Include="search_pssms.cpp" />
     <ClCompile Include="searchgroup.cpp" />
@@ -419,6 +423,7 @@
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
+    <ClInclude Include="pamerger.h" />
     <ClInclude Include="xprof.h" />
     <ClCompile Include="xprofdata.cpp" />
     <ClCompile Include="xprof_train.cpp" />
@@ -504,7 +509,6 @@
     <ClInclude Include="usearch.h" />
     <ClInclude Include="viterbi.h" />
     <ClInclude Include="xdpmem.h" />
-    <ClInclude Include="xlat.h" />
     <ClInclude Include="xprofdata.h" />
     <ClInclude Include="xtrainer.h" />
   </ItemGroup>

@@ -28,9 +28,9 @@ public:
 	bool m_Trace = false;
 
 	double m_MinScore_Core = 20.0;
-	uint m_LeftFlank_Core = 150;	// see also MPCluster
+	uint m_LeftFlank_Core = 149;	// see also MPCluster
 	uint m_RightFlank_Core = 150;	// see also MPCluster
-	uint m_MinFlankLen = 75;
+	uint m_MinFlankLen = 0;
 
 	double m_MinScore_CFiler = 5.0;
 	uint m_LeftFlankCFilter = 150;
@@ -108,10 +108,12 @@ public:
 	void WriteOutput() const;
 	void WriteReport(FILE *f) const;
 	void WriteTsv(FILE *f) const;
+	void WriteFev(FILE *f) const;
 	void WriteMotifs(FILE *fABC, FILE *fCAB) const;
 	void WritePalmprintFasta(FILE *fABC, FILE *fCAB) const;
 	void WriteFlankFasta(FILE *fABC, FILE *fCAB, bool Left) const;
 	bool WriteCore(FILE *fABC, FILE *fCAB) const;
+	void GetCoreSeq(string &Seq) const;
 
 	void CFilter(const string &QueryLabel, const string &QuerySeq);
 	void CFilterGroup(uint GroupIndex);
