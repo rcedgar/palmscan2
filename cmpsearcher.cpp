@@ -153,10 +153,8 @@ void CMPSearcher::Search(const PDBChain &Query)
 	if (!opt_permuted)
 		Search_ABC(Query);
 
-#if 0 // TODO
 	if (!opt_notpermuted)
 		Search_CAB(Query);
-#endif
 	}
 
 void CMPSearcher::Search_ABC(const PDBChain &Query)

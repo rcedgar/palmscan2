@@ -96,6 +96,7 @@ UNS_OPT(maxx,				10,			1,			UINT_MAX)
 UNS_OPT(refn,				10,			1,			UINT_MAX)
 UNS_OPT(minflanklen,		10,			1,			UINT_MAX)
 UNS_OPT(scoretype,			10,			1,			UINT_MAX)
+UNS_OPT(minlen,				10,			1,			UINT_MAX)
 
 UNS_OPT(secs,				60,			1,			UINT_MAX)
 UNS_OPT(flanks,				60,			1,			UINT_MAX)

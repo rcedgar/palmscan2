@@ -31,6 +31,7 @@ void PAMerger::ToFasta(FILE *f) const
 	string OutSeq;
 	for (uint Pos = m_FullTrimLo; Pos <= m_FullTrimHi; ++Pos)
 		OutSeq += aaseq[Pos-1];
+	asserta(SIZE(OutSeq) > 0);
 
 	string OutLabel = m_Label;
 
@@ -456,7 +457,7 @@ void PAMerger::SetFullTrim()
 	uint L = SIZE(aaseq);
 	if (L == 0)
 		return;
-	if (m_MotifPosA != UINT_MAX && m_MotifPosB != UINT_MAX
+	if (m_MotifPosA != UINT_MAX && m_MotifPosC != UINT_MAX
 	  && m_MotifPosA < m_MotifPosC)
 		{
 		if (m_MotifPosA <= 150)

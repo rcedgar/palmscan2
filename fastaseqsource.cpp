@@ -92,7 +92,7 @@ bool FASTASeqSource::GetNextLo(SeqInfo *SI)
 					if (m_StripGaps)
 						continue;
 					}
-				else if (!isalpha(c))
+				else if (!isalpha(c) && c != '*')
 					{
 					BadByte(c);
 					continue;

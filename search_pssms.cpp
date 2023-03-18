@@ -102,14 +102,16 @@ void SearchPSSMs(const string &QueryFileName, fn_OnPalmHit OnHit)
 			Seq += char(toupper(QSI->m_Seq[i]));
 
 		RS.Search(Label, Seq);
-		RS.WriteOutput();
 		bool IsHit = (RS.m_TopPalmHit.m_Score >= MinPalmScore);
 		if (IsHit)
+			{
+			RS.WriteOutput();
 #pragma omp critical
 			{
 			if (OnHit != 0)
 				(*OnHit)(RS);
 			++g_FoundCount;
+			}
 			}
 		OM->Down(QSI);
 

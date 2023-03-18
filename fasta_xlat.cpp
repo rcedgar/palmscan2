@@ -6,7 +6,7 @@
 
 void SeqToFasta(FILE *f, const char *Label, const char *Seq, unsigned L);
 
-static void XlatFrame(FILE *f, SeqInfo *SI, SeqInfo *RCSI, int Frame)
+void XlatFrame(FILE *f, SeqInfo *SI, SeqInfo *RCSI, int Frame)
 	{
 	SeqInfo *QSI = (Frame < 0 ? RCSI : SI);
 
@@ -26,6 +26,11 @@ static void XlatFrame(FILE *f, SeqInfo *SI, SeqInfo *RCSI, int Frame)
 		if (g_IsAminoChar[c])
 			a += c;
 		}
+	uint MinL = 20;
+	if (optset_minlen)
+		MinL = opt_minlen;
+	if (SIZE(a) < MinL)
+		return;
 	string NewLabel = string(QSI->m_Label);
 	Psa(NewLabel, "%s%+d", Sep, Frame);
 	SeqToFasta(f, NewLabel.c_str(), a.c_str(), SIZE(a));
