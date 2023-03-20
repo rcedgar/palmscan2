@@ -259,12 +259,37 @@ void RdRpSearcher::GetAlnRows(vector<string> &Rows) const
 	Psa(QLine, "  [%u]", QHi - QLo + 1);
 	}
 
+extern vector<string> g_IncludeNames;
+extern vector<string> g_ExcludeNames;
+
+bool ExcludeName(const string &Name)
+	{
+	for (uint i = 0; i < SIZE(g_ExcludeNames); ++i)
+		{
+		if (Name == g_ExcludeNames[i])
+			return true;
+		}
+	return false;
+	}
+
+bool IncludeName(const string &Name)
+	{
+	if (g_IncludeNames.empty())
+		return true;
+
+	for (uint i = 0; i < SIZE(g_IncludeNames); ++i)
+		{
+		if (Name == g_IncludeNames[i])
+			return true;
+		}
+	return false;
+	}
+
 bool RdRpSearcher::IsHit() const
 	{
 	if (m_TopPalmHit.m_Score <= opt_minscore)
 		return false;
 
-	extern vector<string> g_ExcludeNames;
 	if (!g_ExcludeNames.empty())
 		{
 		if (m_TopPalmHit.m_Score > 0)
@@ -272,11 +297,10 @@ bool RdRpSearcher::IsHit() const
 			uint GroupIndex = m_TopPalmHit.m_GroupIndex;
 			string GroupName;
 			GetGroupName(GroupIndex, GroupName);
-			for (uint i = 0; i < SIZE(g_ExcludeNames); ++i)
-				{
-				if (GroupName == g_ExcludeNames[i])
-					return false;
-				}
+			if (ExcludeName(GroupName))
+				return false;
+			if (!IncludeName(GroupName))
+				return false;
 			}
 		}
 	return true;

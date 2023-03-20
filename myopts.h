@@ -60,6 +60,7 @@ STR_OPT(pdbout)
 STR_OPT(xxx)
 STR_OPT(centroids)
 STR_OPT(exclude)
+STR_OPT(include)
 STR_OPT(seg_fasta_prefix)
 STR_OPT(motif_coords)
 

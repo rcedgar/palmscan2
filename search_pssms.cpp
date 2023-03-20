@@ -10,6 +10,7 @@ static uint g_QueryCount;
 static uint g_FoundCount;
 
 vector<string> g_ExcludeNames;
+vector<string> g_IncludeNames;
 
 void SetExcludes()
 	{
@@ -21,6 +22,18 @@ void SetExcludes()
 	const uint N = SIZE(g_ExcludeNames);
 	for (uint i = 0; i < N; ++i)
 		ProgressLog("  Exclude %s\n", g_ExcludeNames[i].c_str());
+	}
+
+void SetIncludes()
+	{
+	if (!optset_include)
+		return;
+
+	string NamesStr = string(opt_include);
+	Split(NamesStr, g_IncludeNames, '+');
+	const uint N = SIZE(g_IncludeNames);
+	for (uint i = 0; i < N; ++i)
+		ProgressLog("  Include %s\n", g_IncludeNames[i].c_str());
 	}
 
 void SeqToUpper(string &Seq)
