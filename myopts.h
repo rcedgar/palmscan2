@@ -27,6 +27,7 @@ STR_OPT(rex)
 STR_OPT(align_msas)
 STR_OPT(test_pssms)
 STR_OPT(ppp)
+STR_OPT(tree)
 
 STR_OPT(train_cal)
 STR_OPT(test_cal)

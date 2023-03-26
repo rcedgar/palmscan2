@@ -8,6 +8,7 @@
 #include "objmgr.h"
 #include "rphit.h"
 #include "heuristics.h"
+#include "motifprofile.h"
 
 class RdRpModel
 	{
@@ -55,12 +56,17 @@ public:
 		GroupName = m_GroupNames[GroupIndex];
 		}
 
-	void FromPSSMs(const string &PSSMDir,
+	void FromPSSMs(const vector<string> &GroupNames,
+	  const vector<PSSM> &PAs,
+	  const vector<PSSM> &PBs,
+	  const vector<PSSM> &PCs);
+	void FromPSSMDir(const string &PSSMDir,
 	  const vector<string> &GroupNames);
 	void FromModelFile(const string &FileName);
 	void ToModelFile(const string &FileName) const;
 
 	uint GetPSSMLength(uint GroupIndex, uint MotifIndex) const;
+	void GetMotifProfile(uint GroupIndex, MotifProfile &MP) const;
 	};
 
 extern vector<string> g_ModelStrings;

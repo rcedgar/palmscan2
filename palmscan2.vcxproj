@@ -295,6 +295,7 @@
     <ClCompile Include="clusters2model.cpp" />
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
+    <ClCompile Include="cluster_ppm.cpp" />
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="distmx.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
@@ -389,6 +390,9 @@
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="spher.cpp" />
     <ClCompile Include="split_train_test.cpp" />
+    <ClCompile Include="stock.cpp" />
+    <ClCompile Include="stock2fasta.cpp" />
+    <ClCompile Include="stocks2pssms.cpp" />
     <ClCompile Include="structprof.cpp" />
     <ClCompile Include="structprofheuristics.cpp" />
     <ClCompile Include="sw.cpp" />
@@ -424,6 +428,7 @@
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
     <ClInclude Include="pamerger.h" />
+    <ClInclude Include="stock.h" />
     <ClInclude Include="xprof.h" />
     <ClCompile Include="xprofdata.cpp" />
     <ClCompile Include="xprof_train.cpp" />

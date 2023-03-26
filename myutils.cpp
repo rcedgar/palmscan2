@@ -1891,6 +1891,28 @@ bool StartsWith(const string &s, const string &t)
 	return StartsWith(s.c_str(), t.c_str());
 	}
 
+void SplitWhite(const string &Str, vector<string> &Fields)
+	{
+	Fields.clear();
+	const unsigned Length = (unsigned) Str.size();
+	string s;
+	string Field;
+	for (unsigned i = 0; i < Length; ++i)
+		{
+		char c = Str[i];
+		if (isspace(c))
+			{
+			if (!Field.empty())
+				Fields.push_back(Field);
+			Field.clear();
+			}
+		else
+			Field.push_back(c);
+		}
+	if (!Field.empty())
+		Fields.push_back(Field);
+	}
+
 void Split(const string &Str, vector<string> &Fields, char Sep)
 	{
 	Fields.clear();

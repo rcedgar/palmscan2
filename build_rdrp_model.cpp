@@ -112,6 +112,6 @@ void cmd_build_rdrp_model()
 	CloseStdioFile(f);
 
 	RdRpModel Mod;
-	Mod.FromPSSMs(PSSMDir, Names);
+	Mod.FromPSSMDir(PSSMDir, Names);
 	Mod.ToModelFile(opt_output);
 	}

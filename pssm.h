@@ -84,6 +84,8 @@ public:
 	char GetConsChar(uint ColIndex) const;
 	char CalcConsChar(uint ColIndex) const;
 	const char *CalcConsSeq(string &Seq) const;
+	void CalcProbs(uint ColIndex, vector<double> &Probs) const;
+	void CalcProbs(uint ColIndex, vector<float> &Probs) const;
 
 private:
 	void LogFreqs(const vector<vector<float> > &Freqs) const;

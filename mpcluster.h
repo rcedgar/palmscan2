@@ -29,6 +29,7 @@ public:
 	vector<uint> m_ClusterSizeOrder;
 
 // NN cluster
+	uint m_InputMPCount = 0;
 	vector<MotifProfile *> m_MPs;
 	vector<uint> m_Parents;
 	vector<uint> m_Lefts;
@@ -62,11 +63,14 @@ public:
 		m_Sizes.clear();
 		}
 
+	void LogNN() const;
 	void NNCluster(const vector<MotifProfile *> &Input,
 	  float MinScore);
 	void FindNN(uint &Index1, uint &Index2) const;
 	void Join(uint Index1, uint Index2);
 	MotifProfile &CreateProfileNN(uint Index1, uint Index2) const;
+	void NNToNewickFile(const string &FileName) const;
+	void NNNodeToNewickFile(FILE *f, uint NodeIndex) const;
 
 	void GreedyCluster(const vector<MotifProfile *> &Input,
 	  float MinScore);

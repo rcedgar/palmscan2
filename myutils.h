@@ -325,6 +325,7 @@ inline bool feq(double x, double y)
 
 void InitRand();
 unsigned randu32();
+void SplitWhite(const string &Str, vector<string> &Fields);
 void Split(const string &Str, vector<string> &Fields, char Sep = '\t');
 bool EndsWith(const string &s, const string &t);
 bool StartsWith(const string &s, const string &t);
@@ -391,6 +392,7 @@ void RevCompSeq(string &Seq);
 void StripGaps(string &Seq);
 void StripWhiteSpace(string &Str);
 char GetOneFromThree(const string &AAA);
+void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 
 #ifdef _MSC_VER
 #define brk(x)       if (x) __debugbreak()

@@ -485,6 +485,18 @@
     <ClCompile Include="fasta_xlat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stock2fasta.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stocks2pssms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cluster_ppm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -734,6 +746,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pamerger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

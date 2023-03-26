@@ -399,6 +399,36 @@ void PSSM::SetScores()
 //	SetBackgroundScore();
 	}
 
+void PSSM::CalcProbs(uint ColIndex, vector<double> &Probs) const
+	{
+	Probs.clear();
+	extern double g_AAFreqs[20];
+	asserta(ColIndex < SIZE(m_Scores));
+	asserta(SIZE(m_Scores[ColIndex]) == 21);
+	for (uint Letter = 0; Letter < 20; ++Letter)
+		{
+		// double Score = log(f) - log((float) g_AAFreqs[Letter]);
+		double Score = m_Scores[ColIndex][Letter];
+		double LogBack = log(g_AAFreqs[Letter]);
+		double LogFreq = Score + LogBack;
+		double Prob = exp(LogFreq);
+		Probs.push_back(Prob);
+		}
+	}
+
+void PSSM::CalcProbs(uint ColIndex, vector<float> &Probs) const
+	{
+	Probs.clear();
+	vector<double> dProbs;
+	CalcProbs(ColIndex, dProbs);
+	asserta(SIZE(dProbs) == 20);
+	for (uint i = 0; i < 20; ++i)
+		{
+		float P = (float) dProbs[i];
+		Probs.push_back(P);
+		}
+	}
+
 void PSSM::SetScoresCol(unsigned ColIndex)
 	{
 	extern double g_AAFreqs[20];
@@ -597,7 +627,7 @@ void PSSM::FromStrings(const string &Name, const vector<string> &Strings)
 	unsigned LineNr = 0;
 	bool Ok = GetNextString(Strings, N, LineNr, Line);
 	if (!Ok)
-		Die("PSSM::FromFile, empty .psm %s", Name.c_str());
+		Die("PSSM::FromString, empty .psm %s", Name.c_str());
 
 	vector<string> Fields;
 	Split(Line, Fields, ' ');

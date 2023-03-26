@@ -1,8 +1,6 @@
 #include "myutils.h"
 #include "chainreader.h"
 
-void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
-
 void ChainReader::Open(const string &FileName)
 	{
 	Clear();

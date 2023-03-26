@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pssm.h"
 #include "abcxyz.h"
 
 const uint MPL = AL + BL + CL;
@@ -7,6 +8,7 @@ const uint MPL = AL + BL + CL;
 class MotifProfile
 	{
 public:
+	string m_Name;
 	vector<vector<float> > m_FreqVec;
 	uint m_InputSeqIndex = UINT_MAX;
 	uint m_PosA = UINT_MAX;
@@ -55,6 +57,7 @@ public:
 	void FromSeq(uint SeqIndex, uint PosA, uint PosB, uint PosC,
 	  const string &Seq);
 	void FromSeqs(const vector<string> &Seqs);
+	void FromPSSMs(const PSSM &PA, const PSSM &PB, const PSSM &PC);
 
 	void LogMe() const;
 

@@ -148,6 +148,30 @@ void MotifProfile::FromSeq(uint SeqIndex, uint PosA, uint PosB, uint PosC,
 		}
 	}
 
+void MotifProfile::FromPSSMs(const PSSM &PA, const PSSM &PB, const PSSM &PC)
+	{
+	Clear();
+	vector<float> Probs;
+	for (uint i = 0; i < 12; ++i)
+		{
+		PA.CalcProbs(i, Probs);
+		for (uint j = 0; j < 20; ++j)
+			m_FreqVec[i][j] = Probs[j];
+		}
+	for (uint i = 0; i < 14; ++i)
+		{
+		PB.CalcProbs(i, Probs);
+		for (uint j = 0; j < 20; ++j)
+			m_FreqVec[12 + i][j] = Probs[j];
+		}
+	for (uint i = 0; i < 8; ++i)
+		{
+		PC.CalcProbs(i, Probs);
+		for (uint j = 0; j < 20; ++j)
+			m_FreqVec[12 + 14 + i][j] = Probs[j];
+		}
+	}
+
 void MotifProfile::FromSeqs(const vector<string> &Seqs)
 	{
 	Clear();
@@ -685,7 +709,7 @@ void MPCluster::FindNN(uint &Index1, uint &Index2) const
 	asserta(SIZE(m_PendingIndexes) >= 2);
 	Index1 = UINT_MAX;
 	Index2 = UINT_MAX;
-	float MaxScore = -1;
+	float MaxScore = -9999;
 	for (set<uint>::const_iterator p = m_PendingIndexes.begin();
 	  p != m_PendingIndexes.end(); ++p)
 		{
@@ -706,6 +730,59 @@ void MPCluster::FindNN(uint &Index1, uint &Index2) const
 				}
 			}
 		}
+	}
+
+void MPCluster::LogNN() const
+	{
+	const uint N = SIZE(m_MPs);
+	Log("%u input, %u tree MPs\n", m_InputMPCount, N);
+	const uint M = SIZE(m_Parents);
+	Log("%u internal nodes\n", M);
+	asserta(SIZE(m_Lefts) == M);
+	asserta(SIZE(m_Rights) == M);
+	for (uint i = 0; i < M; ++i)
+		{
+		Log("[%4u]", i);
+		Log("  P=%4u", m_Parents[i]);
+		Log("  L=%4u", m_Lefts[i]);
+		Log("  R=%4u", m_Rights[i]);
+		Log("\n");
+		}
+	}
+
+void MPCluster::NNNodeToNewickFile(FILE *f, uint NodeIndex) const
+	{
+	if (NodeIndex >= m_InputMPCount)
+		{
+	// Internal node
+		uint Left = m_Lefts[NodeIndex - m_InputMPCount];
+		uint Right = m_Rights[NodeIndex - m_InputMPCount];
+		fprintf(f, "(\n");
+		NNNodeToNewickFile(f, Left);
+		fprintf(f, ",\n");
+		NNNodeToNewickFile(f, Right);
+		fprintf(f, ")\n");
+		}
+	else
+		{
+	// Leaf node
+		const MotifProfile &MP = *m_MPs[NodeIndex];
+		fprintf(f, "%s\n", MP.m_Name.c_str());
+		}
+	}
+
+void MPCluster::NNToNewickFile(const string &FileName) const
+	{
+	LogNN();
+	if (FileName == "")
+		return;
+
+	FILE *f = CreateStdioFile(FileName);
+	asserta(SIZE(m_PendingIndexes) == 1);
+	uint RootNode = *m_PendingIndexes.begin();
+	NNNodeToNewickFile(f, RootNode);
+	fprintf(f, ";\n");
+	CloseStdioFile(f);
 	}
 
 void MPCluster::Join(uint Index1, uint Index2)
@@ -779,8 +856,6 @@ MotifProfile &MPCluster::CreateProfileNN(uint i1, uint i2) const
 	MP2.GetLogo(Logo2);
 	P.GetLogo(LogoP);
 	
-	Log("\n");
-	Log("Join\n");
 	Log("  L[%5u, %6.4f]  %s\n", Size1, w1, Logo1.c_str());
 	Log("  R[%5u, %6.4f]  %s\n", Size2, w2, Logo2.c_str());
 
@@ -791,9 +866,9 @@ void MPCluster::NNCluster(const vector<MotifProfile *> &Input,
   float MinScore)
 	{
 	Clear();
-	Clear();
 	m_Input = &Input;
 	const uint N = SIZE(Input);
+	m_InputMPCount = N;
 	for (uint i = 0; i < N; ++i)
 		{
 		m_MPs.push_back(Input[i]);
@@ -807,6 +882,7 @@ void MPCluster::NNCluster(const vector<MotifProfile *> &Input,
 		ProgressStep(JoinIndex, JoinCount, "NN cluster");
 		uint Index1, Index2;
 		FindNN(Index1, Index2);
+		Log("\nJoin %u\n", JoinIndex);
 		Join(Index1, Index2);
 		}
 	}
