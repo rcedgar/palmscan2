@@ -722,9 +722,11 @@ void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 void PDBChain::SetMotifPosVec(uint PosA, uint PosB, uint PosC)
 	{
 	const uint L = GetSeqLength();
-	asserta(PosA < PosB);
-	asserta(PosB < PosC);
+	asserta(PosA < L);
+	asserta(PosB < L);
 	asserta(PosC < L);
+	asserta(PosA < PosB);
+	asserta(PosC < PosA || PosB < PosC);
 	m_MotifPosVec.clear();
 	m_MotifPosVec.push_back(PosA);
 	m_MotifPosVec.push_back(PosB);

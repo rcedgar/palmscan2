@@ -80,6 +80,8 @@ public:
 	void GetMembers(uint CentroidIndex, vector<uint> &Members) const;
 	float GetScore(const MotifProfile &MP1,
 	  const MotifProfile &MP2) const;
+	float GetScore_DotProduct(const MotifProfile &MP1,
+	  const MotifProfile &MP2) const;
 	float GetScoreNNPair(uint i1, uint i2) const;
 	void LogPair(const MotifProfile &MP1,
 	  const MotifProfile &MP2) const;

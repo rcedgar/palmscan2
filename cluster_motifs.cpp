@@ -51,9 +51,32 @@ void MPCluster::LogLogos(const vector<MotifProfile *> &MPs)
 		}
 	}
 
+float MPCluster::GetScore_DotProduct(const MotifProfile &MP1,
+  const MotifProfile &MP2) const
+	{
+#if DEBUG
+	MP1.ValidateFreqs();
+	MP2.ValidateFreqs();
+#endif
+	float Sum = 0;
+	for (uint i = 0; i < MPL; ++i)
+		{
+		for (uint j = 0; j < 20; ++j)
+			{
+			float f1 = MP1.m_FreqVec[i][j];
+			float f2 = MP2.m_FreqVec[i][j];
+			Sum += f1*f2;
+			}
+		}
+	return Sum;
+	}
+
 float MPCluster::GetScore(const MotifProfile &MP1,
   const MotifProfile &MP2) const
 	{
+	if (opt_dotproduct)
+		return GetScore_DotProduct(MP1, MP2);
+
 #if DEBUG
 	MP1.ValidateFreqs();
 	MP2.ValidateFreqs();

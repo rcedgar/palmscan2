@@ -51,11 +51,6 @@ void StructProf::SetCavityCenterPt()
 	m_CavityCenterPt[X] += -10.0*Basis[Z][X];
 	m_CavityCenterPt[Y] += -10.0*Basis[Z][Y];
 	m_CavityCenterPt[Z] += -10.0*Basis[Z][Z];
-
-	//Log("Cavity center %.1f, %.1f, %.1f\n",
-	//  m_CavityCenterPt[X],
-	//  m_CavityCenterPt[Y],
-	//  m_CavityCenterPt[Z]);//@@
 	}
 
 uint StructProf::SearchDist(uint Pos, uint Lo, uint Hi,

@@ -24,7 +24,7 @@ static const uint max_aadist_BgCd = 150;
 //static const uint min_aadist_AdCd = 70;
 //static const uint max_aadist_AdCd = 200;
 
-static const double MINSCORE1 = 0.5;
+static const double MINSCORE1 = 0.4;
 static const double MINSCORE3 = 0.5;
 
 static bool g_Trace = false;

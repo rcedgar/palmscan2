@@ -162,6 +162,7 @@ FLAG_OPT(first_only)
 FLAG_OPT(norows)
 FLAG_OPT(calctps)
 FLAG_OPT(compact)
+FLAG_OPT(dotproduct)
 
 #undef FLAG_OPT
 #undef UNS_OPT
