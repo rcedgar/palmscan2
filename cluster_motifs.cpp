@@ -195,12 +195,27 @@ void MotifProfile::FromPSSMs(const PSSM &PA, const PSSM &PB, const PSSM &PC)
 		}
 	}
 
-void MotifProfile::FromSeqs(const vector<string> &Seqs)
+void MotifProfile::FromSeqs(const vector<string> &InputSeqs)
 	{
 	Clear();
 	m_InputSeqIndex = UINT_MAX;
 
+	const uint InputSeqCount = SIZE(InputSeqs);
+	set<string> UniqueSeqs;
+	for (uint SeqIndex = 0; SeqIndex < InputSeqCount; ++SeqIndex)
+		{
+		const string &Seq = InputSeqs[SeqIndex];
+		asserta(SIZE(Seq) == MPL);
+		UniqueSeqs.insert(Seq);
+		}
+
+	vector<string> Seqs;
+	for (set<string>::const_iterator p = UniqueSeqs.begin();
+	  p != UniqueSeqs.end(); ++p)
+		Seqs.push_back(*p);
+
 	const uint SeqCount = SIZE(Seqs);
+
 	asserta(SeqCount > 0);
 	vector<uint> Letters;
 	for (uint SeqIndex = 0; SeqIndex < SeqCount; ++SeqIndex)
