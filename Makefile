@@ -92,6 +92,7 @@ HDRS = \
   sfasta.h \
   sort.h \
   spher.h \
+  stock.h \
   structprof.h \
   timers.h \
   timing.h \
@@ -137,6 +138,7 @@ OBJS = \
   $(OBJDIR)/clusters2model.o \
   $(OBJDIR)/cluster_motifs.o \
   $(OBJDIR)/cluster_ppc.o \
+  $(OBJDIR)/cluster_ppm.o \
   $(OBJDIR)/dali.o \
   $(OBJDIR)/distmx.o \
   $(OBJDIR)/fasta_xlat.o \
@@ -231,6 +233,9 @@ OBJS = \
   $(OBJDIR)/smooth.o \
   $(OBJDIR)/spher.o \
   $(OBJDIR)/split_train_test.o \
+  $(OBJDIR)/stock.o \
+  $(OBJDIR)/stock2fasta.o \
+  $(OBJDIR)/stocks2pssms.o \
   $(OBJDIR)/structprof.o \
   $(OBJDIR)/structprofheuristics.o \
   $(OBJDIR)/sw.o \
