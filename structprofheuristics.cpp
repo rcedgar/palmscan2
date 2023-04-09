@@ -76,16 +76,6 @@ uint StructProf::FindMofifF2_Hueuristics(uint Pos_MotifA) const
 	int iPos;
 	const char *Seq = m_Chain->m_Seq.c_str();
 
-	Log("Pos1=%u\n", Pos1);
-	for (iPos = int(Pos1) -8; iPos < int(Pos1) + 4; ++iPos)
-		{
-		if (iPos >= 0)
-			{
-			Log("%3d", iPos);
-			Log("  %c\n", Seq[iPos]);
-			}
-		}
-
 #define CheckOffset(Offset)	\
 	{ \
 	iPos = int(Pos1) + Offset; \
@@ -99,7 +89,7 @@ uint StructProf::FindMofifF2_Hueuristics(uint Pos_MotifA) const
 
 #undef CheckOffset
 
-	if (Pos1 <= 5)
+	if (Pos1 >= 5)
 		return Pos1 - 5;
 
 	return UINT_MAX;

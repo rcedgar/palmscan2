@@ -85,6 +85,7 @@ STR_OPT(frame)
 STR_OPT(test)
 STR_OPT(sep)
 STR_OPT(fieldnrs)
+STR_OPT(png)
 
 UNS_OPT(threads,			8,			0,			UINT_MAX)
 UNS_OPT(band,				16,			0,			UINT_MAX)

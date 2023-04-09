@@ -279,7 +279,7 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 		HdrDone = true;
 		}
 
-	uint ResNr = SP.m_Chain->GetResidueNr(Pos);
+	int ResNr = SP.m_Chain->GetResidueNr(Pos);
 	char Motif = '.';
 	if (Pos == g_APos)
 		Motif = 'A';
@@ -306,7 +306,10 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 	fprintf(f, "\t%.1f", Dist_cD);
 	fprintf(f, "\t%u", CN);
 	fprintf(f, "\t%c", Motif);
-	fprintf(f, "\t%u", ResNr);
+	if (ResNr == INT_MAX)
+		fprintf(f, "\t.");
+	else
+		fprintf(f, "\t%d", ResNr);
 	fprintf(f, "\n");
 	}
 
@@ -353,9 +356,13 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 		{
 		string Label;
 		GetLabelFromFileName(opt_struct_prof, Label);
+		fprintf(g_fpml, "window hide\n");
 		fprintf(g_fpml, "cmd.load(\"%s\")\n", opt_struct_prof);
 		fprintf(g_fpml, "select %s\n", Label.c_str());
 		fprintf(g_fpml, "color gray40, %s\n", Label.c_str());
+		if (optset_png)
+			fprintf(g_fpml, "bg_color white\n");
+
 		if (g_APos != UINT_MAX)
 			{
 			uint Res1 = Chain.GetResidueNr(g_APos);
@@ -435,6 +442,12 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
 			}
 		fprintf(g_fpml, "deselect\n");
+		if (optset_png)
+			{
+			fprintf(g_fpml, "ray\n");
+			fprintf(g_fpml, "png %s\n", opt_png);
+			fprintf(g_fpml, "quit\n");
+			}
 		}
 
 	return true;
@@ -477,8 +490,10 @@ void StructProf::WriteTsv(FILE *f) const
 	uint PosE = FindMofifE_Hueuristics(PosD);
 	uint PosF = FindMofifF2_Hueuristics(PosA);
 
+	if (PosC + CL + 2 > L)
+		PosC = UINT_MAX;
 	if (PosD + 7 > L)
-		PosE = UINT_MAX;
+		PosD = UINT_MAX;
 	if (PosE + 7 > L)
 		PosE = UINT_MAX;
 
@@ -585,11 +600,19 @@ void cmd_struct_prof()
 	CR.Open(InputFN);
 
 	PDBChain Chain;
+	ProgressStep(0, 1001, "Processing");
+	uint LastMil = 0;
+	uint DoneCount = 0;
 	while (CR.GetNext(Chain))
 		{
+		uint Mil = CR.GetMilDone();
+		if (Mil > 0)
+			ProgressStep(Mil, 1001, "Processing %u", DoneCount);
 		Chain.SetSS();
 		bool Ok = DoStructProf(g_ftsv, CS, Chain);
+		++DoneCount;
 		if (opt_first_only && Ok)
 			break;
 		}
+	ProgressStep(1000, 1001, "Processing %u", DoneCount);
 	}

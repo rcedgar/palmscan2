@@ -314,6 +314,8 @@ int PDBChain::GetResidueNr(uint Pos) const
 	//string CALine;
 	//GetCAAtomLine(Pos, CALine);
 	//int ResNr = GetResidueNrFromATOMLine(CALine);
+	if (SIZE(m_ResNrs) == 0)
+		return INT_MAX;
 	asserta(Pos < SIZE(m_ResNrs));
 	return m_ResNrs[Pos];
 	}

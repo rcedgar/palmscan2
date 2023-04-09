@@ -248,6 +248,9 @@ double CMPSearcher::GetScore(uint Ad, uint Bg, uint Cd) const
 
 void CMPSearcher::CheckHit(uint Ad, uint Bg, uint Cd, double Score)
 	{
+	bool Ok = (Ad < Bg && Bg < Cd) || (Cd < Ad && Ad < Bg);
+	if (!Ok)
+		return;
 	if (!GoodScore3(Score))
 		return;
 
