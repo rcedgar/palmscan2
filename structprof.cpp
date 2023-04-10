@@ -18,18 +18,9 @@ void StructProf::SetChain(const PDBChain &Chain)
 	{
 	Clear();
 	m_Chain = &Chain;
-	//m_MinPos = 0;
 	uint L = Chain.GetSeqLength();
 	asserta(L > 0);
-	//m_MaxPos = L - 1;
 	}
-
-//void StructProf::SetMinMaxPos(uint MinPos, uint MaxPos)
-//	{
-//	asserta(MinPos <= MaxPos && MaxPos < m_Chain->GetSeqLength());
-//	m_MinPos = MinPos;
-//	m_MaxPos = MaxPos;
-//	}
 
 void StructProf::SetCavityCenterPt()
 	{
@@ -316,17 +307,17 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 static bool DoStructProf(FILE *f, CMPSearcher &CS,
  PDBChain &Chain)
 	{
-	CS.Search(Chain);
+	//CS.Search(Chain);
 
-	g_APos = UINT_MAX;
-	g_BPos = UINT_MAX;
-	g_CPos = UINT_MAX;
-	double PalmScore = CS.GetPSSMStarts(g_APos, g_BPos, g_CPos);
-	if (PalmScore <= 0)
-		return false;
+	//g_APos = UINT_MAX;
+	//g_BPos = UINT_MAX;
+	//g_CPos = UINT_MAX;
+	//double PalmScore = CS.GetPSSMStarts(g_APos, g_BPos, g_CPos);
+	//if (PalmScore <= 0)
+	//	return false;
 
-	Chain.SetMotifPosVec(g_APos, g_BPos, g_CPos);
-	Chain.PrintSeqCoords(g_fLog);
+	//Chain.SetMotifPosVec(g_APos, g_BPos, g_CPos);
+	//Chain.PrintSeqCoords(g_fLog);
 
 	const uint L = Chain.GetSeqLength();
 	uint MinPos = (g_APos < 150 ? 0 : g_APos - 150);
@@ -600,6 +591,7 @@ void cmd_struct_prof()
 	CR.Open(InputFN);
 
 	PDBChain Chain;
+	PDBChain XChain;
 	ProgressStep(0, 1001, "Processing");
 	uint LastMil = 0;
 	uint DoneCount = 0;
@@ -608,6 +600,18 @@ void cmd_struct_prof()
 		uint Mil = CR.GetMilDone();
 		if (Mil > 0)
 			ProgressStep(Mil, 1001, "Processing %u", DoneCount);
+
+		CS.Search(Chain);
+
+		g_APos = UINT_MAX;
+		g_BPos = UINT_MAX;
+		g_CPos = UINT_MAX;
+		double PalmScore = CS.GetPSSMStarts(g_APos, g_BPos, g_CPos);
+		if (PalmScore <= 0)
+			continue;
+
+		Chain.SetMotifPosVec(g_APos, g_BPos, g_CPos);
+		Chain.PrintSeqCoords(g_fLog);
 		Chain.SetSS();
 		bool Ok = DoStructProf(g_ftsv, CS, Chain);
 		++DoneCount;

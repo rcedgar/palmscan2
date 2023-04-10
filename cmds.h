@@ -77,5 +77,6 @@ C(fasta_xlat)
 C(stock2fasta)
 C(stocks2pssms)
 C(cluster_ppm)
+C(triform)
 
 #undef C

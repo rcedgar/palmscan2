@@ -1,4 +1,8 @@
 #include "myutils.h"
+#include "structprof.h"
+#include "chainreader.h"
+#include "outputfiles.h"
+#include "cmpsearcher.h"
 #include "abcxyz.h"
 
 #define TRACE	1
@@ -120,4 +124,45 @@ void cmd_test_triform()
 		vector<vector<double> > R;
 		GetTriForm(MotifCoords, t, R);
 		}
+	}
+
+void cmd_triform()
+	{
+	const string &InputFN = opt_triform;
+
+	if (!optset_model)
+		Die("Must specify -model");
+	const string &ModelFileName = opt_model;
+
+	CMP Prof;
+	Prof.FromFile(ModelFileName);
+
+	CMPSearcher CS;
+	CS.SetProf(Prof);
+
+	ChainReader CR;
+	CR.Open(InputFN);
+
+	PDBChain Chain;
+	PDBChain XChain;
+	bool Done = false;
+	while (CR.GetNext(Chain))
+		{
+		CS.Search(Chain);
+
+		uint APos = UINT_MAX;
+		uint BPos = UINT_MAX;
+		uint CPos = UINT_MAX;
+		double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
+		if (PalmScore > 0)
+			{
+			Chain.SetMotifPosVec(APos, BPos, CPos);
+			Chain.GetTriFormChain_DGD(XChain);
+			XChain.ToPDB(opt_output);
+			Done = true;
+			break;
+			}
+		}
+	if (!Done)
+		Warning("Motifs not found");
 	}
