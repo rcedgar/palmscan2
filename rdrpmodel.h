@@ -15,6 +15,8 @@ class RdRpModel
 public:
 	vector<string> m_GroupNames;
 	vector<PSSM> m_PSSMs;
+	uint m_LineIndex = 0;
+	const vector<string> *m_Lines = 0;
 
 public:
 
@@ -22,6 +24,8 @@ public:
 		{
 		m_PSSMs.clear();
 		m_GroupNames.clear();
+		m_Lines = 0;
+		m_LineIndex = 0;
 		}
 
 	uint GetGroupCount() const
@@ -62,11 +66,16 @@ public:
 	  const vector<PSSM> &PCs);
 	void FromPSSMDir(const string &PSSMDir,
 	  const vector<string> &GroupNames);
+	void FromLines(const vector<string> &Lines);
 	void FromModelFile(const string &FileName);
+	bool GetNextLine(string &Line);
 	void ToModelFile(const string &FileName) const;
 
 	uint GetPSSMLength(uint GroupIndex, uint MotifIndex) const;
 	void GetMotifProfile(uint GroupIndex, MotifProfile &MP) const;
+
+public:
+	void GetDefaultModelLines(vector<string> &Lines);
 	};
 
 extern vector<string> g_ModelStrings;

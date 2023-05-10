@@ -3,6 +3,84 @@
 #include "seqdb.h"
 #include "rdrpmodel.h"
 
+bool RdRpModel::GetNextLine(string &Line)
+	{
+	asserta(m_Lines != 0);
+	if (m_LineIndex >= SIZE(*m_Lines))
+		return false;
+	Line = (*m_Lines)[m_LineIndex++];
+	return true;
+	}
+
+void RdRpModel::FromLines(const vector<string> &Lines)
+	{
+	Clear();
+	m_Lines = &Lines;
+	m_LineIndex = 0;
+
+	string Line;
+	vector<string> Fields;
+	GetNextLine(Line);
+	asserta(Line == "palmprint_model");
+
+	GetNextLine(Line);
+	Split(Line, Fields, '\t');
+	if (SIZE(Fields) != 2 || Fields[0] != "groups")
+		Die("Bad model (groups) '%s'", Line.c_str());
+	uint GroupCount = (uint) atoi(Fields[1].c_str());
+	for (uint GroupIndex = 0; GroupIndex < GroupCount; ++GroupIndex)
+		{
+		GetNextLine(Line);
+		Split(Line, Fields, '\t');
+		if (SIZE(Fields) != 3 || Fields[0] != "group"
+		  || (uint) atoi(Fields[1].c_str()) != GroupIndex)
+			Die("Bad model expected group %u got '%s'",
+			  GroupIndex, Line.c_str());
+
+		const string &Name = Fields[2];
+		m_GroupNames.push_back(Name);
+		}
+
+	uint PSSMCount = 3*GroupCount;
+	m_PSSMs.resize(PSSMCount);
+	for (uint PSSMIndex = 0; PSSMIndex < PSSMCount; ++PSSMIndex)
+		{
+		GetNextLine(Line);
+		Split(Line, Fields, '\t');
+
+		uint GroupIndex = PSSMIndex/3;
+		string GroupName = m_GroupNames[GroupIndex];
+
+		uint MotifIndex = PSSMIndex%3;
+		char MotifLetter = "ABC"[MotifIndex];
+		string MotifLetterStr;
+		MotifLetterStr.push_back(MotifLetter);
+
+		if (SIZE(Fields) != 3
+		  || Fields[0] != "pssm"
+		  || Fields[1] != GroupName
+		  || Fields[2] != MotifLetterStr)
+			Die("Bad PSSM prefix line '%s'", Line.c_str());
+	
+		vector<string> PSSMStrings;
+		for (;;)
+			{
+			bool Ok = GetNextLine(Line);
+			if (!Ok)
+				Die("Missing // at end of PSSM strings");
+			PSSMStrings.push_back(Line);
+			if (Line == "//")
+				break;
+			}
+
+		m_PSSMs[PSSMIndex].FromStrings(GroupName, PSSMStrings);
+		m_PSSMs[PSSMIndex].m_GroupName = GroupName;
+		}
+	GetNextLine(Line);
+	if (Line != ".")
+		Die("Expected . in last line got '%s'", Line.c_str());
+	}
+
 void RdRpModel::FromModelFile(const string &FileName)
 	{
 	asserta(FileName != "");

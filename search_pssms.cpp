@@ -45,8 +45,6 @@ void SeqToUpper(string &Seq)
 
 void SearchPSSMs(const string &QueryFileName, fn_OnPalmHit OnHit)
 	{
-	asserta(optset_model);
-	const string &ModelFileName = opt_model;
 	bool Trace = opt_trace;
 	double MinPalmScore = 10.0;
 	if (optset_min_palm_score)
@@ -58,7 +56,17 @@ void SearchPSSMs(const string &QueryFileName, fn_OnPalmHit OnHit)
 	SetExcludes();
 
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	if (optset_model)
+		{
+		const string &ModelFileName = opt_model;
+		Model.FromModelFile(ModelFileName);
+		}
+	else
+		{
+		vector<string> Lines;
+		Model.GetDefaultModelLines(Lines);
+		Model.FromLines(Lines);
+		}
 
 	const uint ThreadCount = GetRequestedThreadCount();
 	vector<ObjMgr *> OMs;
