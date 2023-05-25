@@ -150,6 +150,7 @@ OBJS = \
   $(OBJDIR)/hse.o \
   $(OBJDIR)/hse_cmp.o \
   $(OBJDIR)/hse_train.o \
+  $(OBJDIR)/palmprint_pssms.o \
   $(OBJDIR)/pamerger.o \
   $(OBJDIR)/pamerge.o \
   $(OBJDIR)/palmcator.o \
