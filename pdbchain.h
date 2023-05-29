@@ -87,6 +87,7 @@ public:
 	void GetDistMx(uint Pos, uint L, vector<vector<double> > &Mx) const;
 	void TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const;
 	void ToPML(FILE *f, const string &PDBFileName) const;
+	void ToPML_Seqs(FILE *f, const string &PDBFileName) const;
 	void GetCAAtomLine(uint Pos, string &Line) const;
 	int GetResidueNr(uint Pos) const;
 	void GetResidueRange(uint PosLo, uint ResidueCount, int &ResLo,

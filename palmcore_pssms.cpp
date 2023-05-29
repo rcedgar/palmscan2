@@ -8,11 +8,18 @@ void cmd_palmcore_pssms()
 	{
 	const string &InputFN = opt_palmcore_pssms;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	if (optset_model)
+		{
+		const string &ModelFileName = opt_model;
+		Model.FromModelFile(ModelFileName);
+		}
+	else
+		{
+		vector<string> Lines;
+		Model.GetDefaultModelLines(Lines);
+		Model.FromLines(Lines);
+		}
 
 	vector<PDBChain *> Chains;
 	ReadChains(InputFN, Chains);
@@ -50,7 +57,7 @@ void cmd_palmcore_pssms()
 		Chain.GetPC(PC);
 
 		PC.ToPDB(opt_output);
-		PC.ToPML(g_fpml, opt_output);
+		PC.ToPML_Seqs(g_fpml, opt_output);
 		break;
 		}
 

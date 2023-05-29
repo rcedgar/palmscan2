@@ -65,3 +65,45 @@ void PDBChain::ToPML(FILE *f, const string &PDBFileName) const
 
 	fprintf(f, "\n");
 	}
+
+void PDBChain::ToPML_Seqs(FILE *f, const string &PDBFileName) const
+	{
+	if (f == 0)
+		return;
+	if (PDBFileName == "")
+		Die("ToPML() PDBFileName empty");
+
+	string SeqA, SeqB, SeqC;
+	GetMotifSeq(0, SeqA);
+	GetMotifSeq(1, SeqB);
+	GetMotifSeq(2, SeqC);
+
+	fprintf(f, "#!/usr/bin/pymol\n");
+	fprintf(f, "\n");
+	fprintf(f, "cmd.load(\"%s\")\n", PDBFileName.c_str());
+
+	string Label;
+	GetLabelFromFileName(PDBFileName, Label);
+	const char *Lab = Label.c_str();
+
+	fprintf(f, "\n");
+	fprintf(f, "select %s\n", Lab);
+	fprintf(f, "color gray30, %s\n", Lab);
+
+	fprintf(f, "\n");
+	fprintf(f, "cmd.select(\"%s_mA\", \"%s and pepseq %s\")\n", Lab, Lab, SeqA.c_str());
+	fprintf(f, "cmd.select(\"%s_mB\", \"%s and pepseq %s\")\n", Lab, Lab, SeqB.c_str());
+	fprintf(f, "cmd.select(\"%s_mC\", \"%s and pepseq %s\")\n", Lab, Lab, SeqC.c_str());
+
+	fprintf(f, "\n");
+	fprintf(f, "color tv_blue, %s_mA\n", Lab);
+	fprintf(f, "color tv_green, %s_mB\n", Lab);
+	fprintf(f, "color tv_red, %s_mC\n", Lab);
+	fprintf(f, "\n");
+	fprintf(f, "deselect\n");
+	fprintf(f, "delete sele\n");
+	fprintf(f, "bg 1 1 1\n");
+	fprintf(f, "util.performance(0)\n");
+
+	fprintf(f, "\n");
+	}
