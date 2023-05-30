@@ -2,7 +2,7 @@
 #include "pdbchain.h"
 #include "abcxyz.h"
 
-void PDBChain::GetPC(PDBChain &PC) const
+void PDBChain::GetPalmCore(PDBChain &PC) const
 	{
 	PC.Clear();
 	asserta(SIZE(m_MotifPosVec) == 3);

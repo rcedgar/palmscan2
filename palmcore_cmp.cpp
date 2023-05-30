@@ -42,7 +42,7 @@ void cmd_palmcore_cmp()
 		Q.SetMotifPosVec(APos, BPos, CPos);
 
 		PDBChain PC;
-		Q.GetPC(PC);
+		Q.GetPalmCore(PC);
 
 		PC.ToPDB(opt_output);
 		PC.ToPML(g_fpml, opt_output);

@@ -573,10 +573,8 @@ void StructProf::WriteGSProf(FILE *f) const
 	GP.ToTsv(f);
 	}
 
-void cmd_struct_prof()
+static void Search3D(const string &InputFN)
 	{
-	const string &InputFN = opt_struct_prof;
-
 	if (!optset_model)
 		Die("Must specify -model");
 	const string &ModelFileName = opt_model;
@@ -611,12 +609,23 @@ void cmd_struct_prof()
 			continue;
 
 		Chain.SetMotifPosVec(g_APos, g_BPos, g_CPos);
-		Chain.PrintSeqCoords(g_fLog);
-		Chain.SetSS();
 		bool Ok = DoStructProf(g_ftsv, CS, Chain);
 		++DoneCount;
 		if (opt_first_only && Ok)
 			break;
 		}
 	ProgressStep(1000, 1001, "Processing %u", DoneCount);
+	}
+
+// for backwards compatibility
+void cmd_struct_prof()
+	{
+	const string &InputFN = opt_struct_prof;
+	Search3D(InputFN);
+	}
+
+void cmd_search3d()
+	{
+	const string &InputFN = opt_search3d;
+	Search3D(InputFN);
 	}

@@ -54,7 +54,7 @@ void cmd_palmcore_pssms()
 		Chain.SetMotifPosVec(APos, BPos, CPos);
 
 		PDBChain PC;
-		Chain.GetPC(PC);
+		Chain.GetPalmCore(PC);
 
 		PC.ToPDB(opt_output);
 		PC.ToPML_Seqs(g_fpml, opt_output);

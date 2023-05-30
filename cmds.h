@@ -78,5 +78,6 @@ C(stock2fasta)
 C(stocks2pssms)
 C(cluster_ppm)
 C(triform)
+C(search3d)
 
 #undef C

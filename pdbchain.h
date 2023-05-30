@@ -73,7 +73,7 @@ public:
 		GetSS(m_SS);
 		}
 	void GetPPC(PDBChain &PPC) const;
-	void GetPC(PDBChain &PC) const;
+	void GetPalmCore(PDBChain &PC) const;
 	char GetMotifChar_Pos(uint Pos) const;
 	bool CheckMotifCoords(bool FailOnError = true) const;
 	bool CheckPPCMotifCoords(bool FailOnError = true) const;
