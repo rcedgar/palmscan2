@@ -304,7 +304,7 @@ static void DoStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 	fprintf(f, "\n");
 	}
 
-static bool DoStructProf(FILE *f, CMPSearcher &CS,
+static bool DoStructProf(FILE *f, const string &PDBFileName, CMPSearcher &CS,
  PDBChain &Chain)
 	{
 	//CS.Search(Chain);
@@ -346,9 +346,9 @@ static bool DoStructProf(FILE *f, CMPSearcher &CS,
 	if (g_fpml != 0)
 		{
 		string Label;
-		GetLabelFromFileName(opt_struct_prof, Label);
-		fprintf(g_fpml, "window hide\n");
-		fprintf(g_fpml, "cmd.load(\"%s\")\n", opt_struct_prof);
+		GetLabelFromFileName(PDBFileName, Label);
+//		fprintf(g_fpml, "window hide\n");
+		fprintf(g_fpml, "cmd.load(\"%s\")\n", PDBFileName.c_str());
 		fprintf(g_fpml, "select %s\n", Label.c_str());
 		fprintf(g_fpml, "color gray40, %s\n", Label.c_str());
 		if (optset_png)
@@ -609,7 +609,7 @@ static void Search3D(const string &InputFN)
 			continue;
 
 		Chain.SetMotifPosVec(g_APos, g_BPos, g_CPos);
-		bool Ok = DoStructProf(g_ftsv, CS, Chain);
+		bool Ok = DoStructProf(g_ftsv, InputFN, CS, Chain);
 		++DoneCount;
 		if (opt_first_only && Ok)
 			break;
