@@ -1314,7 +1314,7 @@ const char *PDBChain::GetAcc(string &Acc) const
 	return Acc.c_str();
 	}
 
-void PDBChain::TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const
+void PDBChain::GetRange(uint Lo, uint Hi, PDBChain &Chain) const
 	{
 	Chain.Clear();
 	asserta(Lo <= Hi);

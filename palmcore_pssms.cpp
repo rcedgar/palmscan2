@@ -4,11 +4,8 @@
 #include "rdrpsearcher.h"
 #include "outputfiles.h"
 
-void cmd_palmcore_pssms()
+void GetRdrpModel(RdRpModel &Model)
 	{
-	const string &InputFN = opt_palmcore_pssms;
-
-	RdRpModel Model;
 	if (optset_model)
 		{
 		const string &ModelFileName = opt_model;
@@ -20,6 +17,14 @@ void cmd_palmcore_pssms()
 		Model.GetDefaultModelLines(Lines);
 		Model.FromLines(Lines);
 		}
+	}
+
+void cmd_palmcore_pssms()
+	{
+	const string &InputFN = opt_palmcore_pssms;
+
+	RdRpModel Model;
+	GetRdrpModel(Model);
 
 	vector<PDBChain *> Chains;
 	ReadChains(InputFN, Chains);

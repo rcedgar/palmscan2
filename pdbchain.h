@@ -85,7 +85,7 @@ public:
 	char GetMotifC_D() const;
 	const char *GetAcc(string &Acc) const;
 	void GetDistMx(uint Pos, uint L, vector<vector<double> > &Mx) const;
-	void TruncateChain(uint Lo, uint Hi, PDBChain &Chain) const;
+	void GetRange(uint Lo, uint Hi, PDBChain &Chain) const;
 	void ToPML(FILE *f, const string &PDBFileName) const;
 	void ToPML_Seqs(FILE *f, const string &PDBFileName) const;
 	void GetCAAtomLine(uint Pos, string &Line) const;

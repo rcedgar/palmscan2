@@ -19,7 +19,6 @@ static void GetNameFromPath(const string &Path, string &Name)
 void cmd_stocks2pssms()
 	{
 	const string &InputFN = opt_stocks2pssms;
-	RdRpModel Model;
 	
 	vector<string> StockFileNames;
 	ReadLinesFromFile(InputFN, StockFileNames);
@@ -81,6 +80,7 @@ void cmd_stocks2pssms()
 			}
 		}
 
+	RdRpModel Model;
 	Model.FromPSSMs(GroupNames, PAs, PBs, PCs);
 	Model.ToModelFile(opt_model);
 	}

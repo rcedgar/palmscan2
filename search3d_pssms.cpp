@@ -9,6 +9,46 @@
 static uint g_DoneCount;
 static uint g_HitCount;
 
+static bool SplitB(const PDBChain &Q, uint APos, uint BPos, uint CPos)
+	{
+	if (!optset_splitb)
+		return false;
+	if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
+		return false;
+
+	uint L = Q.GetSeqLength();
+	uint Lo1 = 0;
+	if (BPos > 400)
+		Lo1 = BPos - 400;
+	uint Hi1 = BPos + 14;
+
+	uint Lo2 = BPos; 
+	uint Hi2 = BPos + 400;
+	if (Hi2 >= L)
+		Hi2 = L - 1;
+
+	PDBChain Split1;
+	PDBChain Split2;
+	Q.GetRange(Lo1, Hi1, Split1);
+	Q.GetRange(Lo2, Hi2, Split2);
+
+	string s;
+	for (uint i = 0; i < SIZE(Q.m_Label); ++i)
+		{
+		char c = Q.m_Label[i];
+		if (!isspace(c))
+			s += c;
+		}
+	const char *Label = s.c_str();
+	string FileName1;
+	string FileName2;
+	Ps(FileName1, "%s.split1.pdb", Label);
+	Ps(FileName2, "%s.split2.pdb", Label);
+	Split1.ToPDB(FileName1);
+	Split2.ToPDB(FileName2);
+	return true;
+	}
+
 static void Thread(ChainReader &CR, vector<PDBChain> &Qs,  
   vector<RdRpSearcher> &RSs)
 	{
@@ -41,54 +81,18 @@ static void Thread(ChainReader &CR, vector<PDBChain> &Qs,
 		uint BPos = RS.GetMotifPos(1);
 		uint CPos = RS.GetMotifPos(2);
 
-		if (APos == UINT_MAX || BPos == UINT_MAX || CPos == UINT_MAX)
+		if (optset_splitb)
+#pragma omp critical
 			{
-			Log("Motif(s) not found in >%s\n", QLabel.c_str());
-			continue;
-			}
-		if (CPos < APos)
-			{
-			Log("Permuted domain >%s\n", QLabel.c_str());
-			continue;
+			bool Ok = SplitB(Q, APos, BPos, CPos);
+			if (Ok)
+				exit(0);
 			}
 
 #pragma omp critical
 		{
 		++g_HitCount;
 		}
-
-//		Q.m_MotifPosVec.clear();
-//		Q.m_MotifPosVec.push_back(APos);
-//		Q.m_MotifPosVec.push_back(BPos);
-//		Q.m_MotifPosVec.push_back(CPos);
-//
-//		vector<vector<double> > MotifCoords;
-//		Q.GetMotifCoords(MotifCoords);
-//
-//		vector<double> t;
-//		vector<vector<double> > R;
-//		GetTriForm(MotifCoords, t, R);
-//
-//		const uint QL = Q.GetSeqLength();
-//		vector<double> Pt;
-//		vector<double> XPt;
-//		for (uint Pos = 0; Pos < QL; ++Pos)
-//			{
-//			Q.GetPt(Pos, Pt);
-//			XFormPt(Pt, t, R, XPt);
-//			Q.SetPt(Pos, XPt);
-//			}
-//		uint PPL = CPos + CL - APos;
-//
-//#pragma omp critical
-//		{
-//		PDBChain Q_PPC;
-//		Q.SetMotifPosVec(APos, BPos, CPos);
-//		Q.GetPPC(Q_PPC);
-//		Q_PPC.ToCal(g_fppc);
-//		if (optset_pdbout)
-//			Q_PPC.ToPDB(opt_pdbout);
-//		}
 		}
 	}
 
@@ -96,11 +100,8 @@ void cmd_search3d_pssms()
 	{
 	const string &QueryFN = opt_search3d_pssms;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	GetRdrpModel(Model);
 
 	//RdRpSearcher::InitOutput();
 	uint ThreadCount = GetRequestedThreadCount();

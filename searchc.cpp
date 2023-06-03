@@ -34,7 +34,7 @@ static void SearchC(const string &QueryFileName)
 	SetExcludes();
 
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	GetRdrpModel(Model);
 
 	const uint ThreadCount = GetRequestedThreadCount();
 	vector<ObjMgr *> OMs;

@@ -95,15 +95,13 @@ void cmd_cfilter()
 	{
 	const string &QueryFileName = opt_cfilter;
 
-	asserta(optset_model);
-	const string &ModelFileName = opt_model;
 	SetExcludes();
 
 	if (!opt_notrunclabels)
 		opt_trunclabels = true;
 
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	GetRdrpModel(Model);
 
 	const uint ThreadCount = GetRequestedThreadCount();
 	vector<ObjMgr *> OMs;

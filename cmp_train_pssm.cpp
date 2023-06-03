@@ -223,11 +223,8 @@ void cmd_cmp_train_pssm()
 	{
 	const string &QueryFN = opt_cmp_train_pssm;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	GetRdrpModel(Model);
 
 	PDBChain Q;
 	RdRpSearcher RS;

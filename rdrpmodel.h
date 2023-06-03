@@ -80,3 +80,5 @@ public:
 
 extern vector<string> g_ModelStrings;
 extern vector<string> g_ModelStringsRdRp;
+
+void GetRdrpModel(RdRpModel &Model);

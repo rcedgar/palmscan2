@@ -61,11 +61,8 @@ void cmd_ppcontactmap_pssm()
 	{
 	const string &QueryFN = opt_ppcontactmap_pssm;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	GetRdrpModel(Model);
 
 	uint ThreadCount = GetRequestedThreadCount();
 

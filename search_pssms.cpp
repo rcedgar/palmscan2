@@ -56,17 +56,7 @@ void SearchPSSMs(const string &QueryFileName, fn_OnPalmHit OnHit)
 	SetExcludes();
 
 	RdRpModel Model;
-	if (optset_model)
-		{
-		const string &ModelFileName = opt_model;
-		Model.FromModelFile(ModelFileName);
-		}
-	else
-		{
-		vector<string> Lines;
-		Model.GetDefaultModelLines(Lines);
-		Model.FromLines(Lines);
-		}
+	GetRdrpModel(Model);
 
 	const uint ThreadCount = GetRequestedThreadCount();
 	vector<ObjMgr *> OMs;

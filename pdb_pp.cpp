@@ -47,12 +47,8 @@ void cmd_pdb_pp()
 	if (optset_flanks)
 		FlankSize = opt_flanks;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
-	//RdRpSearcher::InitOutput();
+	GetRdrpModel(Model);
 
 	const uint ChainCount = SIZE(Chains);
 	for (uint i = 0; i < ChainCount; ++i)

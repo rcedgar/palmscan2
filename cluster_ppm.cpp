@@ -11,7 +11,7 @@ void cmd_cluster_ppm()
 	SetBLOSUM62();
 
 	RdRpModel Model;
-	Model.FromModelFile(ModelFileName);
+	GetRdrpModel(Model);
 
 	const uint GroupCount = Model.GetGroupCount();
 	vector<MotifProfile *> MPs;
