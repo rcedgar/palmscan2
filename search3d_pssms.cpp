@@ -91,7 +91,8 @@ static void Thread(ChainReader &CR, vector<PDBChain> &Qs,
 
 #pragma omp critical
 		{
-		++g_HitCount;
+		if (RS.m_TopPalmHit.m_Score > 0)
+			++g_HitCount;
 		}
 		}
 	}
