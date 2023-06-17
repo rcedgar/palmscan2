@@ -87,6 +87,7 @@ STR_OPT(test)
 STR_OPT(sep)
 STR_OPT(fieldnrs)
 STR_OPT(png)
+STR_OPT(subchain)
 
 UNS_OPT(threads,			8,			0,			UINT_MAX)
 UNS_OPT(band,				16,			0,			UINT_MAX)
@@ -165,6 +166,7 @@ FLAG_OPT(norows)
 FLAG_OPT(calctps)
 FLAG_OPT(compact)
 FLAG_OPT(dotproduct)
+FLAG_OPT(subchainc)
 
 #undef FLAG_OPT
 #undef UNS_OPT

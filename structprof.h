@@ -36,6 +36,6 @@ public:
 	uint FindMofifF1_Hueuristics(uint Pos_MotifA) const;
 	uint FindMofifF2_Hueuristics(uint Pos_MotifA) const;
 	void WriteGSProf(FILE *f) const;
-	void WriteTsv(FILE *f) const;
+	void WriteMotifsTsv(FILE *f) const;
 	void WriteMotifTsv(FILE *f, uint Pos, uint n) const;
 	};

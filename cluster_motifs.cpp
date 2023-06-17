@@ -713,13 +713,14 @@ void MPCluster::WriteCluster(uint OrderIndex) const
 		uint Index = MemberIndexes[i];
 		if (Index == CentroidIndex)
 			continue;
+		const char *Label = m_FLSeqDB.GetLabel(Index).c_str();
 		const MotifProfile &P = GetProfile(Index);
 		float Score = GetScore(CP, P);
 		string ConsSeq;
 		P.GetConsSeq(ConsSeq);
 		const char *ABC = (P.m_PosA > P.m_PosC ? "CAB" : "ABC");
-		Pf(g_fcluster_tsv, "M\t%u\t%.2f\t%s\t%s\n",
-		  OrderIndex, Score, ConsSeq.c_str(), ABC);
+		Pf(g_fcluster_tsv, "M\t%u\t%.2f\t%s\t%s\t%s\n",
+		  OrderIndex, Score, ConsSeq.c_str(), ABC, Label);
 		WriteFasta(P);
 		}
 	}

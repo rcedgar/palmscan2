@@ -1341,8 +1341,10 @@ void PDBChain::GetRange(uint Lo, uint Hi, PDBChain &Chain) const
 		for (uint i = 0; i < 3; ++i)
 			{
 			uint Pos = m_MotifPosVec[i];
-			asserta(Pos >= Lo);
-			Chain.m_MotifPosVec.push_back(Pos - Lo);
+			if (Pos >= Lo)
+				Chain.m_MotifPosVec.push_back(Pos - Lo);
+			else
+				Chain.m_MotifPosVec.push_back(UINT_MAX);
 			}
 		asserta(SIZE(Chain.m_MotifPosVec) == 3);
 		}

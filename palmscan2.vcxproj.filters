@@ -500,6 +500,12 @@
     <ClCompile Include="palmprint_pssms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="search3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="writepml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
