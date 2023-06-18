@@ -22,6 +22,8 @@ uint StructProf::FindMofifD_Hueuristics() const
 	if (Hi1 >= L)
 		Hi1 = L - 1;
 	uint D1 = SearchDist(Pos_bG, Lo1, Hi1, true, 5.0, Dist1);
+	if (D1 == UINT_MAX)
+		return UINT_MAX;
 
 	double Dist2 = DBL_MAX;
 	uint Lo2 = D1;
@@ -29,7 +31,7 @@ uint StructProf::FindMofifD_Hueuristics() const
 	if (Hi2 >= L)
 		Hi2 = L - 1;
 	uint D2 = SearchDist(Pos_bG, Lo2, Hi2, false, 5.0, Dist2, true);
-	if (D2 < 3)
+	if (D2 == UINT_MAX || D2 < 3)
 		return UINT_MAX;
 
 	uint CN = GetCavityNumber(D2);

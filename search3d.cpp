@@ -32,6 +32,12 @@ static void WriteSubChain(const PDBChain &Chain)
 		HiPos = Chain.GetSeqLength() - 1;
 		}
 
+	if (LoPos >= HiPos)
+		return;
+	uint Len = HiPos - LoPos + 1;
+	if (Len < 100)
+		return;
+
 	PDBChain SubChain;
 	Chain.GetRange(LoPos, HiPos, SubChain);
 	SubChain.ToPDB(opt_subchain);
