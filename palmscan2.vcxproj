@@ -300,6 +300,7 @@
     <ClCompile Include="distmx.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="findcavity.cpp" />
+    <ClCompile Include="firstchain_pssms.cpp" />
     <ClCompile Include="gspalign.cpp" />
     <ClCompile Include="gspaligner.cpp" />
     <ClCompile Include="gsprof.cpp" />

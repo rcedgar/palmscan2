@@ -260,23 +260,26 @@ void CMPSearcher::CheckHit(uint Ad, uint Bg, uint Cd, double Score)
 	m_Scores.push_back(Score);
 	}
 
-double CMPSearcher::GetScoreA(const PDBChain &Chain, uint PosA) const
+double CMPSearcher::GetScoreA(const PDBChain &Chain, uint PosA, bool CheckLetter) const
 	{
-	asserta(Chain.m_Seq[PosA+3] == 'D');
+	if (CheckLetter)
+		asserta(Chain.m_Seq[PosA+3] == 'D');
 	double Score = GetScore(Chain, PosA, AIX, AL);
 	return Score;
 	}
 
-double CMPSearcher::GetScoreB(const PDBChain &Chain, uint PosB) const
+double CMPSearcher::GetScoreB(const PDBChain &Chain, uint PosB, bool CheckLetter) const
 	{
-	asserta(Chain.m_Seq[PosB+1] == 'G');
+	if (CheckLetter)
+		asserta(Chain.m_Seq[PosB+1] == 'G');
 	double Score = GetScore(Chain, PosB, BIX, BL);
 	return Score;
 	}
 
-double CMPSearcher::GetScoreC(const PDBChain &Chain, uint PosC) const
+double CMPSearcher::GetScoreC(const PDBChain &Chain, uint PosC, bool CheckLetter) const
 	{
-	asserta(Chain.m_Seq[PosC+3] == 'D');
+	if (CheckLetter)
+		asserta(Chain.m_Seq[PosC+3] == 'D');
 	double Score = GetScore(Chain, PosC, CIX, CL);
 	return Score;
 	}

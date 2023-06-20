@@ -20,9 +20,7 @@ void PDBChain::GetPalmCore(PDBChain &PC) const
 	GetPalmCoreCoords(PosA, PosC, L, Lo, Hi);
 
 	PDBChain Trunc;
-	GetRange(Lo, Hi, Trunc);
-//	Trunc.GetTriFormChain_MotifCoords(PC);
-	Trunc.GetTriFormChain_DGD(PC);
+	GetRange(Lo, Hi, PC);
 
 	uint PC_PosA = PosA - Lo;
 	uint PC_PosB = PosB - Lo;

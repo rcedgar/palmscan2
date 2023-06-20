@@ -852,7 +852,7 @@ void PDBChain::GetTriFormChain_DGD(PDBChain &XChain) const
 	GetTriForm(DGDCoords, t, R);
 	GetTriFormChain_tR(t, R, XChain);
 
-#if 1
+#if 0
 	{
 	uint PosA = m_MotifPosVec[A];
 	uint PosB = m_MotifPosVec[B];
@@ -1170,7 +1170,12 @@ bool PDBChain::IsATOMLine(const string &Line)
 	if (strncmp(Line.c_str(), "ATOM  ", 6) == 0)
 		return true;
 	if (strncmp(Line.c_str(), "HETATM", 6) == 0)
-		return true;
+		{
+		if (optset_delete_hetatm)
+			return false;
+		else
+			return true;
+		}
 	return false;
 	}
 

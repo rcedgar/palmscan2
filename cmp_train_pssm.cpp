@@ -90,9 +90,9 @@ static void Write1(const char *Method, const PDBChain &Q,
 		return;
 		}
 
-	double ScoreA = CS.GetScoreA(Q, APos);
-	double ScoreB = CS.GetScoreB(Q, BPos);
-	double ScoreC = CS.GetScoreC(Q, CPos);
+	double ScoreA = CS.GetScoreA(Q, APos, false);
+	double ScoreB = CS.GetScoreB(Q, BPos, false);
+	double ScoreC = CS.GetScoreC(Q, CPos, false);
 
 	double ScoreAB = CS.GetScoreAB(Q, APos, BPos);
 	double ScoreBC = CS.GetScoreBC(Q, BPos, CPos);

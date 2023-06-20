@@ -59,9 +59,9 @@ public:
 
 	double GetScore3(const PDBChain &Chain,
 	  uint PosA, uint PosB, uint PosC) const;
-	double GetScoreA(const PDBChain &Chain, uint PosA) const;
-	double GetScoreB(const PDBChain &Chain, uint PosB) const;
-	double GetScoreC(const PDBChain &Chain, uint PosC) const;
+	double GetScoreA(const PDBChain &Chain, uint PosA, bool CheckLetter = true) const;
+	double GetScoreB(const PDBChain &Chain, uint PosB, bool CheckLetter = true) const;
+	double GetScoreC(const PDBChain &Chain, uint PosC, bool CheckLetter = true) const;
 	double GetScoreAB(const PDBChain &Chain, uint PosA, uint PosB) const;
 	double GetScoreBC(const PDBChain &Chain, uint PosB, uint PosC) const;
 	double GetScoreAC(const PDBChain &Chain, uint PosA, uint PosC) const;

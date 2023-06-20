@@ -506,6 +506,9 @@
     <ClCompile Include="writepml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="firstchain_pssms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

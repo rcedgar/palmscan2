@@ -49,11 +49,11 @@ void cmd_palmcore_pssms()
 		uint APos = RS.GetMotifPos(A);
 		uint BPos = RS.GetMotifPos(B);
 		uint CPos = RS.GetMotifPos(C);
-		if (CPos < APos)
-			{
-			++PermutedCount;
-			continue;
-			}
+		//if (CPos < APos)
+		//	{
+		//	++PermutedCount;
+		//	continue;
+		//	}
 
 		++ConvertedCount;
 		Chain.SetMotifPosVec(APos, BPos, CPos);
@@ -67,6 +67,6 @@ void cmd_palmcore_pssms()
 		}
 
 	ProgressLog("%u chains converted\n", ConvertedCount);
-	if (PermutedCount > 0)
-		Warning("%u permuted domains skipped", PermutedCount);
+	//if (PermutedCount > 0)
+	//	Warning("%u permuted domains skipped", PermutedCount);
 	}
