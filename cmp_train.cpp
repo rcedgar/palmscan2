@@ -49,15 +49,15 @@ void CMP::FinalizeTrain()
 	{
 	for (uint i = 0; i < PPSPL; ++i)
 		{
-		m_RefMeans[i][i] = 0;
+		m_MeanDistMx[i][i] = 0;
 		m_StdDevs[i][i] = 0;
 		for (uint j = 0; j < i; ++j)
 			{
 			double Mean, StdDev;
 			GetMeanStdDev(i, j, Mean, StdDev);
 
-			m_RefMeans[i][j] = Mean;
-			m_RefMeans[j][i] = Mean;
+			m_MeanDistMx[i][j] = Mean;
+			m_MeanDistMx[j][i] = Mean;
 
 			m_StdDevs[i][j] = StdDev;
 			m_StdDevs[j][i] = StdDev;
@@ -77,15 +77,6 @@ void CMP::TrainChain(const PDBChain &Chain,
 
 	m_RefLabels.push_back(Chain.m_Label);
 	m_DistMxVec.push_back(DistMx);
-	}
-
-void CMP::ToDBFile(const string &FileName) const
-	{
-	if (FileName == "")
-		return;
-	FILE *f = CreateStdioFile(FileName);
-
-	CloseStdioFile(f);
 	}
 
 static void Train(ChainReader &CR,
@@ -430,7 +421,7 @@ void cmd_cmp_train()
 	CMPSearcher CS;
 	CR.Clear();
 	CR.Open(QueryFN);
-	CS.m_DistMx = &Prof.m_RefMeans;
+	CS.m_DistMx = &Prof.m_MeanDistMx;
 	CS.m_StdDevs = &Prof.m_StdDevs;
 	Test(CR, Labels, LabelToIndex, MotifCoordsVec, CS);
 	}

@@ -13,9 +13,11 @@ class CMP
 	{
 public:
 	string m_Label;
-	vector<string> m_RefLabels;
-	vector<vector<double> > m_RefMeans;
+	vector<vector<double> > m_MeanDistMx;
 	vector<vector<double> > m_StdDevs;
+
+// Training only
+	vector<string> m_RefLabels;
 	vector<vector<vector<double> > > m_DistMxVec;
 
 public:
@@ -27,14 +29,14 @@ public:
 	void Clear()
 		{
 		m_Label.clear();
-		m_RefMeans.clear();
+		m_MeanDistMx.clear();
 		m_StdDevs.clear();
-		m_RefMeans.resize(PPSPL);
+		m_MeanDistMx.resize(PPSPL);
 		m_StdDevs.resize(PPSPL);
 		m_RefLabels.clear();
 		for (uint i = 0; i < PPSPL; ++i)
 			{
-			m_RefMeans[i].resize(PPSPL, DBL_MAX);
+			m_MeanDistMx[i].resize(PPSPL, DBL_MAX);
 			m_StdDevs[i].resize(PPSPL, DBL_MAX);
 			}
 		}
@@ -69,7 +71,6 @@ public:
 	  vector<vector<double> > &DistMx);
 	void GetMeanStdDev(uint i, uint j,
 	  double &Mean, double &StdDev) const;
-	void ToDBFile(const string &FileName) const;
 
 public:
 	static char GetMotifChar(uint Ix);

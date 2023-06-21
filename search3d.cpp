@@ -125,13 +125,15 @@ static void WriteStructProfPos(FILE *f, const StructProf &SP, uint Pos)
 
 static void WriteStructProfPosTsv(const StructProf &SP, uint MinPos, uint MaxPos)
 	{
-	if (g_ftsv == 0)
-		return;
+	Die("WriteStructProfPosTsv, need new output option");
+	//if (g_ftsv == 0)
+	//	return;
 	for (uint Pos = MinPos; Pos <= MaxPos; ++Pos)
 		WriteStructProfPos(g_ftsv, SP, Pos);
 	}
 
-static bool DoSearch3D(const string &PDBFileName, CMPSearcher &CS,  PDBChain &Chain)
+static bool DoSearch3D(const string &PDBFileName, 
+  CMPSearcher &CS,  PDBChain &Chain)
 	{
 	const uint L = Chain.GetSeqLength();
 	uint MinPos = (g_APos < 150 ? 0 : g_APos - 150);
@@ -148,8 +150,8 @@ static bool DoSearch3D(const string &PDBFileName, CMPSearcher &CS,  PDBChain &Ch
 	g_F2Pos = SP.FindMofifF2_Hueuristics(g_APos);
 
 	SP.WriteGSProf(g_fgsprof_out);
-	SP.WriteMotifsTsv(g_fmotifs);
-	WriteStructProfPosTsv(SP, MinPos, MaxPos);
+	SP.WriteTsv(g_ftsv);
+	// WriteStructProfPosTsv(SP, MinPos, MaxPos);
 	WritePML(Chain, PDBFileName);
 	WriteSubChain(Chain);
 

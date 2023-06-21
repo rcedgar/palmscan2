@@ -239,7 +239,7 @@ void StructProf::WriteMotifTsv(FILE *f, uint Pos, uint n) const
 	return;
 	}
 
-void StructProf::WriteMotifsTsv(FILE *f) const
+void StructProf::WriteTsv(FILE *f) const
 	{
 	if (f == 0)
 		return;

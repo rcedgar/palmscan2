@@ -10,6 +10,8 @@
 
 static uint g_DoneCount;
 static uint g_HitCount;
+static uint g_SameCount;
+static uint g_DiffCount;
 
 static double g_MinScoreA = DBL_MAX;
 static double g_MinScoreB = DBL_MAX;
@@ -90,6 +92,11 @@ static void Write1(const char *Method, const PDBChain &Q,
 		return;
 		}
 
+	string sA, sB, sC;
+	Q.GetSubSeq(APos, AL, sA);
+	Q.GetSubSeq(BPos, BL, sB);
+	Q.GetSubSeq(CPos, CL, sC);
+
 	double ScoreA = CS.GetScoreA(Q, APos, false);
 	double ScoreB = CS.GetScoreB(Q, BPos, false);
 	double ScoreC = CS.GetScoreC(Q, CPos, false);
@@ -131,7 +138,10 @@ static void Write1(const char *Method, const PDBChain &Q,
 	Log("  %6.4f", ScoreBC);
 	Log("  %6.4f", ScoreAC);
 	Log("  %s", Method);
-	Log("  >%s\n", Q.m_Label.c_str());
+	Log("  >%s", Q.m_Label.c_str());
+	Log("   A:%s", sA.c_str());
+	Log(" B:%s", sB.c_str());
+	Log(" C:%s\n", sC.c_str());
 	}
 
 static void Test(ChainReader &CR, RdRpSearcher &RS, CMPSearcher &CS)
@@ -159,12 +169,13 @@ static void Test(ChainReader &CR, RdRpSearcher &RS, CMPSearcher &CS)
 		if (!Ok)
 			break;
 
-		if (++g_DoneCount%100 == 0)
+		++g_DoneCount;
+		if (g_DoneCount%100 == 0)
 			{
 			string sPct;
 			CR.GetStrPctDone(sPct);
-			Progress("Test %s%% done, %u / %u hits\r",
-			  sPct.c_str(), g_HitCount, g_DoneCount);
+			Progress("Test %s%% done, %u / %u hits, %u diff\r",
+			  sPct.c_str(), g_HitCount, g_DoneCount, g_DiffCount);
 			}
 
 		const string &QSeq = Q.m_Seq;
@@ -176,28 +187,38 @@ static void Test(ChainReader &CR, RdRpSearcher &RS, CMPSearcher &CS)
 		RS.Search(QLabel, QSeq);
 		RS.WriteOutput();
 
-		APos_RS = RS.GetMotifPos(0);
-		BPos_RS = RS.GetMotifPos(1);
-		CPos_RS = RS.GetMotifPos(2);
-		Write1("PSSM", Q, CS, APos_RS, BPos_RS, CPos_RS);
-
 		uint APos_PS = UINT_MAX;
 		uint BPos_PS = UINT_MAX;
 		uint CPos_PS = UINT_MAX;
 		CS.Search(Q);
 		CS.GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
-		const char *Method = "CMP";
-		if (APos_PS == APos_RS
-			&& BPos_PS == BPos_RS
-			&& CPos_PS == CPos_RS)
-			Method = "SAME";
-		else
-			Method = "*DIF";
-		Write1(Method, Q, CS, APos_PS, BPos_PS, CPos_PS);
 
 		if (APos_PS != UINT_MAX || APos_RS != UINT_MAX)
 			++g_HitCount;
-			Log("\n");
+
+		APos_RS = RS.GetMotifPos(0);
+		BPos_RS = RS.GetMotifPos(1);
+		CPos_RS = RS.GetMotifPos(2);
+
+		const char *CmpStr = "CMP";
+		if (APos_PS == APos_RS
+			&& BPos_PS == BPos_RS
+			&& CPos_PS == CPos_RS)
+			{
+			++g_SameCount;
+			CmpStr = "SAME";
+			continue;
+			}
+		else
+			{
+			++g_DiffCount;
+			CmpStr = "*DIF";
+			}
+
+		Write1("PSSM", Q, CS, APos_RS, BPos_RS, CPos_RS);
+		Write1(CmpStr, Q, CS, APos_PS, BPos_PS, CPos_PS);
+
+		Log("\n");
 		}
 
 	Log("\n");
@@ -216,6 +237,8 @@ static void Test(ChainReader &CR, RdRpSearcher &RS, CMPSearcher &CS)
 		Log("  Minimum\n");
 		}
 
+	Log("%u / %u hits, %u SAME count, %u DIFF count\n",
+	  g_HitCount, g_DoneCount, g_SameCount, g_DiffCount);
 	Progress("Test 100.0%% done, %u / %u hits\n", g_HitCount, g_DoneCount);
 	}
 
@@ -241,7 +264,7 @@ void cmd_cmp_train_pssm()
 	CR.Open(QueryFN);
 
 	CMPSearcher CS;
-	CS.m_DistMx = &Prof.m_RefMeans;
+	CS.m_DistMx = &Prof.m_MeanDistMx;
 	CS.m_StdDevs = &Prof.m_StdDevs;
 
 	CR.Clear();

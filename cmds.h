@@ -80,5 +80,6 @@ C(stocks2pssms)
 C(cluster_ppm)
 C(triform)
 C(firstchain_pssms)
+C(shapes_train)
 
 #undef C

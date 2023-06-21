@@ -84,13 +84,13 @@ void CMP::ToFile(const string &FileName) const
 		fprintf(f, "\t.\n");
 	else
 		fprintf(f, "\t%s\n", m_Label.c_str());
-	MxToFile(f, "mean", m_RefMeans);
+	MxToFile(f, "mean", m_MeanDistMx);
 	MxToFile(f, "stddev", m_StdDevs);
-	for (uint i = 0; i < N; ++i)
-		{
-		string Name = "ref." + m_RefLabels[i];
-		MxToFile(f, Name, m_DistMxVec[i]);
-		}
+	//for (uint i = 0; i < N; ++i)
+	//	{
+	//	string Name = "ref." + m_RefLabels[i];
+	//	MxToFile(f, Name, m_DistMxVec[i]);
+	//	}
 	CloseStdioFile(f);
 	}
 
@@ -142,19 +142,19 @@ void CMP::FromFile(FILE *f)
 	m_Label = Fields[2];
 
 	string Name;
-	MxFromFile(f, Name, m_RefMeans);
+	MxFromFile(f, Name, m_MeanDistMx);
 	asserta(Name == "mean");
 
 	MxFromFile(f, Name, m_StdDevs);
 	asserta(Name == "stddev");
 
-	m_DistMxVec.resize(N);
-	for (uint i = 0; i < N; ++i)
-		{
-		MxFromFile(f, Name, m_DistMxVec[i]);
-		asserta(Name.substr(0, 4) == "ref.");
-		m_RefLabels.push_back(Name.substr(4, string::npos));
-		}
+	//m_DistMxVec.resize(N);
+	//for (uint i = 0; i < N; ++i)
+	//	{
+	//	MxFromFile(f, Name, m_DistMxVec[i]);
+	//	asserta(Name.substr(0, 4) == "ref.");
+	//	m_RefLabels.push_back(Name.substr(4, string::npos));
+	//	}
 	}
 
 void CMP::FromFile(const string &FileName)

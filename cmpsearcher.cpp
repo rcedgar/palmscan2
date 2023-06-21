@@ -39,7 +39,7 @@ void CMPSearcher::SetProfRef(const CMP &Prof, uint RefIndex)
 
 void CMPSearcher::SetProf(const CMP &Prof)
 	{
-	m_DistMx = &Prof.m_RefMeans;
+	m_DistMx = &Prof.m_MeanDistMx;
 	m_StdDevs = &Prof.m_StdDevs;
 	}
 

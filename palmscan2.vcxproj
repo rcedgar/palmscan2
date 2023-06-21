@@ -390,6 +390,8 @@
     <ClCompile Include="search3d_ppc.cpp" />
     <ClCompile Include="searchtriangle.cpp" />
     <ClCompile Include="segs.cpp" />
+    <ClCompile Include="shapes.cpp" />
+    <ClCompile Include="shapes_train.cpp" />
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="spher.cpp" />
     <ClCompile Include="split_train_test.cpp" />
@@ -432,6 +434,7 @@
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
     <ClInclude Include="pamerger.h" />
+    <ClInclude Include="shapes.h" />
     <ClInclude Include="stock.h" />
     <ClInclude Include="xprof.h" />
     <ClCompile Include="xprofdata.cpp" />

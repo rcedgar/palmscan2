@@ -498,6 +498,12 @@ bool PDBChain::GetFieldsFromResidueATOMLines(const vector<string> &Lines,
 
 void PDBChain::GetSubSeq(uint Pos, uint n, string &s) const
 	{
+	if (Pos == UINT_MAX)
+		{
+		s = ".";
+		return;
+		}
+
 	s.clear();
 	size_t L = m_Seq.size();
 	asserta(Pos + n <= L);
