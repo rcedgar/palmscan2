@@ -44,7 +44,7 @@ void cmd_hse_cmp()
 		const string &Label = Chain.m_Label;
 		CS.Search(Chain);
 		uint APos, BPos, CPos;
-		double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
+		double PalmScore = CS.GetPosABC(APos, BPos, CPos);
 		if (PalmScore == 0)
 			continue;
 

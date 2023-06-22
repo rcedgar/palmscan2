@@ -81,5 +81,6 @@ C(cluster_ppm)
 C(triform)
 C(firstchain_pssms)
 C(shapes_train)
+C(shapes_search)
 
 #undef C

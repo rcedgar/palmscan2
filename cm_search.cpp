@@ -41,7 +41,7 @@ static void Thread(ChainReader &CR)
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
 		double PalmScore = DBL_MAX;
-		uint RefIndex = CS.GetPSSMStarts(APos, BPos, CPos, PalmScore);
+		uint RefIndex = CS.GetPosABC(APos, BPos, CPos, PalmScore);
 		if (RefIndex == UINT_MAX)
 			continue;
 		++g_HitCount;

@@ -38,7 +38,7 @@ public:
 	void Search_CAB(const PDBChain &Query);
 	double SearchRefs(const PDBChain &Query, const CMP &Prof,
 	  uint &PosA, uint &PosB, uint &PosC, string &BestRefLabel);
-	double GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const;
+	double GetPosABC(uint &PosA, uint &PosB, uint &PosC) const;
 
 	void SearchAd(uint AdLo, uint AdHi, vector<uint> &PosVec);
 	void SearchBg(uint BgLo, uint BgHi, vector<uint> &PosVec);

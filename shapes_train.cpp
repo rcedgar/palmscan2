@@ -106,5 +106,5 @@ void cmd_shapes_train()
 	Shapes S;
 	S.Init(MotifNames, MotifLengths);
 	S.Train(Chains2, MotifSeqsVec2);
-	ProgressLog("Done.\n");
+	S.ToFile(opt_output);
 	}

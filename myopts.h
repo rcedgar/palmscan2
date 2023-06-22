@@ -29,6 +29,7 @@ STR_OPT(test_pssms)
 STR_OPT(ppp)
 STR_OPT(tree)
 STR_OPT(splitb)
+STR_OPT(shapes)
 
 STR_OPT(train_cal)
 STR_OPT(test_cal)

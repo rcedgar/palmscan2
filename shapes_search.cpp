@@ -5,16 +5,19 @@
 #include "outputfiles.h"
 #include "chainreader.h"
 #include "cmpsearcher.h"
+#include "shapesearcher.h"
 #include <time.h>
 
 static uint g_DoneCount;
 static uint g_HitCount;
 
-static void Thread(ChainReader &CR, const CMP &Prof)
+static void Thread(ChainReader &CR, const Shapes &S, const CMP &Prof)
 	{
 	CMPSearcher CS;
+	ShapeSearcher SS;
 	PDBChain Q;
 	CS.SetProf(Prof);
+	SS.Init(S);
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
@@ -37,17 +40,33 @@ static void Thread(ChainReader &CR, const CMP &Prof)
 		uint APos = UINT_MAX;
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
-		string RefLabel = ".";
-		double PalmScore = 0;
-		if (optset_refs)
-			PalmScore = CS.SearchRefs(Q, Prof, APos, BPos, CPos, RefLabel);
-		else
-			{
-			CS.Search(Q);
-			PalmScore = CS.GetPosABC(APos, BPos, CPos);
-			}
+		CS.Search(Q);
+		double PalmScore = CS.GetPosABC(APos, BPos, CPos);
 		if (PalmScore == 0)
 			continue;
+		vector<uint> PosVec;
+		PosVec.push_back(UINT_MAX); // F
+		PosVec.push_back(APos);
+		PosVec.push_back(BPos);
+		PosVec.push_back(CPos);
+		PosVec.push_back(UINT_MAX); // D
+		PosVec.push_back(UINT_MAX); // E
+		SS.Search(Q, APos, BPos, CPos);
+#if 0
+		{
+		uint MinLo, MaxHi;
+		uint QL = Q.GetSeqLength();
+		Log("\n");
+		Log(">%s\n", Q.m_Label.c_str());
+		Log("A=%u B=%u C=%u QL=%u\n", APos, BPos, CPos, QL);
+		for (uint ShapeIndex = 0; ShapeIndex < 6; ++ShapeIndex)
+			{
+			SS.GetMinLoMaxHi(ShapeIndex, PosVec, MinLo, MaxHi);
+			Log(">> Shape %s  MinLo %5u  MaxHi  %5u\n",
+			  SS.GetShapeName(ShapeIndex), MinLo, MaxHi);
+			}
+		}
+#endif
 		++g_HitCount;
 
 		if (g_ftsv != 0)
@@ -82,23 +101,28 @@ static void Thread(ChainReader &CR, const CMP &Prof)
 			fprintf(g_ftsv, "\t%c(%.4f)", Gate, P_rdrp_gate);
 			fprintf(g_ftsv, "\t%3.3s(%.4f)", GDD.c_str(), P_rdrp_gdd);
 			fprintf(g_ftsv, "\t%s", (APos < CPos ? "ABC" : "CAB"));
-			fprintf(g_ftsv, "\t%s", RefLabel.c_str());
 			fprintf(g_ftsv, "\n");
 			}
 		}
 	}
 
-void cmd_cmp_search()
+void cmd_shapes_search()
 	{
-	const string &QueryFN = opt_cmp_search;
+	const string &QueryFN = opt_shapes_search;
 
 	time_t tStart = time(0);
 	if (!optset_model)
 		Die("Must specify -model");
+	if (!optset_shapes)
+		Die("Must specify -shapes");
 	const string &ModelFileName = opt_model;
+	const string &ShapesFileName = opt_shapes;
 
 	CMP Prof;
 	Prof.FromFile(ModelFileName);
+
+	Shapes S;
+	S.FromFile(ShapesFileName);
 
 	ChainReader CR;
 	CR.Open(QueryFN);
@@ -106,7 +130,7 @@ void cmd_cmp_search()
 	uint ThreadCount = GetRequestedThreadCount();
 
 #pragma omp parallel num_threads(ThreadCount)
-	Thread(CR, Prof);
+	Thread(CR, S, Prof);
 	time_t tEnd = time(0);
 	uint Secs = uint(tEnd - tStart);
 	if (Secs <= 0)

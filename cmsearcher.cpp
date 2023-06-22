@@ -16,7 +16,7 @@ void CMSearcher::Search(PDBChain &Query)
 		m_PS.Search(Query);
 
 		uint PosA, PosB, PosC;
-		double Score = m_PS.GetPSSMStarts(PosA, PosB, PosC);
+		double Score = m_PS.GetPosABC(PosA, PosB, PosC);
 #if 1
 		const char *RefLabel = m_ProfDB.m_RefLabels[RefIndex].c_str();
 		Log("Score = %8.3f  %4u  %4u  %4u  >%s\n",
@@ -33,7 +33,7 @@ void CMSearcher::Search(PDBChain &Query)
 		}
 	}
 
-uint CMSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC,
+uint CMSearcher::GetPosABC(uint &PosA, uint &PosB, uint &PosC,
   double &Score) const
 	{
 	PosA = m_PosA;

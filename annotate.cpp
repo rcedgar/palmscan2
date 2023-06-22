@@ -38,7 +38,7 @@ void cmd_annotate()
 		uint APos = UINT_MAX;
 		uint BPos = UINT_MAX;
 		uint CPos = UINT_MAX;
-		double PalmScore = CS.GetPSSMStarts(APos, BPos, CPos);
+		double PalmScore = CS.GetPosABC(APos, BPos, CPos);
 		if (PalmScore <= 0)
 			continue;
 

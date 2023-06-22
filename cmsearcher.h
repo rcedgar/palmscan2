@@ -34,6 +34,6 @@ public:
 		}
 
 	void Search(PDBChain &Query);
-	uint GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC,
+	uint GetPosABC(uint &PosA, uint &PosB, uint &PosC,
 	  double &Score) const;
 	};

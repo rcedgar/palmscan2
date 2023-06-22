@@ -196,7 +196,7 @@ void CMPSearcher::Search_ABC(const PDBChain &Query)
 		}
 	}
 
-double CMPSearcher::GetPSSMStarts(uint &PosA, uint &PosB, uint &PosC) const
+double CMPSearcher::GetPosABC(uint &PosA, uint &PosB, uint &PosC) const
 	{
 	PosA = UINT_MAX;
 	PosB = UINT_MAX;
@@ -399,7 +399,7 @@ double CMPSearcher::SearchRefs(const PDBChain &Query, const CMP &Prof,
 		SetProfRef(Prof, RefIndex);
 		Search(Query);
 		uint PosA, PosB, PosC;
-		double Score = GetPSSMStarts(PosA, PosB, PosC);
+		double Score = GetPosABC(PosA, PosB, PosC);
 		if (Score > BestScore)
 			{
 			BestPosA = PosA;

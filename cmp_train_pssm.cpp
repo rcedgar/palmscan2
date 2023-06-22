@@ -191,7 +191,7 @@ static void Test(ChainReader &CR, RdRpSearcher &RS, CMPSearcher &CS)
 		uint BPos_PS = UINT_MAX;
 		uint CPos_PS = UINT_MAX;
 		CS.Search(Q);
-		CS.GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
+		CS.GetPosABC(APos_PS, BPos_PS, CPos_PS);
 
 		if (APos_PS != UINT_MAX || APos_RS != UINT_MAX)
 			++g_HitCount;

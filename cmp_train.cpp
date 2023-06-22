@@ -305,7 +305,7 @@ static void Test(ChainReader &CR,
 		uint BPos_PS = UINT_MAX;
 		uint CPos_PS = UINT_MAX;
 		CS.Search(Q);
-		CS.GetPSSMStarts(APos_PS, BPos_PS, CPos_PS);
+		CS.GetPosABC(APos_PS, BPos_PS, CPos_PS);
 		const char *Method = "???";
 		if (APos_PS == APos_Train
 			&& BPos_PS == BPos_Train

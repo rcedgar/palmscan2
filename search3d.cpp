@@ -189,7 +189,7 @@ static void Search3D(const string &InputFN)
 		g_APos = UINT_MAX;
 		g_BPos = UINT_MAX;
 		g_CPos = UINT_MAX;
-		double PalmScore = CS.GetPSSMStarts(g_APos, g_BPos, g_CPos);
+		double PalmScore = CS.GetPosABC(g_APos, g_BPos, g_CPos);
 		if (PalmScore <= 0)
 			continue;
 
