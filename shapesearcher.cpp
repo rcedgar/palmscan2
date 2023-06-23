@@ -1,7 +1,7 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 
-void ShapeSearcher::Search(const PDBChain &Query,
+void ShapeSearcher::SetQuery(const PDBChain &Query,
   uint PosA, uint PosB, uint PosC)
 	{
 	ClearSearch();
@@ -118,13 +118,20 @@ double ShapeSearcher::GetScoreShapePair(uint ShapeIndex1, uint ShapeIndex2,
 	uint QL = GetQL();
 	asserta(Pos1 + L1 <= QL);
 	asserta(Pos2 + L2 <= QL);
+	uint n = 0;
 	for (uint Offset1 = 0; Offset1 < L1; ++Offset1)
 		{
-		for (uint Offset2 = 0; Offset2 < L2; ++Offset2)
+		uint StartOffset2 = (ShapeIndex1 == ShapeIndex2 ? Offset1 + 1 : 0);
+		for (uint Offset2 = StartOffset2; Offset2 < L2; ++Offset2)
+			{
 			Sum += GetScoreResiduePair(ShapeIndex1, ShapeIndex2,
 			  Pos1, Pos2, Offset1, Offset2);
+			++n;
+			}
 		}
-	return Sum;
+	assert(n > 0);
+	double Score = Sum/n;
+	return Score;
 	}
 
 double ShapeSearcher::GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
@@ -134,11 +141,19 @@ double ShapeSearcher::GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
 	double XS = (Diag ? 1.5 : 2);
 	const PDBChain &Query = *m_Query;
 	double Observed_d = Query.GetDist(Pos1+Offset1, Pos2+Offset2);
+	Observed_d = fabs(Observed_d);
 	double Mu = GetMeanDist3(ShapeIndex1, ShapeIndex2, Offset1, Offset2);
+	Mu = fabs(Mu);
 	double Sigma = GetStdDev3(ShapeIndex1, ShapeIndex2, Offset1, Offset2);
 	double y = GetNormal(Mu, XS*Sigma, Observed_d);
 	double Max = GetNormal(Mu, XS*Sigma, Mu);
 	double Score = y/Max;
+	return Score;
+	}
+
+double ShapeSearcher::GetSelfScore(uint ShapeIndex, uint Pos) const
+	{
+	double Score = GetScoreShapePair(ShapeIndex, ShapeIndex, Pos, Pos);
 	return Score;
 	}
 
@@ -160,4 +175,39 @@ double ShapeSearcher::GetScore(uint ShapeIndex, uint Pos,
 	asserta(n > 0);
 	double Score = Sum/n;
 	return Score;
+	}
+
+void ShapeSearcher::SearchOneShapeSelf(uint ShapeIndex, double MinScore,
+  uint Lo, uint Hi, char Letter, uint LetterOffset,
+  vector<uint> &HitPosVec, vector<double> &HitScores) const
+	{
+	uint L = GetShapeLength(ShapeIndex);
+	uint QL = GetQL();
+	asserta(Hi + L <= QL);
+	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+		{
+		if (Letter != 0 && LetterOffset != UINT_MAX &&
+		  m_Query->m_Seq[Pos] != Letter)
+			continue;
+		double Score = GetSelfScore(ShapeIndex, Pos);
+		if (Score < MinScore)
+			continue;
+		uint HitCount = SIZE(HitPosVec);
+		if (HitCount > 0)
+			{
+			uint LastHit = HitPosVec[HitCount-1];
+			if (Pos - LastHit < L)
+				{
+				double LastScore = HitScores[HitCount-1];
+				if (Score > LastScore)
+					{
+					HitPosVec[HitCount-1] = Pos;
+					HitScores[HitCount-1] = Score;
+					}
+				continue;
+				}
+			}
+		HitPosVec.push_back(Pos);
+		HitScores.push_back(Score);
+		}
 	}

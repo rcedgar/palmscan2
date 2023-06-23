@@ -14,10 +14,12 @@ static uint g_HitCount;
 static void Thread(ChainReader &CR, const Shapes &S, const CMP &Prof)
 	{
 	CMPSearcher CS;
-	ShapeSearcher SS;
-	PDBChain Q;
 	CS.SetProf(Prof);
+
+	ShapeSearcher SS;
 	SS.Init(S);
+
+	PDBChain Q;
 	for (;;)
 		{
 		bool Ok = CR.GetNext(Q);
@@ -51,7 +53,7 @@ static void Thread(ChainReader &CR, const Shapes &S, const CMP &Prof)
 		PosVec.push_back(CPos);
 		PosVec.push_back(UINT_MAX); // D
 		PosVec.push_back(UINT_MAX); // E
-		SS.Search(Q, APos, BPos, CPos);
+		SS.SetQuery(Q, APos, BPos, CPos);
 #if 0
 		{
 		uint MinLo, MaxHi;

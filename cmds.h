@@ -82,5 +82,6 @@ C(triform)
 C(firstchain_pssms)
 C(shapes_train)
 C(shapes_search)
+C(shapes_train_score)
 
 #undef C

@@ -394,6 +394,7 @@
     <ClCompile Include="shapesearcher.cpp" />
     <ClCompile Include="shapes_train.cpp" />
     <ClCompile Include="shapes_search.cpp" />
+    <ClCompile Include="shapes_train_score.cpp" />
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="spher.cpp" />
     <ClCompile Include="split_train_test.cpp" />

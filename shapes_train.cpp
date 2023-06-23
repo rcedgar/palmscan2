@@ -2,7 +2,14 @@
 #include "shapes.h"
 #include <map>
 
-static void ReadMotifsFile(const string &FileName,
+/***
+shapes_train
+	Input: tsv file with shape sequences
+	Output: calculate and save contact map profile for
+	  all-vs-all shapes.
+***/
+
+void ReadMotifsFile(const string &FileName,
   vector<string> &ChainLabels,
   vector<string> &MotifNames, vector<uint> &MotifLengths,
   vector<vector<string> > &MotifSeqsVec)

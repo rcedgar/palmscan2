@@ -58,12 +58,18 @@ public:
 		}
 
 	void ClearSearch() {  }
-	void Search(const PDBChain &Query, uint PosA, uint PosB, uint PosC);
+	void SetQuery(const PDBChain &Query, uint PosA, uint PosB, uint PosC);
 	uint GetShapeCount() const { return m_ShapeCount; }
 	void GetMinLoMaxHi(uint ShapeIndex, const vector<uint> &PosVec,
 	   uint &MinLo, uint &MaxHi) const;
 	void GetLoHi(uint ShapeIndex, uint ShapeIndex2, 
 	  uint Pos2, uint &Lo, uint &Hi) const;
+
+	void SearchOneShapeSelf(uint ShapeIndex, double MinScore,
+	  uint Lo, uint Hi, char Letter, uint LetterOffset,
+	  vector<uint> &HitPosVec, vector<double> &HitScores) const;
+
+	double GetSelfScore(uint ShapeIndex, uint Pos) const;
 
 	double GetScore(uint ShapeIndex, uint Pos,
 	  const vector<uint> &OtherShapeIndexes) const;
