@@ -1,6 +1,26 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 
+#define TRACE	0
+
+void ShapeSearcher::Init(const Shapes &S)
+	{
+	m_Shapes = &S;
+	m_ShapeCount = S.GetShapeCount();
+	m_ShapeIndexA = UINT_MAX;
+	m_ShapeIndexB = UINT_MAX;
+	m_ShapeIndexC = UINT_MAX;
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		if (S.m_Names[i] == "A")
+			m_ShapeIndexA = i;
+		else if (S.m_Names[i] == "B")
+			m_ShapeIndexB = i;
+		else if (S.m_Names[i] == "C")
+			m_ShapeIndexC = i;
+		}
+	}
+
 void ShapeSearcher::SetQuery(const PDBChain &Query,
   uint PosA, uint PosB, uint PosC)
 	{
@@ -13,100 +33,43 @@ void ShapeSearcher::SetQuery(const PDBChain &Query,
 	m_PosC = PosC;
 	}
 
-void ShapeSearcher::GetLoHi(uint ShapeIndex, uint ShapeIndex2,
-  uint Pos2, uint &Lo, uint &Hi) const
+// dist = start_j - start_i
+void ShapeSearcher::GetDistRange(uint ShapeIndexi, uint ShapeIndexj,
+  uint &MinDist, uint &MaxDist) const
 	{
-	if (ShapeIndex == ShapeIndex2 && Pos2 != UINT_MAX)
+	asserta(ShapeIndexj > ShapeIndexi);
+
+	MinDist = 0;
+	MaxDist = 0;
+	for (uint ShapeIndex = ShapeIndexi; ShapeIndex < ShapeIndexj;
+	  ++ShapeIndex)
 		{
-		Lo = Pos2;
-		Hi = Pos2;
-		return;
+		MinDist += m_Shapes->m_MinNeighborDists[ShapeIndex];
+		MaxDist += m_Shapes->m_MaxNeighborDists[ShapeIndex];
 		}
-
-	Lo = UINT_MAX;
-	Hi = UINT_MAX;
-	if (Pos2 == UINT_MAX)
-		return;
-
-	const Shapes &S = *m_Shapes;
-
-	uint QL = GetQL();
-	double MeanDist = S.GetMeanDist2(ShapeIndex2, ShapeIndex);
-	double StdDev = S.GetStdDev2(ShapeIndex2, ShapeIndex);
-
-	double Var = m_Sigmas*StdDev;
-	double dLo = double(Pos2) + MeanDist - Var - 0.5;
-	double dHi = double(Pos2) + MeanDist + Var + 0.5;
-	Lo = (dLo < 0 ? 0 : uint(dLo));
-	if (Lo >= QL)
-		Lo = QL - 1;
-	Hi = uint(dHi);
-	if (Hi >= QL)
-		Hi = QL - 1;
-	if (Lo > Hi)
-		{
-		Lo = UINT_MAX;
-		Hi = UINT_MAX;
-		}
-#if 0
-	{
-	Log("%s  %s %u + { %+.3g +/- %.3g } = %u .. %u\n",
-	  GetShapeName(ShapeIndex),
-	  GetShapeName(ShapeIndex2),
-	  Pos2,
-	  MeanDist, StdDev,
-	  Lo, Hi);
-	}
-#endif
 	}
 
-void ShapeSearcher::GetMinLoMaxHi(uint ShapeIndex,
-  const vector<uint> &PosVec, uint &MinLo, uint &MaxHi) const
+double ShapeSearcher::GetScoreShapes(const vector<uint> &ShapeIndexes,
+  const vector<uint> &PosVec) const
 	{
-	uint ShapeCount = GetShapeCount();
-	asserta(SIZE(PosVec) == ShapeCount);
-	MinLo = UINT_MAX;
-	MaxHi = UINT_MAX;
-	uint Pos = PosVec[ShapeIndex];
-	if (Pos != UINT_MAX)
+	double Sum = 0;
+	const uint N = SIZE(ShapeIndexes);
+	if (N == 0)
+		return 0;
+	uint Pairs = 0;
+	for (uint i = 0; i < N; ++i)
 		{
-		MinLo = Pos;
-		MaxHi = Pos;
-		return;
-		}
-
-	uint FirstShapeIndex = UINT_MAX;
-	uint SecondShapeIndex = UINT_MAX;
-	for (uint ShapeIndex2 = 0; ShapeIndex2 < ShapeCount; ++ShapeIndex2)
-		{
-		uint Pos = PosVec[ShapeIndex2];
-		if (Pos == UINT_MAX)
-			continue;
-		if (ShapeIndex2 < ShapeIndex)
-			FirstShapeIndex = ShapeIndex2;
-		if (SecondShapeIndex == UINT_MAX && ShapeIndex2 > ShapeIndex)
+		uint ShapeIndexi = ShapeIndexes[i];
+		uint Posi = PosVec[i];
+		for (uint j = 0; j <= i; ++j)
 			{
-			SecondShapeIndex = ShapeIndex2;
-			break;
+			uint ShapeIndexj = ShapeIndexes[j];
+			uint Posj = PosVec[j];
+			Sum += GetScoreShapePair(ShapeIndexi, ShapeIndexj, Posi, Posj);
+			++Pairs;
 			}
 		}
-	if (FirstShapeIndex == UINT_MAX && SecondShapeIndex != UINT_MAX)
-		FirstShapeIndex = SecondShapeIndex;
-	if (FirstShapeIndex != UINT_MAX && SecondShapeIndex == UINT_MAX)
-		SecondShapeIndex = FirstShapeIndex;
-
-	if (FirstShapeIndex == UINT_MAX || SecondShapeIndex == UINT_MAX)
-		return;
-
-	uint FirstPos = PosVec[FirstShapeIndex];
-	asserta(FirstPos != UINT_MAX);
-	uint Hi;
-	GetLoHi(ShapeIndex, FirstShapeIndex, FirstPos, MinLo, Hi);
-
-	uint SecondPos = PosVec[FirstShapeIndex];
-	asserta(FirstPos != UINT_MAX);
-	uint Lo;
-	GetLoHi(ShapeIndex, SecondShapeIndex, FirstPos, Lo, MaxHi);
+	return Sum/Pairs;
 	}
 
 double ShapeSearcher::GetScoreShapePair(uint ShapeIndex1, uint ShapeIndex2,
@@ -177,17 +140,19 @@ double ShapeSearcher::GetScore(uint ShapeIndex, uint Pos,
 	return Score;
 	}
 
-void ShapeSearcher::SearchOneShapeSelf(uint ShapeIndex, double MinScore,
+void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
   uint Lo, uint Hi, char Letter, uint LetterOffset,
   vector<uint> &HitPosVec, vector<double> &HitScores) const
 	{
+	HitPosVec.clear();
+	HitScores.clear();
 	uint L = GetShapeLength(ShapeIndex);
 	uint QL = GetQL();
 	asserta(Hi + L <= QL);
 	for (uint Pos = Lo; Pos <= Hi; ++Pos)
 		{
 		if (Letter != 0 && LetterOffset != UINT_MAX &&
-		  m_Query->m_Seq[Pos] != Letter)
+		  m_Query->m_Seq[Pos+LetterOffset] != Letter)
 			continue;
 		double Score = GetSelfScore(ShapeIndex, Pos);
 		if (Score < MinScore)
@@ -210,4 +175,170 @@ void ShapeSearcher::SearchOneShapeSelf(uint ShapeIndex, double MinScore,
 		HitPosVec.push_back(Pos);
 		HitScores.push_back(Score);
 		}
+	}
+
+void ShapeSearcher::SearchShape(uint ShapeIndex, const vector<uint> &PosVec,
+  double MinScore, uint Lo, uint Hi, char Letter, uint LetterOffset,
+  vector<uint> &HitPosVec, vector<double> &HitScores) const
+	{
+	HitPosVec.clear();
+	HitScores.clear();
+	uint L = GetShapeLength(ShapeIndex);
+	uint QL = GetQL();
+	asserta(Hi + L <= QL);
+	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+		{
+		if (Letter != 0 && LetterOffset != UINT_MAX &&
+		  m_Query->m_Seq[Pos+LetterOffset] != Letter)
+			continue;
+		double Score = GetScore(ShapeIndex, Pos, PosVec);
+		if (Score < MinScore)
+			continue;
+		uint HitCount = SIZE(HitPosVec);
+		if (HitCount > 0)
+			{
+			uint LastHit = HitPosVec[HitCount-1];
+			if (Pos - LastHit < L)
+				{
+				double LastScore = HitScores[HitCount-1];
+				if (Score > LastScore)
+					{
+					HitPosVec[HitCount-1] = Pos;
+					HitScores[HitCount-1] = Score;
+					}
+				continue;
+				}
+			}
+		HitPosVec.push_back(Pos);
+		HitScores.push_back(Score);
+		}
+	}
+
+double ShapeSearcher::SearchABC(uint &TopPosA, uint &TopPosB, uint &TopPosC)
+	{
+	TopPosA = UINT_MAX;
+	TopPosB = UINT_MAX;
+	TopPosC = UINT_MAX;
+	if (m_ShapeIndexA == UINT_MAX ||
+	    m_ShapeIndexB == UINT_MAX ||
+		m_ShapeIndexC == UINT_MAX)
+		return 0;
+
+	uint QL = GetQL();
+	uint AL = GetShapeLength(m_ShapeIndexA);
+	uint BL = GetShapeLength(m_ShapeIndexB);
+	uint CL = GetShapeLength(m_ShapeIndexC);
+
+#if TRACE
+	Log("ShapeSearcher::SearchABC >%s QL=%u\n", m_Query->m_Label.c_str(), QL);
+#endif
+
+	double TopScore = 0;
+
+	uint MaxStartC = QL - CL;
+
+	uint MinDistAC, MaxDistAC;
+	GetDistRange(m_ShapeIndexA, m_ShapeIndexC, MinDistAC, MaxDistAC);
+
+	uint MinStartA = 0;
+	uint MaxStartA = MaxStartC - MinDistAC;
+
+	vector<uint> HitsA;
+	vector<double> ScoresA;
+	SearchShapeSelf(m_ShapeIndexA, m_MinScoreABC, MinStartA, MaxStartA,
+	  'D', 3, HitsA, ScoresA);
+	const uint NA = SIZE(HitsA);
+#if TRACE
+	Log("SearchShapeSelf(A, MinScore=%.2f, MinStartA=%u, MaxStartA=%u) %u hits\n",
+	  m_MinScoreABC, MinStartA, MaxStartA, NA);
+#endif
+
+	vector<uint> ABCIndexes;
+	ABCIndexes.push_back(m_ShapeIndexA);
+	ABCIndexes.push_back(m_ShapeIndexB);
+	ABCIndexes.push_back(m_ShapeIndexC);
+
+	for (uint ia = 0; ia < NA; ++ia)
+		{
+		uint PosA = HitsA[ia];
+		uint MinDistAB, MaxDistAB;
+		GetDistRange(m_ShapeIndexA, m_ShapeIndexB, MinDistAB, MaxDistAB);
+
+		uint MinStartB = PosA + MinDistAB;
+		if (MinStartB >= QL - BL - CL)
+			{
+#if TRACE
+			Log("PosA %u, MinStartB > QL - BL - CL\n", PosA);
+#endif
+			continue;
+			}
+		uint MaxStartB = PosA + MaxDistAB;
+		if (MaxStartB > QL - BL - CL)
+			MaxStartB = QL - BL - CL;
+
+		vector<uint> HitsB;
+		vector<double> ScoresB;
+		SearchShapeSelf(m_ShapeIndexB, m_MinScoreABC, MinStartB, MaxStartB,
+		  'G', 1, HitsB, ScoresB);
+		const uint NB = SIZE(HitsB);
+#if TRACE
+		Log("PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
+		  PosA, m_MinScoreABC, MinStartB, MaxStartB, NB);
+#endif
+
+		for (uint ib = 0; ib < NB; ++ib)
+			{
+			uint PosB = HitsB[ib];
+			uint MinDistBC, MaxDistBC;
+			GetDistRange(m_ShapeIndexB, m_ShapeIndexC, MinDistBC, MaxDistBC);
+
+			uint MinStartC = PosB + MinDistBC;
+			if (MinStartC >= QL - CL)
+				{
+#if TRACE
+				Log("PosB %u, MinStartC > QL - CL\n", PosB);
+#endif
+				continue;
+				}
+			uint MaxStartC = PosB + MaxDistBC;
+			if (MaxStartC > QL - CL)
+				MaxStartC = QL - CL;
+
+			vector<uint> HitsC;
+			vector<double> ScoresC;
+			SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC, MinStartC, MaxStartC,
+			  'D', 3, HitsC, ScoresC);
+			const uint NC = SIZE(HitsC);
+#if TRACE
+			Log("PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
+			  PosA, PosB, m_MinScoreABC, MinStartC, MaxStartC, NC);
+#endif
+			for (uint ic = 0; ic < NC; ++ic)
+				{
+				uint PosC = HitsC[ic];
+
+				vector<uint> PosVec;
+				PosVec.push_back(PosA);
+				PosVec.push_back(PosB);
+				PosVec.push_back(PosC);
+				double ScoreABC = GetScoreShapes(ABCIndexes, PosVec);
+#if TRACE
+				Log("PosC %u ScoreABC %.4f\n", PosC, ScoreABC);
+#endif
+
+				if (ScoreABC > TopScore)
+					{
+					TopScore = ScoreABC;
+					TopPosA = PosA;
+					TopPosB = PosB;
+					TopPosC = PosC;
+					}
+				}
+			}
+		}
+#if TRACE
+	Log("TopScore %.4f PosA,B,C %u,%u,%u\n",
+	  TopScore, TopPosA, TopPosB, TopPosC);
+#endif
+	return TopScore;
 	}

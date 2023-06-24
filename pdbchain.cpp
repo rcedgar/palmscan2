@@ -727,6 +727,41 @@ void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 	MotifCoords[C][Z] = m_Zs[PosC];
 	}
 
+void PDBChain::WriteSeqWithCoords(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	const uint L = GetSeqLength();
+	uint StartPos = 0;
+	for (;;)
+		{
+		uint EndPos = StartPos + 99;
+		if (EndPos >= L)
+			EndPos = L - 1;
+
+		fprintf(f, "\n");
+		for (uint Pos = StartPos; Pos <= EndPos; Pos += 10)
+			fprintf(f, "%-10u", Pos);
+		fprintf(f, "\n");
+		for (uint Pos = StartPos; Pos <= EndPos; ++Pos)
+			{
+			if (Pos%10 == 0)
+				fprintf(f, " ");
+			else
+				fprintf(f, "%u", Pos%10);
+			}
+		fprintf(f, "\n");
+		for (uint Pos = StartPos; Pos <= EndPos; ++Pos)
+			fprintf(f, "%c", m_Seq[Pos]);
+		fprintf(f, "\n");
+
+		StartPos = EndPos + 1;
+		if (StartPos >= L)
+		break;
+		}
+	fprintf(f, "\n");
+	}
+
 void PDBChain::SetMotifPosVec(uint PosA, uint PosB, uint PosC)
 	{
 	const uint L = GetSeqLength();

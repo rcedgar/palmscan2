@@ -8,15 +8,16 @@ typedef vector<vector<vector<vector<double> > > > t_Mx3;
 // Includes ABC
 class Shapes
 	{
+	const double m_MinContract = 0.9;
+	const double m_MaxExpand = 1.1;
+
 public:
 // [ShapeIndex]
 	vector<uint> m_Lengths;
 	vector<string> m_Names;
 
-// Pair-wise start distances in primary sequence
-//   [ShapeIndex1][ShapeIndex2]
-	t_Mx2 m_MeanDistMx2;
-	t_Mx2 m_StdDevMx2;
+	vector<uint> m_MinNeighborDists;
+	vector<uint> m_MaxNeighborDists;
 
 // Pair-wise residue distances in 3D
 //   [ShapeIndex1][ShapeIndex2][ResidueIndex1][ResidueIndex2}
@@ -28,8 +29,6 @@ public:
 		{
 		m_Names.clear();
 		m_Lengths.clear();
-		m_MeanDistMx2.clear();
-		m_StdDevMx2.clear();
 		m_MeanDistMx3.clear();
 		m_StdDevMx3.clear();
 		}
@@ -49,10 +48,10 @@ public:
 	void Mx3FromFile(FILE *f, const string &MxName, t_Mx3 &Mx) const;
 	void ToFile(const string &FileName) const;
 	void FromFile(const string &FileName);
-	double GetMeanDist2(uint ShapeIndex1, uint ShapeIndex2) const;
-	double GetStdDev2(uint ShapeIndex1, uint ShapeIndex2) const;
 	double GetMeanDist3(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Offset1, uint Offset2) const;
 	double GetStdDev3(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Offset1, uint Offset2) const;
+	void GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
+	  uint &MinDist, uint &MaxDist) const;
 	};

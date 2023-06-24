@@ -1,12 +1,6 @@
 #include "myutils.h"
 #include "shapes.h"
-
-/***
-ABC found by CMP.
-Two passes:
-	1. For each shape, find bext fit vs. ABC
-	2. For each shape, hold all other shapes fixed and re-optimize.
-***/
+#include "quarts.h"
 
 void Shapes::Init(const vector<string> &Names,
   const vector<uint> &Lengths)
@@ -65,6 +59,20 @@ void Shapes::TrainGetPosVec(const PDBChain &Chain, const vector<string> &Seqs,
 		}
 	}
 
+void Shapes::GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
+  uint &MinDist, uint &MaxDist) const
+	{
+	Quarts Q;
+	GetQuarts(NeighborDists, Q);
+	MinDist = uint(Q.Min*m_MinContract);
+	MaxDist = uint(Q.Max*m_MaxExpand);
+	//Log("%s .. %s  %u .. %u\n",
+	//  m_Names[ShapeIndex].c_str(),
+	//  m_Names[ShapeIndex+1].c_str(),
+	//  MinDist,
+	//  MaxDist);
+	}
+
 void Shapes::Train(const vector<PDBChain *> &Chains,
   const vector<vector<string> > &SeqsVec)
 	{
@@ -72,22 +80,56 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 	asserta(SIZE(SeqsVec) == ChainCount);
 	const uint ShapeCount = GetShapeCount();
 
-	InitMx2(m_MeanDistMx2);
-	InitMx2(m_StdDevMx2);
+	vector<vector<uint> > NeighborDistVec(ShapeCount-1);
+	for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
+		{
+		const PDBChain &Chain = *Chains[ChainIndex];
+		const vector<string> &Seqs = SeqsVec[ChainIndex];
+		vector<uint> PosVec;
+		TrainGetPosVec(Chain, Seqs, PosVec);
+		asserta(SIZE(PosVec) == ShapeCount);
+		for (uint ShapeIndex = 0; ShapeIndex + 1 < ShapeCount; ++ShapeIndex)
+			{
+			uint Pos = PosVec[ShapeIndex];
+			if (Pos == UINT_MAX)
+				continue;
+			uint NextPos = PosVec[ShapeIndex + 1];
+			if (NextPos == UINT_MAX)
+				continue;
+		// permuted?
+			if (NextPos <= Pos)
+				continue;
+			uint Dist = NextPos - Pos;
+			NeighborDistVec[ShapeIndex].push_back(Dist);
+			}
+		}
+
+	m_MinNeighborDists.clear();
+	m_MaxNeighborDists.clear();
+	for (uint ShapeIndex = 0; ShapeIndex + 1 < ShapeCount; ++ShapeIndex)
+		{
+		const vector<uint> &NeighborDists = NeighborDistVec[ShapeIndex];
+
+		uint MinDist, MaxDist;
+		GetMinMaxDist(ShapeIndex, NeighborDists, MinDist, MaxDist);
+
+		m_MinNeighborDists.push_back(MinDist);
+		m_MaxNeighborDists.push_back(MaxDist);
+		}
+	m_MinNeighborDists.push_back(0);
+	m_MaxNeighborDists.push_back(0);
 
 	InitMx3(m_MeanDistMx3);
 	InitMx3(m_StdDevMx3);
 
 	t_Mx2 CountMx;
-	t_Mx2 SumDistMx2;
 	InitMx2(CountMx);
-	InitMx2(SumDistMx2);
 
 	t_Mx3 SumDistMx3;
 	InitMx3(SumDistMx3);
 
 ////////////////////////////////////////////////////////////////////
-// Sums
+// Sums (3D)
 ////////////////////////////////////////////////////////////////////
 	for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 		{
@@ -111,9 +153,6 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 
 				CountMx[ShapeIndex1][ShapeIndex2] += 1;
 
-				double Dist2 = double(Pos2) - double(Pos1);
-				SumDistMx2[ShapeIndex1][ShapeIndex2] += Dist2;
-
 				for (uint Offset1 = 0; Offset1 < L1; ++Offset1)
 					{
 					uint SeqPos1 = Pos1 + Offset1;
@@ -129,7 +168,7 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 		}
 
 ////////////////////////////////////////////////////////////////////
-// Means
+// Means (3D)
 ////////////////////////////////////////////////////////////////////
 	for (uint ShapeIndex1 = 0; ShapeIndex1 < ShapeCount; ++ShapeIndex1)
 		{
@@ -141,9 +180,6 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 			double Count = CountMx[ShapeIndex1][ShapeIndex2];
 			if (Count == 0)
 				continue;
-
-			double MeanDist = SumDistMx2[ShapeIndex1][ShapeIndex2]/Count;
-			m_MeanDistMx2[ShapeIndex1][ShapeIndex2] = MeanDist;
 
 			for (uint Offset1 = 0; Offset1 < L1; ++Offset1)
 				{
@@ -159,11 +195,9 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 		}
 
 ////////////////////////////////////////////////////////////////////
-// Sum (x - mean)^2
+// Sum (x - mean)^2 (3D)
 ////////////////////////////////////////////////////////////////////
-	t_Mx2 SumDiffSquared2;
 	t_Mx3 SumDiffSquared3;
-	InitMx2(SumDiffSquared2);
 	InitMx3(SumDiffSquared3);
 	for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 		{
@@ -185,11 +219,6 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 					continue;
 				uint L2 = m_Lengths[ShapeIndex2];
 
-				double Dist2 = double(Pos2) - double(Pos1);
-				double MeanDist2 = m_MeanDistMx2[ShapeIndex1][ShapeIndex2];
-				double Diff = (Dist2 - MeanDist2);
-				SumDiffSquared2[ShapeIndex1][ShapeIndex2] += Diff*Diff;
-
 				for (uint Offset1 = 0; Offset1 < L1; ++Offset1)
 					{
 					uint SeqPos1 = Pos1 + Offset1;
@@ -209,7 +238,7 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 		}
 
 ////////////////////////////////////////////////////////////////////
-// Standard deviations
+// Standard deviations (3D)
 ////////////////////////////////////////////////////////////////////
 	for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 		{
@@ -227,10 +256,6 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 				double Count = CountMx[ShapeIndex1][ShapeIndex2];
 				if (Count == 0)
 					continue;
-
-				double Sum = SumDiffSquared2[ShapeIndex1][ShapeIndex2];
-				double StdDev = sqrt(Sum/Count);
-				m_StdDevMx2[ShapeIndex1][ShapeIndex2] = StdDev;
 
 				for (uint Offset1 = 0; Offset1 < L1; ++Offset1)
 					{
@@ -356,10 +381,12 @@ void Shapes::ToFile(const string &FileName) const
 	uint ShapeCount = GetShapeCount();
 	fprintf(f, "shapes\t%u\n", ShapeCount);
 	for (uint ShapeIndex = 0; ShapeIndex < ShapeCount; ++ShapeIndex)
-		fprintf(f, "%u\t%s\t%u\n",
-		  ShapeIndex, m_Names[ShapeIndex].c_str(), m_Lengths[ShapeIndex]);
-	Mx2ToFile(f, "MeanDistMx2", m_MeanDistMx2);
-	Mx2ToFile(f, "StdDevMx2", m_StdDevMx2);
+		fprintf(f, "%u\t%s\t%u\t%u\t%u\n",
+		  ShapeIndex, m_Names[ShapeIndex].c_str(),
+		  m_Lengths[ShapeIndex],
+		  m_MinNeighborDists[ShapeIndex],
+		  m_MaxNeighborDists[ShapeIndex]);
+
 	Mx3ToFile(f, "MeanDistMx3", m_MeanDistMx3);
 	Mx3ToFile(f, "StdDevMx3", m_StdDevMx3);
 	Pf(f, "//\n");
@@ -382,16 +409,18 @@ void Shapes::FromFile(const string &FileName)
 		bool Ok = ReadLineStdioFile(f, Line);
 		asserta(Ok);
 		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) == 3);
+		asserta(SIZE(Fields) == 5);
 		asserta(StrToUint(Fields[0]) == ShapeIndex);
 		const string &Name = Fields[1];
 		uint L = StrToUint(Fields[2]);
+		uint MinND = StrToUint(Fields[3]);
+		uint MaxND = StrToUint(Fields[4]);
 		m_Names.push_back(Name);
 		m_Lengths.push_back(L);
+		m_MinNeighborDists.push_back(MinND);
+		m_MaxNeighborDists.push_back(MaxND);
 		}
 
-	Mx2FromFile(f, "MeanDistMx2", m_MeanDistMx2);
-	Mx2FromFile(f, "StdDevMx2", m_StdDevMx2);
 	Mx3FromFile(f, "MeanDistMx3", m_MeanDistMx3);
 	Mx3FromFile(f, "StdDevMx3", m_StdDevMx3);
 
@@ -402,34 +431,25 @@ void Shapes::FromFile(const string &FileName)
 	CloseStdioFile(f);
 	}
 
-double Shapes::GetMeanDist2(uint ShapeIndex1, uint ShapeIndex2) const
-	{
-	if (ShapeIndex1 == ShapeIndex2)
-		return 0;
-	else if (ShapeIndex1 < ShapeIndex2)
-		{
-		double d = m_MeanDistMx2[ShapeIndex2][ShapeIndex1];
-		return -d;
-		}
-	else
-		{
-		assert(ShapeIndex1 > ShapeIndex2);
-		double d = m_MeanDistMx2[ShapeIndex1][ShapeIndex2];
-		return d;
-		}
-	}
-
 double Shapes::GetMeanDist3(uint ShapeIndex1, uint ShapeIndex2,
   uint Offset1, uint Offset2) const
 	{
 	if (ShapeIndex1 <= ShapeIndex2)
 		{
-		double d = m_MeanDistMx3[ShapeIndex2][ShapeIndex1][Offset1][Offset2];
+		assert(ShapeIndex2 < SIZE(m_MeanDistMx3));
+		assert(ShapeIndex1 < SIZE(m_MeanDistMx3[ShapeIndex2]));
+		assert(Offset2 < SIZE(m_MeanDistMx3[ShapeIndex2][ShapeIndex1]));
+		assert(Offset1 < SIZE(m_MeanDistMx3[ShapeIndex2][ShapeIndex1][Offset2]));
+		double d = m_MeanDistMx3[ShapeIndex2][ShapeIndex1][Offset2][Offset1];
 		return -d;
 		}
 	else
 		{
 		assert(ShapeIndex1 > ShapeIndex2);
+		assert(ShapeIndex1 < SIZE(m_MeanDistMx3));
+		assert(ShapeIndex2 < SIZE(m_MeanDistMx3[ShapeIndex1]));
+		assert(Offset1 < SIZE(m_MeanDistMx3[ShapeIndex1][ShapeIndex2]));
+		assert(Offset2 < SIZE(m_MeanDistMx3[ShapeIndex1][ShapeIndex2][Offset1]));
 		double d = m_MeanDistMx3[ShapeIndex1][ShapeIndex2][Offset1][Offset2];
 		return d;
 		}
@@ -440,30 +460,22 @@ double Shapes::GetStdDev3(uint ShapeIndex1, uint ShapeIndex2,
 	{
 	if (ShapeIndex1 <= ShapeIndex2)
 		{
-		double d = m_StdDevMx3[ShapeIndex2][ShapeIndex1][Offset1][Offset2];
+		assert(ShapeIndex2 < SIZE(m_MeanDistMx3));
+		assert(ShapeIndex1 < SIZE(m_MeanDistMx3[ShapeIndex2]));
+		assert(Offset2 < SIZE(m_MeanDistMx3[ShapeIndex2][ShapeIndex1]));
+		assert(Offset1 < SIZE(m_MeanDistMx3[ShapeIndex2][ShapeIndex1][Offset2]));
+		double d = m_StdDevMx3[ShapeIndex2][ShapeIndex1][Offset2][Offset1];
 		return -d;
 		}
 	else
 		{
 		assert(ShapeIndex1 > ShapeIndex2);
-		double d = m_StdDevMx3[ShapeIndex1][ShapeIndex2][Offset1][Offset2];
-		return d;
-		}
-	}
-
-double Shapes::GetStdDev2(uint ShapeIndex1, uint ShapeIndex2) const
-	{
-	if (ShapeIndex1 == ShapeIndex2)
-		return 0;
-	else if (ShapeIndex1 < ShapeIndex2)
-		{
-		double d = m_StdDevMx2[ShapeIndex2][ShapeIndex1];
-		return d;
-		}
-	else
-		{
 		assert(ShapeIndex1 > ShapeIndex2);
-		double d = m_StdDevMx2[ShapeIndex1][ShapeIndex2];
+		assert(ShapeIndex1 < SIZE(m_MeanDistMx3));
+		assert(ShapeIndex2 < SIZE(m_MeanDistMx3[ShapeIndex1]));
+		assert(Offset1 < SIZE(m_MeanDistMx3[ShapeIndex1][ShapeIndex2]));
+		assert(Offset2 < SIZE(m_MeanDistMx3[ShapeIndex1][ShapeIndex2][Offset1]));
+		double d = m_StdDevMx3[ShapeIndex1][ShapeIndex2][Offset1][Offset2];
 		return d;
 		}
 	}

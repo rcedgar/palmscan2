@@ -12,13 +12,13 @@ public:
 	const Shapes *m_Shapes = 0;
 	uint m_ShapeCount = UINT_MAX;
 	double m_Sigmas = 2.5;
+	uint m_ShapeIndexA = UINT_MAX;
+	uint m_ShapeIndexB = UINT_MAX;
+	uint m_ShapeIndexC = UINT_MAX;
+	double m_MinScoreABC = 0.5;
 
 public:
-	void Init(const Shapes &S)
-		{
-		m_Shapes = &S;
-		m_ShapeCount = S.GetShapeCount();
-		}
+	void Init(const Shapes &S);
 
 	uint GetQL() const
 		{
@@ -35,16 +35,6 @@ public:
 		return m_Shapes->m_Lengths[ShapeIndex];
 		}
 
-	double GetMeanDist2(uint ShapeIndex1, uint ShapeIndex2) const
-		{
-		return m_Shapes->GetMeanDist2(ShapeIndex1, ShapeIndex2);
-		}
-
-	double GetStdDev2(uint ShapeIndex1, uint ShapeIndex2) const
-		{
-		return m_Shapes->GetStdDev2(ShapeIndex1, ShapeIndex2);
-		}
-
 	double GetMeanDist3(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Offset1, uint Offset2) const
 		{
@@ -58,27 +48,37 @@ public:
 		}
 
 	void ClearSearch() {  }
-	void SetQuery(const PDBChain &Query, uint PosA, uint PosB, uint PosC);
-	uint GetShapeCount() const { return m_ShapeCount; }
-	void GetMinLoMaxHi(uint ShapeIndex, const vector<uint> &PosVec,
-	   uint &MinLo, uint &MaxHi) const;
-	void GetLoHi(uint ShapeIndex, uint ShapeIndex2, 
-	  uint Pos2, uint &Lo, uint &Hi) const;
 
-	void SearchOneShapeSelf(uint ShapeIndex, double MinScore,
+	uint GetShapeCount() const { return m_ShapeCount; }
+
+	void SetQuery(const PDBChain &Query, uint PosA, uint PosB, uint PosC);
+
+	void GetDistRange(uint ShapeIndex, uint ShapeIndex2, 
+	  uint &MinDist, uint &MaxDist) const;
+
+	void SearchShape(uint ShapeIndex, const vector<uint> &PosVec,
+	  double MinScore, uint Lo, uint Hi, char Letter, uint LetterOffset,
+	  vector<uint> &HitPosVec, vector<double> &HitScores) const;
+
+	void SearchShapeSelf(uint ShapeIndex, double MinScore,
 	  uint Lo, uint Hi, char Letter, uint LetterOffset,
 	  vector<uint> &HitPosVec, vector<double> &HitScores) const;
 
 	double GetSelfScore(uint ShapeIndex, uint Pos) const;
 
 	double GetScore(uint ShapeIndex, uint Pos,
-	  const vector<uint> &OtherShapeIndexes) const;
+	  const vector<uint> &PosVec) const;
 
 	double GetScoreShapePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2) const;
 
+	double GetScoreShapes(const vector<uint> &ShapeIndexes,
+	  const vector<uint> &PosVec) const;
+
 	double GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
+
+	double SearchABC(uint &PosA, uint &PosB, uint &PosC);
 	};
 
 double GetNormal(double Mu, double Sigma, double x);
