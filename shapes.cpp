@@ -66,16 +66,24 @@ void Shapes::GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
 	GetQuarts(NeighborDists, Q);
 	MinDist = uint(Q.Min*m_MinContract);
 	MaxDist = uint(Q.Max*m_MaxExpand);
-	//Log("%s .. %s  %u .. %u\n",
-	//  m_Names[ShapeIndex].c_str(),
-	//  m_Names[ShapeIndex+1].c_str(),
-	//  MinDist,
-	//  MaxDist);
 	}
 
 void Shapes::Train(const vector<PDBChain *> &Chains,
-  const vector<vector<string> > &SeqsVec)
+  const vector<vector<string> > &SeqsVec, bool ExtendABC)
 	{
+	if (ExtendABC)
+		{
+		m_Offset_D_MotifA = 5;
+		m_Offset_G_MotifB = 1;
+		m_Offset_D_MotifC = 5;
+		}
+	else
+		{
+		m_Offset_D_MotifA = 3;
+		m_Offset_G_MotifB = 1;
+		m_Offset_D_MotifC = 3;
+		}
+
 	const uint ChainCount = SIZE(Chains);
 	asserta(SIZE(SeqsVec) == ChainCount);
 	const uint ShapeCount = GetShapeCount();
@@ -83,6 +91,7 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 	vector<vector<uint> > NeighborDistVec(ShapeCount-1);
 	for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 		{
+		ProgressStep(ChainIndex, ChainCount, "Training");
 		const PDBChain &Chain = *Chains[ChainIndex];
 		const vector<string> &Seqs = SeqsVec[ChainIndex];
 		vector<uint> PosVec;
@@ -380,6 +389,10 @@ void Shapes::ToFile(const string &FileName) const
 	FILE *f = CreateStdioFile(FileName);
 	uint ShapeCount = GetShapeCount();
 	fprintf(f, "shapes\t%u\n", ShapeCount);
+	fprintf(f, "AD_BG_CD\t%u\t%u\t%u\n",
+	  m_Offset_D_MotifA,
+	  m_Offset_G_MotifB,
+	  m_Offset_D_MotifC);
 	for (uint ShapeIndex = 0; ShapeIndex < ShapeCount; ++ShapeIndex)
 		fprintf(f, "%u\t%s\t%u\t%u\t%u\n",
 		  ShapeIndex, m_Names[ShapeIndex].c_str(),
@@ -398,12 +411,23 @@ void Shapes::FromFile(const string &FileName)
 	FILE *f = OpenStdioFile(FileName);
 	string Line;
 	vector<string> Fields;
+
 	bool Ok = ReadLineStdioFile(f, Line);
 	asserta(Ok);
 	Split(Line, Fields, '\t');
 	asserta(SIZE(Fields) == 2);
 	asserta(Fields[0] == "shapes");
 	uint ShapeCount = StrToUint(Fields[1]);
+
+	Ok = ReadLineStdioFile(f, Line);
+	asserta(Ok);
+	Split(Line, Fields, '\t');
+	asserta(SIZE(Fields) == 4);
+	asserta(Fields[0] == "AD_BG_CD");
+	m_Offset_D_MotifA = StrToUint(Fields[1]);
+	m_Offset_G_MotifB = StrToUint(Fields[2]);
+	m_Offset_D_MotifC = StrToUint(Fields[3]);
+
 	for (uint ShapeIndex = 0; ShapeIndex < ShapeCount; ++ShapeIndex)
 		{
 		bool Ok = ReadLineStdioFile(f, Line);

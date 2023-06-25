@@ -169,6 +169,7 @@ FLAG_OPT(compact)
 FLAG_OPT(dotproduct)
 FLAG_OPT(subchainc)
 FLAG_OPT(delete_hetatm)
+FLAG_OPT(extend_abc)
 
 #undef FLAG_OPT
 #undef UNS_OPT

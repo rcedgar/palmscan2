@@ -34,6 +34,7 @@ void RdRpSearcher::WriteOutput() const
 	WriteMotifs(g_fmotifs, g_fmotifs);
 	WriteMotifs(g_fmotifs_abc, g_fmotifs_cab);
 	WriteCore(g_fcore, g_fcore);
+	WriteShapeTrainTsv(g_fshapes_train_tsv);
 	bool Ok = WriteCore(g_fcore_abc, g_fcore_cab);
 	if (!Ok)
 		SeqToFasta(g_fcore_notmatched, m_QueryLabel.c_str(),
@@ -455,6 +456,75 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 	fprintf(f, "\t%u", PosB);
 	fprintf(f, "\t%s", SeqB.c_str());
 	fprintf(f, "\t%u", PosC);
+	fprintf(f, "\t%s", SeqC.c_str());
+	fprintf(f, "\n");
+	}
+
+void RdRpSearcher::WriteShapeTrainTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	static bool HdrDone = false;
+	if (!HdrDone)
+		{
+		HdrDone = true;
+
+		fprintf(f, "Label");
+		fprintf(f, "\tA");
+		fprintf(f, "\tB");
+		fprintf(f, "\tC");
+		fprintf(f, "\n");
+		}
+
+	if (m_TopPalmHit.m_Score <= 0)
+		return;
+
+	string QueryLabel = m_QueryLabel;
+	float Score = 0;
+	string GroupName = ".";
+	string SecondGroupName = ".";
+	float Diff2 = 0;
+	const char *ABC = ".";
+	uint QL = SIZE(m_QuerySeq);
+	uint Lo = 0;
+	uint Hi = 0;
+	uint PPL = 0;
+	uint Suff = 0;
+
+	if (m_TopPalmHit.m_Score <= 0)
+		return;
+
+	Score = m_TopPalmHit.m_Score;
+	uint GroupIndex = m_TopPalmHit.m_GroupIndex;
+	GetGroupName(GroupIndex, GroupName);
+	if (m_TopPalmHit.m_Permuted)
+		return;
+
+	uint PosA = GetMotifPos(0);
+	uint PosB = GetMotifPos(1);
+	uint PosC = GetMotifPos(2);
+
+	asserta(PosA < PosB && PosB < PosC);
+	if (PosA < 2)
+		return;
+
+	string SeqA, SeqB, SeqC;
+
+	GetSubSeq(PosA-2, 12+4, SeqA);
+	GetSubSeq(PosB, 12+8, SeqB);
+	GetSubSeq(PosC-2, 8+4, SeqC);
+
+	if (SeqA == "" || SeqA == ".")
+		return;
+	if (SeqB == "" || SeqB == ".")
+		return;
+	if (SeqC == "" || SeqC == ".")
+		return;
+
+	fprintf(f, "%s", QueryLabel.c_str());
+	fprintf(f, "\t%s", SeqA.c_str());
+	fprintf(f, "\t%s", SeqB.c_str());
 	fprintf(f, "\t%s", SeqC.c_str());
 	fprintf(f, "\n");
 	}

@@ -301,6 +301,7 @@
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="firstchain_pssms.cpp" />
+    <ClCompile Include="getshapestrainingmotifs.cpp" />
     <ClCompile Include="gspalign.cpp" />
     <ClCompile Include="gspaligner.cpp" />
     <ClCompile Include="gsprof.cpp" />
@@ -392,8 +393,10 @@
     <ClCompile Include="segs.cpp" />
     <ClCompile Include="shapes.cpp" />
     <ClCompile Include="shapesearcher.cpp" />
+    <ClCompile Include="shapestrainaddmotif.cpp" />
     <ClCompile Include="shapes_train.cpp" />
     <ClCompile Include="shapes_search.cpp" />
+    <ClCompile Include="shapes_train1.cpp" />
     <ClCompile Include="shapes_train_score.cpp" />
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="spher.cpp" />
@@ -404,6 +407,7 @@
     <ClCompile Include="structprof.cpp" />
     <ClCompile Include="structprofheuristics.cpp" />
     <ClCompile Include="sw.cpp" />
+    <ClCompile Include="testabc.cpp" />
     <ClCompile Include="test_pssms.cpp" />
     <ClCompile Include="seqdb.cpp" />
     <ClCompile Include="seqinfo.cpp" />

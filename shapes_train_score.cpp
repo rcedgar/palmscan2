@@ -10,11 +10,6 @@ shapes_train
 	Output: ShapeSearcher scores for training shapes
 ***/
 
-void ReadMotifsFile(const string &FileName,
-  vector<string> &ChainLabels,
-  vector<string> &MotifNames, vector<uint> &MotifLengths,
-  vector<vector<string> > &MotifSeqsVec);
-
 static void ShapesTrainScore(ShapeSearcher &SS,
   const PDBChain &Chain, const vector<string> &ShapeSeqs,
   vector<vector<double> > &ScoresVec)
@@ -89,8 +84,12 @@ void cmd_shapes_train_score()
 	vector<string> MotifNames;
 	vector<uint> MotifLengths;
 	vector<vector<string> > MotifSeqsVec;
-	ReadMotifsFile(InputFileName2,
-	  ChainLabels, MotifNames, MotifLengths, MotifSeqsVec);
+	vector<PDBChain *> Chains;
+	ReadChains(InputFileName1, Chains);
+	const uint ChainCount = SIZE(Chains);
+
+	GetTrainingMotifs(InputFileName2, Chains, ChainLabels,
+	  MotifNames, MotifLengths, MotifSeqsVec, opt_extend_abc);
 	const uint N = SIZE(ChainLabels);
 	asserta(SIZE(MotifSeqsVec) == N);
 
@@ -102,9 +101,6 @@ void cmd_shapes_train_score()
 		ChainLabelToIndex[ChainLabel] = i;
 		}
 
-	vector<PDBChain *> Chains;
-	ReadChains(InputFileName1, Chains);
-	const uint ChainCount = SIZE(Chains);
 
 	Shapes S;
 	S.FromFile(ShapesFileName);

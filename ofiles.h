@@ -41,5 +41,6 @@ F(tsv_false)
 F(tsv_dot)
 F(cfv)
 F(aln)
+F(shapes_train_tsv)
 
 #undef F

@@ -104,9 +104,11 @@ public:
 	  uint &QLo, uint &QHi) const;
 	uint GetPSSMLength(uint GroupIndex, uint MotifIndex) const;
 	void GetSpan(uint &QLo, uint &QHi) const;
+	void GetSubSeq(uint Pos, uint L, string &Seq) const;
 	void GetMotifSeq(uint MotifIndex, string &Seq) const;
 	void WriteOutput() const;
 	void WriteReport(FILE *f) const;
+	void WriteShapeTrainTsv(FILE *f) const;
 	void WriteTsv(FILE *f) const;
 	void WriteFev(FILE *f) const;
 	void WriteMotifs(FILE *fABC, FILE *fCAB) const;

@@ -18,6 +18,14 @@ public:
 	double m_MinScoreABC = 0.5;
 
 public:
+	void ClearSearch()
+		{
+		m_Query = 0;
+		m_PosA = UINT_MAX;
+		m_PosB = UINT_MAX;
+		m_PosC = UINT_MAX;
+		}
+
 	void Init(const Shapes &S);
 
 	uint GetQL() const
@@ -47,11 +55,10 @@ public:
 		return m_Shapes->GetStdDev3(ShapeIndex1, ShapeIndex2, Offset1, Offset2);
 		}
 
-	void ClearSearch() {  }
-
 	uint GetShapeCount() const { return m_ShapeCount; }
 
 	void SetQuery(const PDBChain &Query, uint PosA, uint PosB, uint PosC);
+	void SetQuery(const PDBChain &Query);
 
 	void GetDistRange(uint ShapeIndex, uint ShapeIndex2, 
 	  uint &MinDist, uint &MaxDist) const;
@@ -79,6 +86,14 @@ public:
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
 	double SearchABC(uint &PosA, uint &PosB, uint &PosC);
+
+	void TestABC1(const PDBChain &Chain,
+	  const vector<string> &MotifSeqs);
+
+public:
+	static void TestABC(const Shapes &S,
+	  const vector<PDBChain *> &Chains,
+	  vector<vector<string> > &MotifSeqsVec);
 	};
 
 double GetNormal(double Mu, double Sigma, double x);

@@ -24,6 +24,10 @@ public:
 	t_Mx3 m_MeanDistMx3;
 	t_Mx3 m_StdDevMx3;
 
+	uint m_Offset_D_MotifA = UINT_MAX;
+	uint m_Offset_G_MotifB = UINT_MAX;
+	uint m_Offset_D_MotifC = UINT_MAX;
+
 public:
 	void Clear()
 		{
@@ -37,7 +41,11 @@ public:
 	void Init(const vector<string> &Names,
 	  const vector<uint> &Lengths);
 	void Train(const vector<PDBChain *> &Chains,
-	  const vector<vector<string> > &SeqsVec);
+	  const vector<vector<string> > &SeqsVec, bool ExtendABC);
+	void Train_AddMotif(const Shapes &Shapes_ABC,
+	  const vector<PDBChain *> &Chains,
+	  const vector<vector<string> > &ABCSeqsVec,
+	  const vector<string> &NewMotifSeqs);
 	void InitMx2(t_Mx2 &Mx) const;
 	void InitMx3(t_Mx3 &Mx) const;
 	void TrainGetPosVec(const PDBChain &Chain, const vector<string> &Seqs,
@@ -55,3 +63,8 @@ public:
 	void GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
 	  uint &MinDist, uint &MaxDist) const;
 	};
+
+void GetTrainingMotifs(const string &FileName,
+  const vector<PDBChain *> &Chains, vector<string> &ChainLabels,
+  vector<string> &MotifNames, vector<uint> &MotifLengths,
+  vector<vector<string> > &MotifSeqsVec, bool ExtendABC);

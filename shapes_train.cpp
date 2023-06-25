@@ -1,66 +1,16 @@
 #include "myutils.h"
-#include "shapes.h"
+#include "shapesearcher.h"
+#include "rdrpsearcher.h"
 #include <map>
 
 /***
 shapes_train
-	Input: tsv file with shape sequences
+	Input: (a) tsv file with shape sequences or (b) PSSMs
 	Output: calculate and save contact map profile for
 	  all-vs-all shapes.
+
+	Tests ShapeSearcher ABC detection against training set.
 ***/
-
-void ReadMotifsFile(const string &FileName,
-  vector<string> &ChainLabels,
-  vector<string> &MotifNames, vector<uint> &MotifLengths,
-  vector<vector<string> > &MotifSeqsVec)
-	{
-	ChainLabels.clear();
-	MotifNames.clear();
-	MotifLengths.clear();
-	MotifSeqsVec.clear();
-
-	FILE *f = OpenStdioFile(FileName);
-	string Line;
-	bool Ok = ReadLineStdioFile(f, Line);
-	asserta(Ok);
-	vector<string> Fields;
-	Split(Line, Fields, '\t');
-	asserta(Fields[0] == "Label");
-	asserta(SIZE(Fields) > 1);
-	const uint MotifCount = SIZE(Fields) - 1;
-	for (uint i = 0; i < MotifCount; ++i)
-		{
-		MotifLengths.push_back(UINT_MAX);
-		MotifNames.push_back(Fields[i+1]);
-		}
-
-	while (ReadLineStdioFile(f, Line))
-		{
-		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) == MotifCount + 1);
-
-		const string &ChainLabel = Fields[0];
-		ChainLabels.push_back(ChainLabel);
-
-		vector<string> MotifSeqs;
-		for (uint i = 0; i < MotifCount; ++i)
-			MotifSeqs.push_back(Fields[i+1]);
-		MotifSeqsVec.push_back(MotifSeqs);
-
-		for (uint i = 0; i < MotifCount; ++i)
-			{
-			const string &MotifSeq = MotifSeqs[i];
-			if (MotifSeq == "" || MotifSeq == ".")
-				continue;
-			uint L = SIZE(MotifSeq);
-			if (MotifLengths[i] == UINT_MAX)
-				MotifLengths[i] = L;
-			else
-				asserta(L == MotifLengths[i]);
-			}
-		}
-	CloseStdioFile(f);
-	}
 
 void cmd_shapes_train()
 	{
@@ -72,8 +22,12 @@ void cmd_shapes_train()
 	vector<string> MotifNames;
 	vector<uint> MotifLengths;
 	vector<vector<string> > MotifSeqsVec;
-	ReadMotifsFile(InputFileName2,
-	  ChainLabels, MotifNames, MotifLengths, MotifSeqsVec);
+	vector<PDBChain *> Chains;
+	ReadChains(InputFileName1, Chains);
+	const uint ChainCount = SIZE(Chains);
+
+	GetTrainingMotifs(InputFileName2, Chains,
+	  ChainLabels, MotifNames, MotifLengths, MotifSeqsVec, opt_extend_abc);
 	const uint N = SIZE(ChainLabels);
 	asserta(SIZE(MotifSeqsVec) == N);
 
@@ -84,10 +38,6 @@ void cmd_shapes_train()
 		asserta(ChainLabelToIndex.find(ChainLabel) == ChainLabelToIndex.end());
 		ChainLabelToIndex[ChainLabel] = i;
 		}
-
-	vector<PDBChain *> Chains;
-	ReadChains(InputFileName1, Chains);
-	const uint ChainCount = SIZE(Chains);
 
 	vector<PDBChain *> Chains2;
 	vector<vector<string> > MotifSeqsVec2;
@@ -112,6 +62,8 @@ void cmd_shapes_train()
 
 	Shapes S;
 	S.Init(MotifNames, MotifLengths);
-	S.Train(Chains2, MotifSeqsVec2);
+	S.Train(Chains2, MotifSeqsVec2, opt_extend_abc);
 	S.ToFile(opt_output);
+
+	ShapeSearcher::TestABC(S, Chains2, MotifSeqsVec2);
 	}

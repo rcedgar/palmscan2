@@ -22,6 +22,18 @@ uint RdRpSearcher::GetPSSMLength(uint GroupIndex, uint MotifIndex) const
 	return L;
 	}
 
+void RdRpSearcher::GetSubSeq(uint Pos, uint L, string &Seq) const
+	{
+	Seq.clear();
+	uint QL = SIZE(m_QuerySeq);
+	asserta(Pos < QL);
+	if (Pos + L > QL)
+		return;
+
+	for (uint i = 0; i < L; ++i)
+		Seq += m_QuerySeq[Pos+i];
+	}
+
 void RdRpSearcher::GetMotifSeq(uint MotifIndex, string &Seq) const
 	{
 	Seq.clear();
