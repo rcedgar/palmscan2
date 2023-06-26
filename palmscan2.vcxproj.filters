@@ -530,10 +530,7 @@
     <ClCompile Include="getshapestrainingmotifs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shapes_train1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shapestrainaddmotif.cpp">
+    <ClCompile Include="shapes_score1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

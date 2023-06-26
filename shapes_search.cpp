@@ -4,21 +4,19 @@
 #include "abcxyz.h"
 #include "outputfiles.h"
 #include "chainreader.h"
-#include "cmpsearcher.h"
+//#include "cmpsearcher.h"
 #include "shapesearcher.h"
 #include <time.h>
 
 static uint g_DoneCount;
 static uint g_HitCount;
 
-static void Search1(const PDBChain &Q, ShapeSearcher &SS,
-  uint PosA, uint PosB, uint PosC)
+static void Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
+	SS.SetQuery(Q);
 
-	SS.SetQuery(Q, PosA, PosB, PosC);
-
-	uint SSPosA, SSPosB, SSPosC;
-	SS.SearchABC(SSPosA, SSPosB, SSPosC);
+	uint PosA, PosB, PosC;
+	SS.SearchABC(PosA, PosB, PosC);
 
 	const uint AL = SS.GetShapeLength(SS.m_ShapeIndexA);
 	const uint BL = SS.GetShapeLength(SS.m_ShapeIndexB);
@@ -26,22 +24,18 @@ static void Search1(const PDBChain &Q, ShapeSearcher &SS,
 	string SeqA = ".";
 	string SeqB = ".";
 	string SeqC = ".";
-	if (SSPosA != UINT_MAX)
-		Q.GetSubSeq(SSPosA, AL, SeqA);
-	if (SSPosB != UINT_MAX)
-		Q.GetSubSeq(SSPosB, BL, SeqB);
-	if (SSPosC != UINT_MAX)
-		Q.GetSubSeq(SSPosC, CL, SeqC);
+	if (PosA != UINT_MAX)
+		Q.GetSubSeq(PosA, AL, SeqA);
+	if (PosB != UINT_MAX)
+		Q.GetSubSeq(PosB, BL, SeqB);
+	if (PosC != UINT_MAX)
+		Q.GetSubSeq(PosC, CL, SeqC);
 
 	Log(">%s", Q.m_Label.c_str());
-	Log(" A%u/%u=%s  B %u/%u=%s  C %u/%u=%s",
-	  PosA, SSPosA, SeqA.c_str(),
-	  PosB, SSPosB, SeqB.c_str(),
-	  PosC, SSPosC, SeqC.c_str());
-	if (PosA == SSPosA && PosB == SSPosB && PosC == SSPosC)
-		Log(" same\n");
-	else
-		Log(" **DIFF**\n");
+	Log(" A%u=%s  B %u=%s  C %u=%s",
+	  PosA, SeqA.c_str(),
+	  PosB, SeqB.c_str(),
+	  PosC, SeqC.c_str());
 
 #if 0
 	const uint ShapeCount = SS.GetShapeCount();
@@ -133,11 +127,8 @@ static void Search1(const PDBChain &Q, ShapeSearcher &SS,
 	}
 
 
-static void Thread(ChainReader &CR, const Shapes &S, const CMP &Prof)
+static void Thread(ChainReader &CR, const Shapes &S)
 	{
-	CMPSearcher CS;
-	CS.SetProf(Prof);
-
 	ShapeSearcher SS;
 	SS.Init(S);
 
@@ -161,14 +152,7 @@ static void Thread(ChainReader &CR, const Shapes &S, const CMP &Prof)
 
 		const char *Seq = Q.m_Seq.c_str();
 		const string &Label = Q.m_Label;
-		uint PosA = UINT_MAX;
-		uint PosB = UINT_MAX;
-		uint PosC = UINT_MAX;
-		CS.Search(Q);
-		double PalmScore = CS.GetPosABC(PosA, PosB, PosC);
-		if (PalmScore == 0)
-			continue;
-		Search1(Q, SS, PosA, PosB, PosC);
+		Search1(Q, SS);
 		++g_HitCount;
 		}
 	}
@@ -178,15 +162,9 @@ void cmd_shapes_search()
 	const string &QueryFN = opt_shapes_search;
 
 	time_t tStart = time(0);
-	if (!optset_model)
-		Die("Must specify -model");
 	if (!optset_shapes)
 		Die("Must specify -shapes");
-	const string &ModelFileName = opt_model;
 	const string &ShapesFileName = opt_shapes;
-
-	CMP Prof;
-	Prof.FromFile(ModelFileName);
 
 	Shapes S;
 	S.FromFile(ShapesFileName);
@@ -197,7 +175,7 @@ void cmd_shapes_search()
 	uint ThreadCount = GetRequestedThreadCount();
 
 #pragma omp parallel num_threads(ThreadCount)
-	Thread(CR, S, Prof);
+	Thread(CR, S);
 	time_t tEnd = time(0);
 	uint Secs = uint(tEnd - tStart);
 	if (Secs <= 0)

@@ -38,14 +38,11 @@ public:
 		}
 
 	uint GetShapeCount() const { return SIZE(m_Names); }
+	uint GetShapeIndex(const string &Name) const;
 	void Init(const vector<string> &Names,
 	  const vector<uint> &Lengths);
 	void Train(const vector<PDBChain *> &Chains,
 	  const vector<vector<string> > &SeqsVec, bool ExtendABC);
-	void Train_AddMotif(const Shapes &Shapes_ABC,
-	  const vector<PDBChain *> &Chains,
-	  const vector<vector<string> > &ABCSeqsVec,
-	  const vector<string> &NewMotifSeqs);
 	void InitMx2(t_Mx2 &Mx) const;
 	void InitMx3(t_Mx3 &Mx) const;
 	void TrainGetPosVec(const PDBChain &Chain, const vector<string> &Seqs,

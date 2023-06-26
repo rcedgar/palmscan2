@@ -1,7 +1,7 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 
-#define TRACE	0
+#define TRACE	1
 
 void ShapeSearcher::Init(const Shapes &S)
 	{
@@ -161,6 +161,7 @@ void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
 		  m_Query->m_Seq[Pos+LetterOffset] != Letter)
 			continue;
 		double Score = GetSelfScore(ShapeIndex, Pos);
+		Log("Pos=%u score=%.3g\n", Pos, Score);//@@
 		if (Score < MinScore)
 			continue;
 		uint HitCount = SIZE(HitPosVec);
@@ -292,8 +293,8 @@ double ShapeSearcher::SearchABC(uint &TopPosA, uint &TopPosB, uint &TopPosC)
 		  'G', Offset_G_MotifB, HitsB, ScoresB);
 		const uint NB = SIZE(HitsB);
 #if TRACE
-		Log("PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
-		  PosA, m_MinScoreABC, MinStartB, MaxStartB, NB);
+		Log(" [%u] PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
+		  ia, PosA, m_MinScoreABC, MinStartB, MaxStartB, NB);
 #endif
 
 		for (uint ib = 0; ib < NB; ++ib)
@@ -320,8 +321,8 @@ double ShapeSearcher::SearchABC(uint &TopPosA, uint &TopPosB, uint &TopPosC)
 			  'D', Offset_D_MotifC, HitsC, ScoresC);
 			const uint NC = SIZE(HitsC);
 #if TRACE
-			Log("PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
-			  PosA, PosB, m_MinScoreABC, MinStartC, MaxStartC, NC);
+			Log("  [%u,%u] PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
+			  ia, ib, PosA, PosB, m_MinScoreABC, MinStartC, MaxStartC, NC);
 #endif
 			for (uint ic = 0; ic < NC; ++ic)
 				{
@@ -333,7 +334,8 @@ double ShapeSearcher::SearchABC(uint &TopPosA, uint &TopPosB, uint &TopPosC)
 				PosVec.push_back(PosC);
 				double ScoreABC = GetScoreShapes(ABCIndexes, PosVec);
 #if TRACE
-				Log("PosC %u ScoreABC %.4f\n", PosC, ScoreABC);
+				Log("   [%u,%u,%u] PosC %u ScoreABC %.4f\n",
+				  ia, ib, ic, PosC, ScoreABC);
 #endif
 
 				if (ScoreABC > TopScore)

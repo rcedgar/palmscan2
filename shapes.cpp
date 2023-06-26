@@ -2,6 +2,15 @@
 #include "shapes.h"
 #include "quarts.h"
 
+uint Shapes::GetShapeIndex(const string &Name) const
+	{
+	for (uint i = 0; i < SIZE(m_Names); ++i)
+		if (Name == m_Names[i])
+			return i;
+	Die("GetShapeIndex(%s)", Name.c_str());
+	return UINT_MAX;
+	}
+
 void Shapes::Init(const vector<string> &Names,
   const vector<uint> &Lengths)
 	{
@@ -71,18 +80,21 @@ void Shapes::GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
 void Shapes::Train(const vector<PDBChain *> &Chains,
   const vector<vector<string> > &SeqsVec, bool ExtendABC)
 	{
-	if (ExtendABC)
-		{
-		m_Offset_D_MotifA = 5;
-		m_Offset_G_MotifB = 1;
-		m_Offset_D_MotifC = 5;
-		}
-	else
-		{
-		m_Offset_D_MotifA = 3;
-		m_Offset_G_MotifB = 1;
-		m_Offset_D_MotifC = 3;
-		}
+	//if (ExtendABC)
+	//	{
+	//	m_Offset_D_MotifA = 5;
+	//	m_Offset_G_MotifB = 1;
+	//	m_Offset_D_MotifC = 5;
+	//	}
+	//else
+	//	{
+	//	m_Offset_D_MotifA = 3;
+	//	m_Offset_G_MotifB = 1;
+	//	m_Offset_D_MotifC = 3;
+	//	}
+	m_Offset_D_MotifA = 5;
+	m_Offset_G_MotifB = 1;
+	m_Offset_D_MotifC = 7;
 
 	const uint ChainCount = SIZE(Chains);
 	asserta(SIZE(SeqsVec) == ChainCount);

@@ -15,7 +15,7 @@ public:
 	uint m_ShapeIndexA = UINT_MAX;
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
-	double m_MinScoreABC = 0.5;
+	double m_MinScoreABC = 0.4;
 
 public:
 	void ClearSearch()

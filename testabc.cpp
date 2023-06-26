@@ -5,6 +5,60 @@ static uint g_AgreeCount;
 static uint g_DisagreeCount;
 static uint g_RefPermutedCount;
 
+static bool Cmp1(ShapeSearcher &SS, const PDBChain &Chain,
+  uint ShapeIndex, uint RefPosX, uint PredPosX)
+	{
+	if (RefPosX == UINT_MAX && PredPosX == UINT_MAX)
+		return true;
+
+	string RefSeqX = ".";
+	string PredSeqX = ".";
+
+	uint XL = SS.GetShapeLength(ShapeIndex);
+
+	const char *Label = Chain.m_Label.c_str();
+	if (RefPosX != UINT_MAX)
+		Chain.GetSubSeq(RefPosX, XL, RefSeqX);
+
+	if (PredPosX != UINT_MAX)
+		Chain.GetSubSeq(PredPosX, XL, PredSeqX);
+
+	if (RefSeqX == PredSeqX)
+		return true;
+
+	Log(">%s  Motif-%u", Label, ShapeIndex);
+	if (RefPosX == UINT_MAX)
+		Log(" ref=.");
+	else
+		Log("  ref=%s(%u)", RefSeqX.c_str(), RefPosX);
+
+	if (PredPosX == UINT_MAX)
+		Log(" pred=.");
+	else
+		Log("  pred=%s(%u)", PredSeqX.c_str(), PredPosX);
+
+	if (RefPosX == UINT_MAX && PredPosX != UINT_MAX)
+		Log(" << found");
+
+	int Shift = 999;
+	if (RefPosX != UINT_MAX && PredPosX != UINT_MAX)
+		{
+		Shift = int(PredPosX) - int(RefPosX);
+		Log(" << shift %+d", Shift);
+		}
+	if (RefPosX != UINT_MAX && PredPosX == UINT_MAX)
+		Log(" << NOT FOUND");
+
+
+	Log("\n");
+
+	if (abs(Shift) <= 3)
+		return true;
+	if (RefPosX == UINT_MAX)
+		return true;
+	return false;
+	}
+
 void ShapeSearcher::TestABC(const Shapes &S,
   const vector<PDBChain *> &Chains,
   vector<vector<string> > &MotifSeqsVec)
@@ -33,69 +87,32 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 	size_t stPosA = Seq.find(MotifSeqs[m_ShapeIndexA]);
 	size_t stPosB = Seq.find(MotifSeqs[m_ShapeIndexB]);
 	size_t stPosC = Seq.find(MotifSeqs[m_ShapeIndexC]);
-	if (stPosA == string::npos)
-		return;
-	if (stPosB == string::npos)
-		return;
-	if (stPosC == string::npos)
-		return;
 
-	if (stPosC < stPosA)
+	uint RefPosA = (stPosA == string::npos ? UINT_MAX : uint(stPosA));
+	uint RefPosB = (stPosB == string::npos ? UINT_MAX : uint(stPosB));
+	uint RefPosC = (stPosC == string::npos ? UINT_MAX : uint(stPosC));
+
+	if (RefPosC != UINT_MAX && RefPosA != UINT_MAX && RefPosC < RefPosA)
 		{
 		++g_RefPermutedCount;
 		return;
 		}
 
-	uint RefPosA = uint(stPosA);
-	uint RefPosB = uint(stPosB);
-	uint RefPosC = uint(stPosC);
-
 	SetQuery(Chain);
 
-	uint PosA, PosB, PosC;
-	SearchABC(PosA, PosB, PosC);
+	uint PredPosA, PredPosB, PredPosC;
+	SearchABC(PredPosA, PredPosB, PredPosC);
 
-	if (PosA == RefPosA && PosB == RefPosB && PosC == RefPosC)
+	if (PredPosA == RefPosA && PredPosB == RefPosB && PredPosC == RefPosC)
 		{
+		Log(">%s agree ABC\n", Chain.m_Label.c_str());
 		++g_AgreeCount;
 		return;
 		}
-	++g_DisagreeCount;
 
-	string RefSeqA;
-	string RefSeqB;
-	string RefSeqC;
-
-	string SeqA;
-	string SeqB;
-	string SeqC;
-
-	uint AL = GetShapeLength(m_ShapeIndexA);
-	uint BL = GetShapeLength(m_ShapeIndexB);
-	uint CL = GetShapeLength(m_ShapeIndexC);
-
-	Chain.GetSubSeq(RefPosA, AL, RefSeqA);
-	Chain.GetSubSeq(RefPosB, BL, RefSeqB);
-	Chain.GetSubSeq(RefPosC, CL, RefSeqC);
-
-	Chain.GetSubSeq(PosA, AL, SeqA);
-	Chain.GetSubSeq(PosB, BL, SeqB);
-	Chain.GetSubSeq(PosC, CL, SeqC);
-
-	Log("\n");
-	Log(">%s\n", Chain.m_Label.c_str());
-	Log("A: %4u %4u  %s  %s", RefPosA, PosA, RefSeqA.c_str(), SeqA.c_str());
-	if (RefPosA != PosA)
-		Log(" << DIFF");
-	Log("\n");
-
-	Log("B: %4u %4u  %s  %s", RefPosB, PosB, RefSeqB.c_str(), SeqB.c_str());
-	if (RefPosB != PosB)
-		Log(" << DIFF");
-	Log("\n");
-
-	Log("C: %4u %4u  %s  %s", RefPosC, PosC, RefSeqC.c_str(), SeqC.c_str());
-	if (RefPosC != PosC)
-		Log(" << DIFF");
-	Log("\n");
+	bool OkA = Cmp1(*this, Chain, m_ShapeIndexA, RefPosA, PredPosA);
+	bool OkB = Cmp1(*this, Chain, m_ShapeIndexB, RefPosB, PredPosB);
+	bool OkC = Cmp1(*this, Chain, m_ShapeIndexC, RefPosC, PredPosC);
+	if (!OkA || !OkB || !OkC)
+		++g_DisagreeCount;
 	}
