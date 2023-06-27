@@ -17,6 +17,9 @@ public:
 	uint m_ShapeIndexC = UINT_MAX;
 	double m_MinScoreABC = 0.4;
 
+	vector<uint> m_ShapePosVec;
+	vector<double> m_ShapeScores;
+
 public:
 	void ClearSearch()
 		{
@@ -57,15 +60,20 @@ public:
 
 	uint GetShapeCount() const { return m_ShapeCount; }
 
-	void SetQuery(const PDBChain &Query, uint PosA, uint PosB, uint PosC);
 	void SetQuery(const PDBChain &Query);
 
 	void GetDistRange(uint ShapeIndex, uint ShapeIndex2, 
 	  uint &MinDist, uint &MaxDist) const;
 
+	void SearchPalm(const PDBChain &Q);
+
 	void SearchShape(uint ShapeIndex, const vector<uint> &PosVec,
 	  double MinScore, uint Lo, uint Hi, char Letter, uint LetterOffset,
 	  vector<uint> &HitPosVec, vector<double> &HitScores) const;
+
+	void SearchShapeTopHit(uint ShapeIndex, const vector<uint> &PosVec,
+	  double MinScore, uint Lo, uint Hi, char Letter, uint LetterOffset,
+	  uint &Pos, double &Score) const;
 
 	void SearchShapeSelf(uint ShapeIndex, double MinScore,
 	  uint Lo, uint Hi, char Letter, uint LetterOffset,
@@ -85,10 +93,12 @@ public:
 	double GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
-	double SearchABC(uint &PosA, uint &PosB, uint &PosC);
+	double SearchABC();
 
 	void TestABC1(const PDBChain &Chain,
 	  const vector<string> &MotifSeqs);
+
+	void GetShapeSeq(uint ShapeIndex, string &Seq) const;
 
 public:
 	static void TestABC(const Shapes &S,

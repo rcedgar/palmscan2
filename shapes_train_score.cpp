@@ -32,10 +32,8 @@ static void ShapesTrainScore(ShapeSearcher &SS,
 			}
 		ShapePosVec.push_back(Pos);
 		}
-	uint PosA = ShapePosVec[1];
-	uint PosB = ShapePosVec[2];
-	uint PosC = ShapePosVec[3];
-	SS.SetQuery(Chain, PosA, PosB, PosC);
+
+	SS.SetQuery(Chain);
 	uint QL = Chain.GetSeqLength();
 #if 0
 	Log("\n");

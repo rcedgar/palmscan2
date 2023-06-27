@@ -25,8 +25,6 @@ static bool Hides(double Lat_j, double Long_j,
 		dLong = 360 - dLong;
 
 	bool h = dLat <= LAT_D && dLong <= LONG_D;
-	if (h)
-		Log("");//@@
 	return h;
 	}
 

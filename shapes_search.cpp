@@ -11,121 +11,59 @@
 static uint g_DoneCount;
 static uint g_HitCount;
 
-static void Search1(const PDBChain &Q, ShapeSearcher &SS)
+static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
-	SS.SetQuery(Q);
-
-	uint PosA, PosB, PosC;
-	SS.SearchABC(PosA, PosB, PosC);
-
-	const uint AL = SS.GetShapeLength(SS.m_ShapeIndexA);
-	const uint BL = SS.GetShapeLength(SS.m_ShapeIndexB);
-	const uint CL = SS.GetShapeLength(SS.m_ShapeIndexC);
-	string SeqA = ".";
-	string SeqB = ".";
-	string SeqC = ".";
-	if (PosA != UINT_MAX)
-		Q.GetSubSeq(PosA, AL, SeqA);
-	if (PosB != UINT_MAX)
-		Q.GetSubSeq(PosB, BL, SeqB);
-	if (PosC != UINT_MAX)
-		Q.GetSubSeq(PosC, CL, SeqC);
-
-	Log(">%s", Q.m_Label.c_str());
-	Log(" A%u=%s  B %u=%s  C %u=%s",
-	  PosA, SeqA.c_str(),
-	  PosB, SeqB.c_str(),
-	  PosC, SeqC.c_str());
-
-#if 0
+	SS.SearchPalm(Q);
 	const uint ShapeCount = SS.GetShapeCount();
+	asserta(SIZE(SS.m_ShapePosVec) == ShapeCount);
+	asserta(SIZE(SS.m_ShapeScores) == ShapeCount);
 
-	vector<uint> PosVec;
-	PosVec.push_back(UINT_MAX); // F
-	//PosVec.push_back(UINT_MAX); // H
-	PosVec.push_back(PosA);
-	PosVec.push_back(PosB);
-	PosVec.push_back(PosC);
-	PosVec.push_back(UINT_MAX); // D
-	PosVec.push_back(UINT_MAX); // E
-	asserta(SIZE(PosVec) == ShapeCount);
+	uint IXA = SS.m_ShapeIndexA;
+	uint IXB = SS.m_ShapeIndexB;
+	uint IXC = SS.m_ShapeIndexC;
+	bool IsHit = (SS.m_ShapePosVec[IXA] != UINT_MAX &&
+	  SS.m_ShapePosVec[IXB] != UINT_MAX
+	  && SS.m_ShapePosVec[IXC] != UINT_MAX);
 
-	uint MinLo, MaxHi;
-	uint QL = Q.GetSeqLength();
-	Log("\n");
-	Log(">%s\n", Q.m_Label.c_str());
-//	Q.WriteSeqWithCoords(g_fLog);
-	vector<uint> HitPosVec;
-	vector<double> HitScores;
-
-	for (uint k = 0; k < 3; ++k)
+	if (g_ftsv != 0)
 		{
-		uint SIX = k + 2;
-		if (k == 1)
-			SS.SearchShapeSelf(SIX, 0.7, 20, QL-20, 'G', 1, HitPosVec, HitScores);
-		else
-			SS.SearchShapeSelf(SIX, 0.7, 20, QL-20, 'D', 3, HitPosVec, HitScores);
-		const uint n = SIZE(HitPosVec);
-		uint SL = SS.GetShapeLength(SIX);
-		Log ("SIX [%u]", n);
-		for (uint i = 0; i < n; ++i)
+		static bool HdrDone = false;
+#pragma omp critical
 			{
-			uint Pos = HitPosVec[i];
-			string ShapeSeq;
-			Q.GetSubSeq(Pos, SL, ShapeSeq);
-			Log(" %u(%.4f)%s", Pos, HitScores[i], ShapeSeq.c_str());
-			}
-		Log("\n");
-		}
-
-	Log("A=%u B=%u C=%u QL=%u\n", PosA, PosB, PosC, QL);
-	vector<string> ShapeSeqs;
-	for (uint ShapeIndex = 0; ShapeIndex < 7; ++ShapeIndex)
-		{
-		string TopShapeSeq = ".";
-		double TopScore = 0;
-		SS.GetMinLoMaxHi(ShapeIndex, PosVec, MinLo, MaxHi);
-		//SS.SearchShapeSelf(ShapeIndex, 0.5, MinLo, MaxHi, 0, UINT_MAX,
-		//	HitPosVec, HitScores);
-		SS.SearchShape(ShapeIndex, PosVec, 0.5, MinLo, MaxHi, 0, UINT_MAX,
-			HitPosVec, HitScores);
-		Log(">> Shape %s  MinLo %5u  MaxHi  %5u: ",
-			SS.GetShapeName(ShapeIndex), MinLo, MaxHi);
-		const uint n = SIZE(HitPosVec);
-		uint SL = SS.GetShapeLength(ShapeIndex);
-		Log ("[%u]", n);
-		for (uint i = 0; i < n; ++i)
-			{
-			uint Pos = HitPosVec[i];
-			string ShapeSeq;
-			Q.GetSubSeq(Pos, SL, ShapeSeq);
-			double Score = HitScores[i];
-			if (Score > TopScore)
+			if (!HdrDone)
 				{
-				TopShapeSeq = ShapeSeq;
-				TopScore = Score;
+				HdrDone = true;
+				fprintf(g_ftsv, "Label");
+				for (uint i = 0; i < ShapeCount; ++i)
+					{
+					const char *ShapeName = SS.GetShapeName(i);
+					fprintf(g_ftsv, "\t%s_pos", ShapeName);
+					fprintf(g_ftsv, "\t%s_seq", ShapeName);
+					fprintf(g_ftsv, "\t%s_score", ShapeName);
+					}
+				fprintf(g_ftsv, "\n");
 				}
-			Log(" %u(%.4f)%s", Pos, Score, ShapeSeq.c_str());
+
+			fprintf(g_ftsv, "%s", Q.m_Label.c_str());
+			for (uint i = 0; i < ShapeCount; ++i)
+				{
+				double Score = SS.m_ShapeScores[i];
+				string Seq;
+				SS.GetShapeSeq(i, Seq);
+				uint Pos = SS.m_ShapePosVec[i];
+				if (Pos == UINT_MAX)
+					fprintf(g_ftsv, "\t.");
+				else
+					fprintf(g_ftsv, "\t%u", Pos);
+				fprintf(g_ftsv, "\t%s", Seq.c_str());
+				fprintf(g_ftsv, "\t%.3g", Score);
+				}
+			fprintf(g_ftsv, "\n");
 			}
-		Log("\n");
-
-		ShapeSeqs.push_back(TopShapeSeq);
 		}
-	
-	if (g_ftsv == 0)
-		return;
 
-	fprintf(g_ftsv, "%s", Q.m_Label.c_str());
-	fprintf(g_ftsv, "\t%u", PosA+1);
-	fprintf(g_ftsv, "\t%u", PosB+1);
-	fprintf(g_ftsv, "\t%u", PosC+1);
-	fprintf(g_ftsv, "\t%s", (PosA < PosC ? "ABC" : "CAB"));
-	for (uint i = 0; i < ShapeCount; ++i)
-		fprintf(g_ftsv, "\t%s", ShapeSeqs[i].c_str());
-	fprintf(g_ftsv, "\n");
-#endif
+	return IsHit;
 	}
-
 
 static void Thread(ChainReader &CR, const Shapes &S)
 	{
@@ -141,7 +79,7 @@ static void Thread(ChainReader &CR, const Shapes &S)
 
 #pragma omp critical
 		{
-		if (++g_DoneCount%1000 == 0)
+		if (++g_DoneCount%100 == 0)
 			{
 			string sPct;
 			CR.GetStrPctDone(sPct);
@@ -152,8 +90,12 @@ static void Thread(ChainReader &CR, const Shapes &S)
 
 		const char *Seq = Q.m_Seq.c_str();
 		const string &Label = Q.m_Label;
-		Search1(Q, SS);
-		++g_HitCount;
+
+		vector<uint> PosVec;
+		vector<string> ShapeSeqs;
+		bool IsHit = Search1(Q, SS);
+		if (IsHit)
+			++g_HitCount;
 		}
 	}
 

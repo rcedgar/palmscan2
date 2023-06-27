@@ -393,6 +393,7 @@
     <ClCompile Include="segs.cpp" />
     <ClCompile Include="shapes.cpp" />
     <ClCompile Include="shapesearcher.cpp" />
+    <ClCompile Include="shapesearchpalm.cpp" />
     <ClCompile Include="shapes_score1.cpp" />
     <ClCompile Include="shapes_train.cpp" />
     <ClCompile Include="shapes_search.cpp" />

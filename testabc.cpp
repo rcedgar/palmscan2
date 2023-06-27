@@ -100,8 +100,10 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 
 	SetQuery(Chain);
 
-	uint PredPosA, PredPosB, PredPosC;
-	SearchABC(PredPosA, PredPosB, PredPosC);
+	SearchABC();
+	uint PredPosA = m_ShapePosVec[m_ShapeIndexA];
+	uint PredPosB = m_ShapePosVec[m_ShapeIndexB];
+	uint PredPosC = m_ShapePosVec[m_ShapeIndexC];
 
 	if (PredPosA == RefPosA && PredPosB == RefPosB && PredPosC == RefPosC)
 		{
