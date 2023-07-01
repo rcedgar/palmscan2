@@ -309,19 +309,21 @@ void Shapes::Mx2ToFile(FILE *f, const string &MxName,
 		}
 	}
 
-void Shapes::Mx2FromFile(FILE *f, const string &MxName, t_Mx2 &Mx) const
+uint Shapes::Mx2FromLines(const vector<string> &Lines, uint LineNr,
+  const string &MxName, t_Mx2 &Mx) const
 	{
 	InitMx2(Mx);
-	string Line;
-	bool Ok = ReadLineStdioFile(f, Line);
-	asserta(Ok);
-	asserta(Line == MxName);
+	asserta(LineNr < SIZE(Lines));
+	asserta(Lines[LineNr] == MxName);
+	++LineNr;
+
 	const uint ShapeCount = GetShapeCount();
 	for (uint ShapeIndex1 = 0; ShapeIndex1 < ShapeCount; ++ShapeIndex1)
 		{
 		vector<string> Fields;
-		Ok = ReadLineStdioFile(f, Line);
-		asserta(Ok);
+		asserta(LineNr < SIZE(Lines));
+		const string &Line = Lines[LineNr];
+		++LineNr;
 		Split(Line, Fields, '\t');
 		asserta(SIZE(Fields) == ShapeIndex1 + 1);
 		asserta(StrToUint(Fields[0]) == ShapeIndex1);
@@ -331,6 +333,7 @@ void Shapes::Mx2FromFile(FILE *f, const string &MxName, t_Mx2 &Mx) const
 			Mx[ShapeIndex1][ShapeIndex2] = x;
 			}
 		}
+	return LineNr;
 	}
 
 void Shapes::Mx3ToFile(FILE *f, const string &MxName,
@@ -359,15 +362,15 @@ void Shapes::Mx3ToFile(FILE *f, const string &MxName,
 		}
 	}
 
-void Shapes::Mx3FromFile(FILE *f, const string &MxName, t_Mx3 &Mx) const
+uint Shapes::Mx3FromLines(const vector<string> &Lines, uint LineNr,
+  const string &MxName, t_Mx3 &Mx) const
 	{
 	InitMx3(Mx);
 
-	string Line;
-	vector<string> Fields;
-	bool Ok = ReadLineStdioFile(f, Line);
-	asserta(Ok);
-	asserta(Line == MxName);
+	asserta(LineNr < SIZE(Lines));
+	asserta(Lines[LineNr] == MxName);
+	++LineNr;
+
 	const uint ShapeCount = GetShapeCount();
 	for (uint ShapeIndex1 = 0; ShapeIndex1 < ShapeCount; ++ShapeIndex1)
 		{
@@ -377,8 +380,11 @@ void Shapes::Mx3FromFile(FILE *f, const string &MxName, t_Mx3 &Mx) const
 			uint L2 = m_Lengths[ShapeIndex2];
 			for (uint Offset1 = 0; Offset1 < L1; ++Offset1)
 				{
-				Ok = ReadLineStdioFile(f, Line);
-				asserta(Ok);
+				asserta(LineNr < SIZE(Lines));
+				const string &Line = Lines[LineNr];
+				++LineNr;
+
+				vector<string> Fields;
 				Split(Line, Fields, '\t');
 				asserta(SIZE(Fields) == L2 + 3);
 				asserta(StrToUint(Fields[0]) == ShapeIndex1);
@@ -392,6 +398,7 @@ void Shapes::Mx3FromFile(FILE *f, const string &MxName, t_Mx3 &Mx) const
 				}
 			}
 		}
+	return LineNr;
 	}
 
 void Shapes::ToFile(const string &FileName) const
@@ -418,22 +425,26 @@ void Shapes::ToFile(const string &FileName) const
 	CloseStdioFile(f);
 	}
 
-void Shapes::FromFile(const string &FileName)
+void Shapes::FromLines(const vector<string> &Lines)
 	{
-	FILE *f = OpenStdioFile(FileName);
-	string Line;
+	const uint LineCount = SIZE(Lines);
 	vector<string> Fields;
 
-	bool Ok = ReadLineStdioFile(f, Line);
-	asserta(Ok);
-	Split(Line, Fields, '\t');
+	uint LineNr = 0;
+	asserta(LineNr < LineCount);
+	const string &Line0 = Lines[LineNr];
+	++LineNr;
+
+	Split(Line0, Fields, '\t');
 	asserta(SIZE(Fields) == 2);
 	asserta(Fields[0] == "shapes");
 	uint ShapeCount = StrToUint(Fields[1]);
 
-	Ok = ReadLineStdioFile(f, Line);
-	asserta(Ok);
-	Split(Line, Fields, '\t');
+	asserta(LineNr < LineCount);
+	const string &Line1 = Lines[LineNr];
+	++LineNr;
+
+	Split(Line1, Fields, '\t');
 	asserta(SIZE(Fields) == 4);
 	asserta(Fields[0] == "AD_BG_CD");
 	m_Offset_D_MotifA = StrToUint(Fields[1]);
@@ -442,8 +453,10 @@ void Shapes::FromFile(const string &FileName)
 
 	for (uint ShapeIndex = 0; ShapeIndex < ShapeCount; ++ShapeIndex)
 		{
-		bool Ok = ReadLineStdioFile(f, Line);
-		asserta(Ok);
+		asserta(LineNr < LineCount);
+		const string &Line = Lines[LineNr];
+		++LineNr;
+
 		Split(Line, Fields, '\t');
 		asserta(SIZE(Fields) == 5);
 		asserta(StrToUint(Fields[0]) == ShapeIndex);
@@ -457,14 +470,18 @@ void Shapes::FromFile(const string &FileName)
 		m_MaxNeighborDists.push_back(MaxND);
 		}
 
-	Mx3FromFile(f, "MeanDistMx3", m_MeanDistMx3);
-	Mx3FromFile(f, "StdDevMx3", m_StdDevMx3);
+	LineNr = Mx3FromLines(Lines, LineNr, "MeanDistMx3", m_MeanDistMx3);
+	LineNr = Mx3FromLines(Lines, LineNr, "StdDevMx3", m_StdDevMx3);
 
-	Ok = ReadLineStdioFile(f, Line);
-	asserta(Ok);
-	asserta(Line == "//");
+	asserta(LineNr < LineCount);
+	asserta(Lines[LineNr] == "//");
+	}
 
-	CloseStdioFile(f);
+void Shapes::FromFile(const string &FileName)
+	{
+	vector<string> Lines;
+	ReadLinesFromFile(FileName, Lines);
+	FromLines(Lines);
 	}
 
 double Shapes::GetMeanDist3(uint ShapeIndex1, uint ShapeIndex2,

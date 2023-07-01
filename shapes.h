@@ -47,12 +47,18 @@ public:
 	void InitMx3(t_Mx3 &Mx) const;
 	void TrainGetPosVec(const PDBChain &Chain, const vector<string> &Seqs,
 	  vector<uint> &PosVec) const;
+
+	void ToFile(const string &FileName) const;
 	void Mx2ToFile(FILE *f, const string &MxName, const t_Mx2 &Mx) const;
 	void Mx3ToFile(FILE *f, const string &MxName, const t_Mx3 &Mx) const;
-	void Mx2FromFile(FILE *f, const string &MxName, t_Mx2 &Mx) const;
-	void Mx3FromFile(FILE *f, const string &MxName, t_Mx3 &Mx) const;
-	void ToFile(const string &FileName) const;
+
 	void FromFile(const string &FileName);
+	void FromLines(const vector<string> &Lines);
+	uint Mx2FromLines(const vector<string> &Lines, uint LineNr,
+	  const string &MxName, t_Mx2 &Mx) const;
+	uint Mx3FromLines(const vector<string> &Lines, uint LineNr,
+	  const string &MxName, t_Mx3 &Mx) const;
+
 	double GetMeanDist3(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Offset1, uint Offset2) const;
 	double GetStdDev3(uint ShapeIndex1, uint ShapeIndex2,
