@@ -23,11 +23,12 @@ void cmd_shapes_train()
 	vector<uint> MotifLengths;
 	vector<vector<string> > MotifSeqsVec;
 	vector<PDBChain *> Chains;
+	Progress("Reading chains\n");
 	ReadChains(InputFileName1, Chains);
 	const uint ChainCount = SIZE(Chains);
 
 	GetTrainingMotifs(InputFileName2, Chains,
-	  ChainLabels, MotifNames, MotifLengths, MotifSeqsVec, opt_extend_abc);
+	  ChainLabels, MotifNames, MotifLengths, MotifSeqsVec);
 	const uint N = SIZE(ChainLabels);
 	asserta(SIZE(MotifSeqsVec) == N);
 
@@ -41,7 +42,7 @@ void cmd_shapes_train()
 
 	vector<PDBChain *> Chains2;
 	vector<vector<string> > MotifSeqsVec2;
-	uint LabelNotFoundCount = 0;
+	vector<string> NotFoundLabels;
 	for (uint i = 0; i < ChainCount; ++i)
 		{
 		PDBChain &Chain = *Chains[i];
@@ -49,7 +50,7 @@ void cmd_shapes_train()
 		map<string, uint>::const_iterator p = ChainLabelToIndex.find(Label);
 		if (p == ChainLabelToIndex.end())
 			{
-			++LabelNotFoundCount;
+			NotFoundLabels.push_back(Label);
 			continue;
 			}
 		uint Index = p->second;
@@ -57,12 +58,17 @@ void cmd_shapes_train()
 		MotifSeqsVec2.push_back(MotifSeqsVec[Index]);
 		}
 
-	if (LabelNotFoundCount > 0)
-		Warning("%u chain labels not found", LabelNotFoundCount);
+	uint NotFoundCount = SIZE(NotFoundLabels);
+	if (NotFoundCount > 0)
+		{
+		for (uint i = 0; i < NotFoundCount; ++i)
+			Log("Not found >%s\n", NotFoundLabels[i].c_str());
+		Warning("%u chain labels not found", NotFoundCount);
+		}
 
 	Shapes S;
 	S.Init(MotifNames, MotifLengths);
-	S.Train(Chains2, MotifSeqsVec2, opt_extend_abc);
+	S.Train(Chains2, MotifSeqsVec2);
 	S.ToFile(opt_output);
 
 	ShapeSearcher::TestABC(S, Chains2, MotifSeqsVec2);

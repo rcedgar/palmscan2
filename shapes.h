@@ -42,7 +42,7 @@ public:
 	void Init(const vector<string> &Names,
 	  const vector<uint> &Lengths);
 	void Train(const vector<PDBChain *> &Chains,
-	  const vector<vector<string> > &SeqsVec, bool ExtendABC);
+	  const vector<vector<string> > &SeqsVec);
 	void InitMx2(t_Mx2 &Mx) const;
 	void InitMx3(t_Mx3 &Mx) const;
 	void TrainGetPosVec(const PDBChain &Chain, const vector<string> &Seqs,
@@ -70,4 +70,4 @@ public:
 void GetTrainingMotifs(const string &FileName,
   const vector<PDBChain *> &Chains, vector<string> &ChainLabels,
   vector<string> &MotifNames, vector<uint> &MotifLengths,
-  vector<vector<string> > &MotifSeqsVec, bool ExtendABC);
+  vector<vector<string> > &MotifSeqsVec);

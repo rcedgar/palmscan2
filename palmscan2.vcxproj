@@ -392,6 +392,7 @@
     <ClCompile Include="searchtriangle.cpp" />
     <ClCompile Include="segs.cpp" />
     <ClCompile Include="shapes.cpp" />
+    <ClCompile Include="shapesearchabc.cpp" />
     <ClCompile Include="shapesearcher.cpp" />
     <ClCompile Include="shapesearchpalm.cpp" />
     <ClCompile Include="shapes_score1.cpp" />

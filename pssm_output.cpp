@@ -34,7 +34,7 @@ void RdRpSearcher::WriteOutput() const
 	WriteMotifs(g_fmotifs, g_fmotifs);
 	WriteMotifs(g_fmotifs_abc, g_fmotifs_cab);
 	WriteCore(g_fcore, g_fcore);
-	WriteShapeTrainTsv(g_fshapes_train_tsv);
+	WriteShapesTrainTsv(g_fshapes_train_tsv);
 	bool Ok = WriteCore(g_fcore_abc, g_fcore_cab);
 	if (!Ok)
 		SeqToFasta(g_fcore_notmatched, m_QueryLabel.c_str(),
@@ -460,7 +460,7 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 	fprintf(f, "\n");
 	}
 
-void RdRpSearcher::WriteShapeTrainTsv(FILE *f) const
+void RdRpSearcher::WriteShapesTrainTsv(FILE *f) const
 	{
 	if (f == 0)
 		return;
@@ -477,7 +477,10 @@ void RdRpSearcher::WriteShapeTrainTsv(FILE *f) const
 		fprintf(f, "\n");
 		}
 
-	if (m_TopPalmHit.m_Score <= 0)
+	double MinScore = 15;
+	if (optset_minscore)
+		MinScore = opt_minscore;
+	if (m_TopPalmHit.m_Score < MinScore)
 		return;
 
 	string QueryLabel = m_QueryLabel;
@@ -492,12 +495,19 @@ void RdRpSearcher::WriteShapeTrainTsv(FILE *f) const
 	uint PPL = 0;
 	uint Suff = 0;
 
-	if (m_TopPalmHit.m_Score <= 0)
-		return;
-
 	Score = m_TopPalmHit.m_Score;
 	uint GroupIndex = m_TopPalmHit.m_GroupIndex;
 	GetGroupName(GroupIndex, GroupName);
+	if (GroupName == "Birna")
+		{
+		static bool WarningDone = false;
+		if (!WarningDone)
+			{
+			Warning("Birna");
+			WarningDone = true;
+			}
+		return;
+		}
 	if (m_TopPalmHit.m_Permuted)
 		return;
 

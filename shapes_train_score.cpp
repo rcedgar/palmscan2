@@ -87,7 +87,7 @@ void cmd_shapes_train_score()
 	const uint ChainCount = SIZE(Chains);
 
 	GetTrainingMotifs(InputFileName2, Chains, ChainLabels,
-	  MotifNames, MotifLengths, MotifSeqsVec, opt_extend_abc);
+	  MotifNames, MotifLengths, MotifSeqsVec);
 	const uint N = SIZE(ChainLabels);
 	asserta(SIZE(MotifSeqsVec) == N);
 

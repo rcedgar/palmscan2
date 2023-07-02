@@ -536,6 +536,9 @@
     <ClCompile Include="shapesearchpalm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shapesearchabc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

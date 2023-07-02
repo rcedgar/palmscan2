@@ -78,23 +78,15 @@ void Shapes::GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
 	}
 
 void Shapes::Train(const vector<PDBChain *> &Chains,
-  const vector<vector<string> > &SeqsVec, bool ExtendABC)
+  const vector<vector<string> > &SeqsVec)
 	{
-	//if (ExtendABC)
-	//	{
-	//	m_Offset_D_MotifA = 5;
-	//	m_Offset_G_MotifB = 1;
-	//	m_Offset_D_MotifC = 5;
-	//	}
-	//else
-	//	{
-	//	m_Offset_D_MotifA = 3;
-	//	m_Offset_G_MotifB = 1;
-	//	m_Offset_D_MotifC = 3;
-	//	}
-	m_Offset_D_MotifA = 5;
-	m_Offset_G_MotifB = 1;
-	m_Offset_D_MotifC = 7;
+	asserta(optset_abcoffsets);
+	vector<string> Fields;
+	Split(opt_abcoffsets, Fields, '/');
+	asserta(SIZE(Fields) == 3);
+	m_Offset_D_MotifA = StrToUint(Fields[0]);
+	m_Offset_G_MotifB = StrToUint(Fields[1]);
+	m_Offset_D_MotifC = StrToUint(Fields[2]);
 
 	const uint ChainCount = SIZE(Chains);
 	asserta(SIZE(SeqsVec) == ChainCount);

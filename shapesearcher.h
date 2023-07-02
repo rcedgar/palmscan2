@@ -16,9 +16,18 @@ public:
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
 	double m_MinScoreABC = 0.4;
+	uint m_MaxTopHitCountABC = 8;
 
 	vector<uint> m_ShapePosVec;
 	vector<double> m_ShapeScores;
+
+	vector<uint> m_ShapeIndexABCs;
+	vector<char> m_CharABCs;
+	vector<uint> m_OffsetABCs;
+	vector<vector<uint> > m_TopPosABCs;
+	vector<vector<double> > m_TopScoreABCs;
+
+	double m_ScoreABC;
 
 public:
 	void ClearSearch()
@@ -33,7 +42,7 @@ public:
 
 	uint GetQL() const
 		{
-		return m_Query->GetSeqLength();\
+		return m_Query->GetSeqLength();
 		}
 
 	const char *GetShapeName(uint ShapeIndex) const
@@ -94,6 +103,7 @@ public:
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
 	double SearchABC();
+	void SearchABC1(uint k);
 
 	void TestABC1(const PDBChain &Chain,
 	  const vector<string> &MotifSeqs);

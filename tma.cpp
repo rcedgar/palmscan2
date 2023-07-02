@@ -1789,17 +1789,6 @@ int TMA::TMalign_main(double** xa, double** ya,
 	do_rotation(xa, xt, xlen, t, u);
 	k = 0;
 
-	//{//@@
-	//Log("invmap0[%d]: ", ylen);
-	//for (int j = 0; j < ylen; ++j)
-	//	{
-	//	Log(" %d", invmap0[j]);
-	//	if (j%20 == 0)
-	//		Log("\n");
-	//	}
-	//Log("\n");
-	//}//@@
-
 	for (int j = 0; j < ylen; j++)
 		{
 		i = invmap0[j];

@@ -30,6 +30,7 @@ STR_OPT(ppp)
 STR_OPT(tree)
 STR_OPT(splitb)
 STR_OPT(shapes)
+STR_OPT(abcoffsets)
 
 STR_OPT(train_cal)
 STR_OPT(test_cal)
@@ -173,7 +174,6 @@ FLAG_OPT(compact)
 FLAG_OPT(dotproduct)
 FLAG_OPT(subchainc)
 FLAG_OPT(delete_hetatm)
-FLAG_OPT(extend_abc)
 
 #undef FLAG_OPT
 #undef UNS_OPT
