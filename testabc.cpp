@@ -1,89 +1,65 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 
+static double MIN_PRED_SCORE = 0.6;
+static int MAX_SHIFT = 4;
+
+static uint g_NoRefCount;
+static uint g_NoPredCount;
 static uint g_AgreeCount;
 static uint g_DisagreeCount;
 static uint g_RefPermutedCount;
+static uint g_PredScoreHigherCount;
+static uint g_PredScoreTooLowCount;
 
-static void LogDiff(ShapeSearcher &SS, const PDBChain &Chain,
-  uint ShapeIndex, uint RefPosX, uint PredPosX)
+void ShapeSearcher::LogShapes(const vector<uint> &ShapeIndexes,
+  const vector<string> &ShapeSeqs) const
 	{
-	if (RefPosX == UINT_MAX && PredPosX == UINT_MAX)
-		return;
+	const uint N = SIZE(ShapeIndexes);
+	asserta(SIZE(ShapeSeqs) == N);
 
-	string RefSeqX = ".";
-	string PredSeqX = ".";
-
-	uint XL = SS.GetShapeLength(ShapeIndex);
-
-	const char *Label = Chain.m_Label.c_str();
-	if (RefPosX != UINT_MAX)
-		Chain.GetSubSeq(RefPosX, XL, RefSeqX);
-
-	if (PredPosX != UINT_MAX)
-		Chain.GetSubSeq(PredPosX, XL, PredSeqX);
-
-	if (RefSeqX == PredSeqX)
-		return;
-
-	Log("%s:", SS.GetShapeName(ShapeIndex));
-	if (RefPosX == UINT_MAX)
-		Log(" ref=.");
-	else
-		Log("  ref=%s(%u)", RefSeqX.c_str(), RefPosX);
-
-	if (PredPosX == UINT_MAX)
-		Log(" pred=.");
-	else
-		Log("  pred=%s(%u)", PredSeqX.c_str(), PredPosX);
-
-	if (RefPosX == UINT_MAX && PredPosX != UINT_MAX)
-		Log(" << found");
-
-	int Shift = 999;
-	if (RefPosX != UINT_MAX && PredPosX != UINT_MAX)
+	Log(">%s", m_Query->m_Label.c_str());
+	const string &Seq = m_Query->m_Seq;
+	vector<uint> PosVec;
+	for (uint i = 0; i < N; ++i)
 		{
-		Shift = int(PredPosX) - int(RefPosX);
-		Log(" << shift %+d", Shift);
-		if (abs(Shift) <= 3)
-			Log(" ok");
-		else
-			Log(" *ERROR*");
+		uint ShapeIndex = ShapeIndexes[i];
+		const string &ShapeSeq = ShapeSeqs[i];
+		size_t stPos = Seq.find(ShapeSeq);
+		uint Pos = (stPos == string::npos ? UINT_MAX : uint(stPos));
+		const char *ShapeName = GetShapeName(ShapeIndex);
+		Log(" %s:%s", ShapeName, ShapeSeq.c_str());
+		if (Pos != UINT_MAX)
+			{
+			double Score = GetSelfScore(ShapeIndex, Pos);
+			Log("(%.3f)", Score);
+			}
 		}
-	if (RefPosX != UINT_MAX && PredPosX == UINT_MAX)
-		Log(" << NOT FOUND");
-
 	Log("\n");
 	}
 
-static bool CmpOk(ShapeSearcher &SS, const PDBChain &Chain,
-  uint ShapeIndex, uint RefPosX, uint PredPosX)
+void ShapeSearcher::LogShape(const string &Msg, uint ShapeIndex, uint Pos) const
 	{
-	if (RefPosX == PredPosX)
-		return true;
-
-	if (RefPosX == UINT_MAX && PredPosX != UINT_MAX)
-		return true;
-
-	if (RefPosX != UINT_MAX && PredPosX == UINT_MAX)
-		return false;
-
-	asserta(RefPosX != UINT_MAX && PredPosX != UINT_MAX);
-	int Shift = int(PredPosX) - int(RefPosX);
-	if (abs(Shift) <= 3)
-		return true;
-	else
-		return false;
-	}
-
-static bool Cmp1(ShapeSearcher &SS, const PDBChain &Chain,
-  uint ShapeIndex, uint RefPosX, uint PredPosX)
-	{
-	bool Ok = CmpOk(SS, Chain, ShapeIndex, RefPosX, PredPosX);
-	if (Ok)
-		return true;
-	LogDiff(SS, Chain, ShapeIndex, RefPosX, PredPosX);
-	return false;
+	Log("%s Shape_", Msg.c_str());
+	if (ShapeIndex == UINT_MAX)
+		{
+		Log("*  ");
+		return;
+		}
+	Log("%s", GetShapeName(ShapeIndex));
+	if (Pos == UINT_MAX)
+		{
+		Log(" pos=.  ", Pos);
+		return;
+		}
+	Log(" pos=%u", Pos);
+	string ShapeSeq;
+	uint ShapeLength = GetShapeLength(ShapeIndex);
+	GetSubSeq(Pos, ShapeLength, ShapeSeq);
+	Log(" %s", ShapeSeq.c_str());
+	double Score = GetSelfScore(ShapeIndex, Pos);
+	Log(" score %.3g", Score);
+	Log("  ");
 	}
 
 void ShapeSearcher::TestABC(const Shapes &S,
@@ -96,39 +72,50 @@ void ShapeSearcher::TestABC(const Shapes &S,
 	g_AgreeCount = 0;
 	ShapeSearcher SS;
 	SS.Init(S);
-#if 0
-	{
-	uint MinDistAB, MaxDistAB;
-	uint MinDistBC, MaxDistBC;
-	SS.GetDistRange(SS.m_ShapeIndexA, SS.m_ShapeIndexB, MinDistAB, MaxDistAB);
-	SS.GetDistRange(SS.m_ShapeIndexB, SS.m_ShapeIndexC, MinDistBC, MaxDistBC);
-
-	MinDistAB *= 0.8;
-	MaxDistAB *= 1.2;
-
-	MinDistBC *= 0.8;
-	MaxDistBC *= 1.2;
-	Log("DistAB = %u .. %u, BC = %u .. %u\n",
-	  MinDistAB, MaxDistAB, MinDistBC, MaxDistBC);
-	}
-#endif // 0
 	for (uint i = 0; i < N; ++i)
 		{
 		ProgressStep(i, N, "Test ABC");
 		SS.TestABC1(*Chains[i], MotifSeqsVec[i]);
 		}
 
-	ProgressLog("Agree %u, disagree %u, permuted %u\n",
-	  g_AgreeCount, g_DisagreeCount, g_RefPermutedCount);
+	ProgressLog("Agree %u, disagree %u, pred higher %u, permuted %u, no pred %u, no ref %u, too low %u (%.4f)\n",
+	  g_AgreeCount,
+	  g_DisagreeCount,
+	  g_PredScoreHigherCount,
+	  g_RefPermutedCount,
+	  g_NoPredCount,
+	  g_NoRefCount,
+	  g_PredScoreTooLowCount,
+	  MIN_PRED_SCORE);
+
+	uint RevHitCount = 0;
+	for (uint i = 0; i < N; ++i)
+		{
+		ProgressStep(i, N, "Test ABC reverse");
+		const PDBChain &Chain = *Chains[i];
+		PDBChain RevChain;
+		Chain.GetReverse(RevChain);
+		SS.SetQuery(RevChain);
+		double RevScore = SS.SearchABC();
+		if (RevScore >= MIN_PRED_SCORE)
+			++RevHitCount;
+		}
+	Log("%u rev hits\n", RevHitCount);
+	}
+
+static bool ShiftOk(uint RefPos, uint PredPos)
+	{
+	int Shift = abs(int(RefPos) - int(PredPos));
+	return Shift <= MAX_SHIFT;
 	}
 
 void ShapeSearcher::TestABC1(const PDBChain &Chain,
-  const vector<string> &MotifSeqs)
+  const vector<string> &RefMotifSeqs)
 	{
 	const string &Seq = Chain.m_Seq;
-	size_t stPosA = Seq.find(MotifSeqs[m_ShapeIndexA]);
-	size_t stPosB = Seq.find(MotifSeqs[m_ShapeIndexB]);
-	size_t stPosC = Seq.find(MotifSeqs[m_ShapeIndexC]);
+	size_t stPosA = Seq.find(RefMotifSeqs[m_ShapeIndexA]);
+	size_t stPosB = Seq.find(RefMotifSeqs[m_ShapeIndexB]);
+	size_t stPosC = Seq.find(RefMotifSeqs[m_ShapeIndexC]);
 
 	uint RefPosA = (stPosA == string::npos ? UINT_MAX : uint(stPosA));
 	uint RefPosB = (stPosB == string::npos ? UINT_MAX : uint(stPosB));
@@ -136,79 +123,140 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 
 	if (RefPosC != UINT_MAX && RefPosA != UINT_MAX && RefPosC < RefPosA)
 		{
-		Log("Permuted >%s\n", Chain.m_Label.c_str());
 		++g_RefPermutedCount;
 		return;
 		}
 
 	SetQuery(Chain);
 
-	SearchABC();
+	if (RefPosA == UINT_MAX || RefPosB == UINT_MAX || RefPosC == UINT_MAX)
+		{
+		++g_NoRefCount;
+		return;
+		}
+
+	double PredScore = SearchABC();
+	if (PredScore < MIN_PRED_SCORE)
+		{
+		++g_PredScoreTooLowCount;
+		return;
+		}
+
 	uint PredPosA = m_ShapePosVec[m_ShapeIndexA];
 	uint PredPosB = m_ShapePosVec[m_ShapeIndexB];
 	uint PredPosC = m_ShapePosVec[m_ShapeIndexC];
 
-	if (PredPosA == RefPosA && PredPosB == RefPosB && PredPosC == RefPosC)
+	if (ShiftOk(PredPosA, RefPosA) &&
+	  ShiftOk(PredPosB, RefPosB) &&
+	  ShiftOk(PredPosC,RefPosC))
 		{
-		Log(">%s agree ABC\n", Chain.m_Label.c_str());
 		++g_AgreeCount;
 		return;
 		}
 
-	Log("\n");
-	Log(">%s\n", Chain.m_Label);
-
-	if (
-	  PredPosA != UINT_MAX &&
-	  PredPosB != UINT_MAX &&
-	  PredPosC != UINT_MAX &&
-	  RefPosA != UINT_MAX &&
-	  RefPosB != UINT_MAX &&
-	  RefPosC != UINT_MAX)
+	if (PredPosA == UINT_MAX || PredPosB == UINT_MAX || PredPosC == UINT_MAX)
 		{
-		vector<uint> ShapeIndexes;
-		ShapeIndexes.push_back(m_ShapeIndexA);
-		ShapeIndexes.push_back(m_ShapeIndexB);
-		ShapeIndexes.push_back(m_ShapeIndexC);
-
-		vector<uint> RefPosVec;
-		RefPosVec.push_back(RefPosA);
-		RefPosVec.push_back(RefPosB);
-		RefPosVec.push_back(RefPosC);
-		double RefScore = GetScoreShapes(ShapeIndexes, RefPosVec);
-
-		const string &Seq = m_Query->m_Seq;
-		double RefScoreSelfA = GetSelfScore(m_ShapeIndexA, RefPosA);
-		double RefScoreSelfB = GetSelfScore(m_ShapeIndexB, RefPosB);
-		double RefScoreSelfC = GetSelfScore(m_ShapeIndexC, RefPosC);
-
-		char cA = Seq[RefPosA + m_OffsetABCs[0]];
-		char cB = Seq[RefPosB + m_OffsetABCs[1]];
-		char cC = Seq[RefPosC + m_OffsetABCs[2]];
-
-		Log("RefA pos %u char %c self %.3g\n", RefPosA, cA, RefScoreSelfA);
-		Log("RefB pos %u char %c self %.3g\n", RefPosB, cB, RefScoreSelfB);
-		Log("RefC pos %u char %c self %.3g\n", RefPosC, cC, RefScoreSelfC);
-
-		double PredScoreSelfA = GetSelfScore(m_ShapeIndexA, PredPosA);
-		double PredScoreSelfB = GetSelfScore(m_ShapeIndexB, PredPosB);
-		double PredScoreSelfC = GetSelfScore(m_ShapeIndexC, PredPosC);
-		Log("PredA pos %u self %.3g\n", PredPosA, PredScoreSelfA);
-		Log("PredB pos %u self %.3g\n", PredPosB, PredScoreSelfB);
-		Log("PredC pos %u self %.3g\n", PredPosC, PredScoreSelfC);
-
-		vector<uint> PredPosVec;
-		PredPosVec.push_back(PredPosA);
-		PredPosVec.push_back(PredPosB);
-		PredPosVec.push_back(PredPosC);
-		double PredScore = GetScoreShapes(ShapeIndexes, PredPosVec);
-		Log("RefScore %.3g AB=%u BC=%u, PredScore %.3g\n",
-		  RefScore, RefPosB - RefPosA, RefPosC - RefPosB, PredScore);
+		++g_NoPredCount;
+		return;
 		}
 
-	bool OkA = Cmp1(*this, Chain, m_ShapeIndexA, RefPosA, PredPosA);
-	bool OkB = Cmp1(*this, Chain, m_ShapeIndexB, RefPosB, PredPosB);
-	bool OkC = Cmp1(*this, Chain, m_ShapeIndexC, RefPosC, PredPosC);
-	if (!OkA || !OkB || !OkC)
-		++g_DisagreeCount;
+	vector<uint> ShapeIndexes;
+	ShapeIndexes.push_back(m_ShapeIndexA);
+	ShapeIndexes.push_back(m_ShapeIndexB);
+	ShapeIndexes.push_back(m_ShapeIndexC);
+
+	vector<uint> RefPosVec;
+	RefPosVec.push_back(RefPosA);
+	RefPosVec.push_back(RefPosB);
+	RefPosVec.push_back(RefPosC);
+	double RefScore = GetScoreShapes(ShapeIndexes, RefPosVec);
+
+	if (PredScore > RefScore)
+		{
+		++g_PredScoreHigherCount;
+		return;
+		}
+
+	++g_DisagreeCount;
+
+	Log("\n");
+	Log(">%s  ref %.3g, pred %.3g\n",
+	  m_Query->m_Label.c_str(), RefScore, PredScore);
+
+	LogShape("RefA", m_ShapeIndexA, RefPosA);
+	if (PredPosA != RefPosA)
+		LogShape("PrdA", m_ShapeIndexA, PredPosA);
+	Log("\n");
+
+	LogShape("RefB", m_ShapeIndexB, RefPosB);
+	if (PredPosB != RefPosB)
+		LogShape("PrdB", m_ShapeIndexB, PredPosB);
+	Log("\n");
+
+	LogShape("RefC", m_ShapeIndexC, RefPosC);
+	if (PredPosC != RefPosC)
+		LogShape("PrdC", m_ShapeIndexC, PredPosC);
+	Log("\n");
+
+	Log("reinitialize\n");
+	Log("load d:/int/ictv_rdrp_structures/pdb/%s.pdb\n",
+	  m_Query->m_Label.c_str());
+	Log("color gray70\n");
+
+	Log("select pepseq %s\n", RefMotifSeqs[0].c_str());
+	Log("color tv_blue, sele\n");
+	if (PredPosA != RefPosA)
+		{
+		string PredSeqA;
+		uint LA = GetShapeLength(m_ShapeIndexA);
+		GetSubSeq(PredPosA, LA, PredSeqA);
+		Log("select pepseq %s\n", PredSeqA.c_str());
+		Log("color slate, sele\n");
+		}
+
+	Log("select pepseq %s\n", RefMotifSeqs[1].c_str());
+	Log("color tv_green, sele\n");
+	if (PredPosB != RefPosB)
+		{
+		string PredSeqB;
+		uint LB = GetShapeLength(m_ShapeIndexB);
+		GetSubSeq(PredPosB, LB, PredSeqB);
+		Log("select pepseq %s\n", PredSeqB.c_str());
+		Log("color splitpea, sele\n");
+		}
+
+	Log("select pepseq %s\n", RefMotifSeqs[2].c_str());
+	Log("color tv_red, sele\n");
+	if (PredPosC != RefPosC)
+		{
+		string PredSeqC;
+		uint LC = GetShapeLength(m_ShapeIndexC);
+		GetSubSeq(PredPosC, LC, PredSeqC);
+		Log("select pepseq %s\n", PredSeqC.c_str());
+		Log("color salmon, sele\n");
+		}
+	Log("deselect\n");
+	}
+
+void ShapeSearcher::ToPmlABC(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	if (m_PosA == UINT_MAX || m_PosB == UINT_MAX || m_PosC == UINT_MAX)
+		return;
+
+	string SeqA, SeqB, SeqC;
+	GetShapeSeq(m_ShapeIndexA, SeqA);
+	GetShapeSeq(m_ShapeIndexB, SeqB);
+	GetShapeSeq(m_ShapeIndexC, SeqC);
+
+	fprintf(f, "color gray70\n");
+	fprintf(f, "select pepseq %s\n", SeqA.c_str());
+	fprintf(f, "color tv_blue, sele\n");
+	fprintf(f, "select pepseq %s\n", SeqB.c_str());
+	fprintf(f, "color tv_green, sele\n");
+	fprintf(f, "select pepseq %s\n", SeqC.c_str());
+	fprintf(f, "color tv_red, sele\n");
+	fprintf(f, "deselect\n");
 	}

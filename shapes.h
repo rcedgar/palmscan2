@@ -38,6 +38,7 @@ public:
 		}
 
 	uint GetShapeCount() const { return SIZE(m_Names); }
+	uint GetShapeLength(uint ShapeIndex) const;
 	uint GetShapeIndex(const string &Name) const;
 	void Init(const vector<string> &Names,
 	  const vector<uint> &Lengths);

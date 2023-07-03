@@ -5,7 +5,7 @@
 
 /***
 shapes_train
-	Input: (a) tsv file with shape sequences or (b) PSSMs
+	Input: tsv file with shape sequences
 	Output: calculate and save contact map profile for
 	  all-vs-all shapes.
 
@@ -62,8 +62,8 @@ void cmd_shapes_train()
 	if (NotFoundCount > 0)
 		{
 		for (uint i = 0; i < NotFoundCount; ++i)
-			Log("Not found >%s\n", NotFoundLabels[i].c_str());
-		Warning("%u chain labels not found", NotFoundCount);
+			Log("Not found in training tsv >%s\n", NotFoundLabels[i].c_str());
+		Warning("%u chain labels not found in training tsv", NotFoundCount);
 		}
 
 	Shapes S;

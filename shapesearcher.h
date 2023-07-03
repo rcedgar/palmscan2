@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shapes.h"
+#include <map>
 
 class ShapeSearcher
 	{
@@ -15,19 +16,12 @@ public:
 	uint m_ShapeIndexA = UINT_MAX;
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
-	double m_MinScoreABC = 0.4;
+	double m_ScoreABC = 0;
+	double m_MinScoreABC = 0.6;
 	uint m_MaxTopHitCountABC = 8;
 
 	vector<uint> m_ShapePosVec;
 	vector<double> m_ShapeScores;
-
-	vector<uint> m_ShapeIndexABCs;
-	vector<char> m_CharABCs;
-	vector<uint> m_OffsetABCs;
-	vector<vector<uint> > m_TopPosABCs;
-	vector<vector<double> > m_TopScoreABCs;
-
-	double m_ScoreABC;
 
 public:
 	void ClearSearch()
@@ -39,6 +33,8 @@ public:
 		}
 
 	void Init(const Shapes &S);
+
+	void ToTsv(FILE *f) const;
 
 	uint GetQL() const
 		{
@@ -103,17 +99,65 @@ public:
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
 	double SearchABC();
-	void SearchABC1(uint k);
 
 	void TestABC1(const PDBChain &Chain,
 	  const vector<string> &MotifSeqs);
 
 	void GetShapeSeq(uint ShapeIndex, string &Seq) const;
 
+	void GetSubSeq(uint Pos, uint n, string &Seq) const;
+
+	void LogShape(const string &Msg, uint ShapeIndex, uint Pos) const;
+
+	void ToPmlABC(FILE *f) const;
+
+	void LogShapes(const vector<uint> &ShapeIndexes,
+	  const vector<string> &ShapeSeqs) const;
+
 public:
 	static void TestABC(const Shapes &S,
 	  const vector<PDBChain *> &Chains,
 	  vector<vector<string> > &MotifSeqsVec);
+
+	static void SearchABCX(const Shapes &S,
+	  const vector<PDBChain *> &Chains, double MinScoreX,
+	  vector<string> &SeqXs, vector<double> &Scores);
+
+	static void JoinABCX1(const vector<string> &ChainLabels,
+	  const map<string, vector<string> > &LabelToABC,
+	  const map<string, string> &LabelToX,
+	  bool BeforeABC,
+	  vector<string> &Xs,
+	  vector<vector<string> > &ABCs,
+	  vector<vector<string> > &ABCXs,
+	  vector<string> &Names,
+	  vector<uint> &Lengths);
+
+	static void JoinABCX2(
+	  const vector<vector<string> > &ABCs,
+	  const vector<string> &Xs,
+	  bool BeforeABC,
+	  vector<vector<string> > &ABCXs,
+	  vector<string> &Names,
+	  vector<uint> &Lengths);
+
+	static void TrainABCX(const vector<PDBChain *> &Chains,
+	  const vector<vector<string> > &ABCs,
+	  const vector<string> &SeqsX1s,
+	  bool BeforeABC,
+	  Shapes &S1,
+	  Shapes &S2,
+	  vector<string> &SeqX2s,
+	  vector<string> &SeqX3s,
+	  vector<double> &ScoreX2s,
+	  vector<double> &ScoreX3s);
+
+	static void GetTrainStats(double MinScoreX,
+	  const vector<PDBChain *> &Chains,
+	  vector<string> &SeqX2s,
+	  vector<string> &SeqX3s,
+	  vector<double> &ScoreX2s,
+	  vector<double> &ScoreX3s);
 	};
 
 double GetNormal(double Mu, double Sigma, double x);

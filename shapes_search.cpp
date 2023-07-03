@@ -1,15 +1,56 @@
 #include "myutils.h"
 #include "pdbchain.h"
-#include "rdrpsearcher.h"
-#include "abcxyz.h"
 #include "outputfiles.h"
 #include "chainreader.h"
-//#include "cmpsearcher.h"
 #include "shapesearcher.h"
 #include <time.h>
 
 static uint g_DoneCount;
 static uint g_HitCount;
+
+void ShapeSearcher::ToTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	static bool HdrDone = false;
+#pragma omp critical
+	{
+	Log("\n");
+	Log("# score %.3g\n", m_ScoreABC);
+	Log("fetch %s\n", m_Query->m_Label.c_str());
+	ToPmlABC(g_fLog);
+
+	if (!HdrDone)
+		{
+		HdrDone = true;
+		fprintf(f, "Label");
+		for (uint i = 0; i < m_ShapeCount; ++i)
+			{
+			const char *ShapeName = GetShapeName(i);
+			fprintf(f, "\t%s_pos", ShapeName);
+			fprintf(f, "\t%s_seq", ShapeName);
+			fprintf(f, "\t%s_score", ShapeName);
+			}
+		fprintf(f, "\n");
+		}
+
+	fprintf(f, "%s", m_Query->m_Label.c_str());
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		double Score = m_ShapeScores[i];
+		string Seq;
+		GetShapeSeq(i, Seq);
+		uint Pos = m_ShapePosVec[i];
+		if (Pos == UINT_MAX)
+			fprintf(f, "\t.");
+		else
+			fprintf(f, "\t%u", Pos);
+		fprintf(f, "\t%s", Seq.c_str());
+		fprintf(f, "\t%.3g", Score);
+		}
+	fprintf(f, "\n");
+	}
+	}
 
 static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
@@ -21,47 +62,9 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	uint IXA = SS.m_ShapeIndexA;
 	uint IXB = SS.m_ShapeIndexB;
 	uint IXC = SS.m_ShapeIndexC;
-	bool IsHit = (SS.m_ShapePosVec[IXA] != UINT_MAX &&
-	  SS.m_ShapePosVec[IXB] != UINT_MAX
-	  && SS.m_ShapePosVec[IXC] != UINT_MAX);
-
-	if (g_ftsv != 0)
-		{
-		static bool HdrDone = false;
-#pragma omp critical
-			{
-			if (!HdrDone)
-				{
-				HdrDone = true;
-				fprintf(g_ftsv, "Label");
-				for (uint i = 0; i < ShapeCount; ++i)
-					{
-					const char *ShapeName = SS.GetShapeName(i);
-					fprintf(g_ftsv, "\t%s_pos", ShapeName);
-					fprintf(g_ftsv, "\t%s_seq", ShapeName);
-					fprintf(g_ftsv, "\t%s_score", ShapeName);
-					}
-				fprintf(g_ftsv, "\n");
-				}
-
-			fprintf(g_ftsv, "%s", Q.m_Label.c_str());
-			for (uint i = 0; i < ShapeCount; ++i)
-				{
-				double Score = SS.m_ShapeScores[i];
-				string Seq;
-				SS.GetShapeSeq(i, Seq);
-				uint Pos = SS.m_ShapePosVec[i];
-				if (Pos == UINT_MAX)
-					fprintf(g_ftsv, "\t.");
-				else
-					fprintf(g_ftsv, "\t%u", Pos);
-				fprintf(g_ftsv, "\t%s", Seq.c_str());
-				fprintf(g_ftsv, "\t%.3g", Score);
-				}
-			fprintf(g_ftsv, "\n");
-			}
-		}
-
+	bool IsHit = (SS.m_ScoreABC >= SS.m_MinScoreABC);
+	if (IsHit)
+		SS.ToTsv(g_ftsv);
 	return IsHit;
 	}
 

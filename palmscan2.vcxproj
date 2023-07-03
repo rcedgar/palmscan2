@@ -309,6 +309,7 @@
     <ClCompile Include="hse.cpp" />
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
+    <ClCompile Include="joinabcx.cpp" />
     <ClCompile Include="palmprint_pssms.cpp" />
     <ClCompile Include="pamerger.cpp" />
     <ClCompile Include="pamerge.cpp" />
@@ -382,6 +383,7 @@
     <ClCompile Include="rdrpsearcher.cpp" />
     <ClCompile Include="search3d_cal.cpp" />
     <ClCompile Include="searchaatop.cpp" />
+    <ClCompile Include="searchabcx.cpp" />
     <ClCompile Include="searchc.cpp" />
     <ClCompile Include="search_ppp.cpp" />
     <ClCompile Include="search_pssms.cpp" />
@@ -398,6 +400,7 @@
     <ClCompile Include="shapes_score1.cpp" />
     <ClCompile Include="shapes_train.cpp" />
     <ClCompile Include="shapes_search.cpp" />
+    <ClCompile Include="shapes_train1.cpp" />
     <ClCompile Include="shapes_train_score.cpp" />
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="spher.cpp" />
@@ -424,6 +427,7 @@
     <ClCompile Include="tmscore.cpp" />
     <ClCompile Include="tm_ppc.cpp" />
     <ClCompile Include="tracebackbitmem.cpp" />
+    <ClCompile Include="trainabcx.cpp" />
     <ClCompile Include="triangle.cpp" />
     <ClCompile Include="triangles.cpp" />
     <ClCompile Include="trifinder.cpp" />

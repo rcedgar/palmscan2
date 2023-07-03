@@ -30,6 +30,7 @@ public:
 		m_SS.clear();
 		}
 
+	void GetReverse(PDBChain &Chain) const;
 	void WriteSeqWithCoords(FILE *f) const;
 	void SetMotifPosVec(uint PosA, uint PosB, uint PosC);
 	uint GetSeqLength() const;

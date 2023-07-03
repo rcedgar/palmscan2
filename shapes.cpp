@@ -2,6 +2,12 @@
 #include "shapes.h"
 #include "quarts.h"
 
+uint Shapes::GetShapeLength(uint ShapeIndex) const
+	{
+	asserta(ShapeIndex < SIZE(m_Lengths));
+	return m_Lengths[ShapeIndex];
+	}
+
 uint Shapes::GetShapeIndex(const string &Name) const
 	{
 	for (uint i = 0; i < SIZE(m_Names); ++i)

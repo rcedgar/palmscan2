@@ -3,12 +3,13 @@
 
 void ShapeSearcher::SearchPalm(const PDBChain &Q)
 	{
+	m_ScoreABC = 0;
 	SetQuery(Q);
 	uint QL = GetQL();
 	const uint ShapeCount = GetShapeCount();
 
-	double ABCScore = SearchABC();
-	if (ABCScore == 0)
+	m_ScoreABC = SearchABC();
+	if (m_ScoreABC == 0)
 		return;
 
 	const Shapes &S = *m_Shapes;

@@ -71,6 +71,7 @@ STR_OPT(shapename)
 
 STR_OPT(log)
 STR_OPT(input)
+STR_OPT(input1)
 STR_OPT(output)
 STR_OPT(output2)
 STR_OPT(output3)
@@ -174,6 +175,8 @@ FLAG_OPT(compact)
 FLAG_OPT(dotproduct)
 FLAG_OPT(subchainc)
 FLAG_OPT(delete_hetatm)
+FLAG_OPT(before_abc)
+FLAG_OPT(after_abc)
 
 #undef FLAG_OPT
 #undef UNS_OPT

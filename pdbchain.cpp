@@ -727,6 +727,21 @@ void PDBChain::GetMotifCoords(vector<vector<double> > &MotifCoords) const
 	MotifCoords[C][Z] = m_Zs[PosC];
 	}
 
+void PDBChain::GetReverse(PDBChain &Chain) const
+	{
+	Chain.Clear();
+	Chain.m_Label = m_Label + "_reverse";
+	Chain.m_Seq = m_Seq;
+
+#define rev(x)	Chain.m_##x = m_##x; reverse(Chain.m_##x.begin(), Chain.m_##x.end())
+	rev(Seq);
+	rev(Xs);
+	rev(Ys);
+	rev(Zs);
+	rev(ResNrs);
+#undef rev
+	}
+
 void PDBChain::WriteSeqWithCoords(FILE *f) const
 	{
 	if (f == 0)
