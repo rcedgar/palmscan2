@@ -24,6 +24,10 @@ public:
 	t_Mx3 m_MeanDistMx3;
 	t_Mx3 m_StdDevMx3;
 
+	uint m_ShapeIndexA = UINT_MAX;
+	uint m_ShapeIndexB = UINT_MAX;
+	uint m_ShapeIndexC = UINT_MAX;
+
 	uint m_Offset_D_MotifA = UINT_MAX;
 	uint m_Offset_G_MotifB = UINT_MAX;
 	uint m_Offset_D_MotifC = UINT_MAX;
@@ -48,6 +52,8 @@ public:
 	void InitMx3(t_Mx3 &Mx) const;
 	void TrainGetPosVec(const PDBChain &Chain, const vector<string> &Seqs,
 	  vector<uint> &PosVec) const;
+	void TrainGetCatalytic3Ds(const PDBChain &Chain, const vector<uint> &PosVec,
+	  double &AB, double &AC, double &BC) const;
 
 	void ToFile(const string &FileName) const;
 	void Mx2ToFile(FILE *f, const string &MxName, const t_Mx2 &Mx) const;

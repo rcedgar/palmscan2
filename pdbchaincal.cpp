@@ -36,8 +36,6 @@ void PDBChain::ParseCalLabelLine(const string &Line)
 			m_MotifPosVec.push_back(PosB - 1);
 			m_MotifPosVec.push_back(PosC - 1);
 			}
-		else
-			Die("Invalid .ppc label %s", Line.c_str());
 		}
 	}
 

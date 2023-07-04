@@ -127,6 +127,10 @@ void cmd_shapes_train1()
 	FILE *f = OpenStdioFile(TsvFN_ABC);
 	string Line;
 	vector<string> Fields;
+	bool Ok = ReadLineStdioFile(f, Line);
+	asserta(Ok);
+	Split(Line, Fields, '\t');
+	asserta(Fields[0] == "Label");
 	while (ReadLineStdioFile(f, Line))
 		{
 		Split(Line, Fields, '\t');
@@ -141,6 +145,12 @@ void cmd_shapes_train1()
 	CloseStdioFile(f);
 
 	f = OpenStdioFile(TsvFN_X);
+	Ok = ReadLineStdioFile(f, Line);
+	asserta(Ok);
+	Split(Line, Fields, '\t');
+	asserta(SIZE(Fields) == 2);
+	asserta(Fields[0] == "Label");
+	const string MotifNameX = Fields[1];
 	while (ReadLineStdioFile(f, Line))
 		{
 		Split(Line, Fields, '\t');
@@ -183,6 +193,7 @@ void cmd_shapes_train1()
 
 	if (g_ftsv != 0)
 		{
+		fprintf(g_ftsv, "Label\t%s\n", MotifNameX.c_str());
 		asserta(SIZE(X5s) == ChainCount);
 		for (uint i = 0; i < ChainCount; ++i)
 			{

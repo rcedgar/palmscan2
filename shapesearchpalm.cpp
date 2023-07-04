@@ -68,4 +68,22 @@ void ShapeSearcher::SearchPalm(const PDBChain &Q)
 		m_ShapeScores[ShapeIndex] = HitScore;
 		m_ShapePosVec[ShapeIndex] = HitPos;
 		}
+
+	m_PalmScore = 0;
+	if (m_ScoreABC > 0)
+		{
+		vector<uint> FoundShapeIndexes;
+		vector<uint> FoundPosVec;
+		for (uint i = 0; i < ShapeCount; ++i)
+			{
+			uint Pos = m_ShapePosVec[i];
+			if (Pos != UINT_MAX)
+				{
+				FoundShapeIndexes.push_back(i);
+				FoundPosVec.push_back(Pos);
+				}
+			}
+		asserta(SIZE(FoundPosVec) >= 3);
+		m_PalmScore = GetScoreShapes(FoundShapeIndexes, FoundPosVec);
+		}
 	}

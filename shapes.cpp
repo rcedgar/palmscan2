@@ -25,6 +25,19 @@ void Shapes::Init(const vector<string> &Names,
 	asserta(SIZE(Lengths) == N);
 	m_Names = Names;
 	m_Lengths = Lengths;
+
+	m_ShapeIndexA = UINT_MAX;
+	m_ShapeIndexB = UINT_MAX;
+	m_ShapeIndexC = UINT_MAX;
+	for (uint i = 0; i < N; ++i)
+		{
+		if (m_Names[i] == "A")
+			m_ShapeIndexA = i;
+		else if (m_Names[i] == "B")
+			m_ShapeIndexB = i;
+		else if (m_Names[i] == "C")
+			m_ShapeIndexC = i;
+		}
 	}
 
 void Shapes::InitMx2(t_Mx2 &Mx) const
@@ -83,6 +96,40 @@ void Shapes::GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
 	MaxDist = uint(Q.Max*m_MaxExpand);
 	}
 
+void Shapes::TrainGetCatalytic3Ds(const PDBChain &Chain, const vector<uint> &PosVec,
+  double &AB, double &AC, double &BC) const
+	{
+	AB = DBL_MAX;
+	AC = DBL_MAX;
+	BC = DBL_MAX;
+	if (
+	  m_ShapeIndexA == UINT_MAX ||
+	  m_ShapeIndexB == UINT_MAX ||
+	  m_ShapeIndexC == UINT_MAX ||
+	  m_Offset_D_MotifA == UINT_MAX ||
+	  m_Offset_G_MotifB == UINT_MAX ||
+	  m_Offset_D_MotifC == UINT_MAX)
+		return;
+
+	asserta(m_ShapeIndexA < SIZE(PosVec));
+	uint PosA = PosVec[m_ShapeIndexA];
+	uint PosB = PosVec[m_ShapeIndexB];
+	uint PosC = PosVec[m_ShapeIndexC];
+	if (PosA == UINT_MAX || PosB == UINT_MAX || PosC == UINT_MAX)
+		return;
+
+	uint L = Chain.GetSeqLength();
+	if (
+	  PosA + m_Offset_D_MotifA >= L ||
+	  PosB + m_Offset_G_MotifB >= L ||
+	  PosC + m_Offset_D_MotifC >= L)
+		return;
+
+	AB = Chain.GetDist(PosA + m_Offset_D_MotifA, PosB + m_Offset_G_MotifB);
+	AC = Chain.GetDist(PosA + m_Offset_D_MotifA, PosC + m_Offset_D_MotifC);
+	BC = Chain.GetDist(PosB + m_Offset_G_MotifB, PosC + m_Offset_D_MotifC);
+	}
+
 void Shapes::Train(const vector<PDBChain *> &Chains,
   const vector<vector<string> > &SeqsVec)
 	{
@@ -98,6 +145,10 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 	asserta(SIZE(SeqsVec) == ChainCount);
 	const uint ShapeCount = GetShapeCount();
 
+	vector<double> AD_BG_3D_Dists;
+	vector<double> AD_CD_3D_Dists;
+	vector<double> BG_CD_3D_Dists;
+
 	vector<vector<uint> > NeighborDistVec(ShapeCount-1);
 	for (uint ChainIndex = 0; ChainIndex < ChainCount; ++ChainIndex)
 		{
@@ -106,6 +157,7 @@ void Shapes::Train(const vector<PDBChain *> &Chains,
 		const vector<string> &Seqs = SeqsVec[ChainIndex];
 		vector<uint> PosVec;
 		TrainGetPosVec(Chain, Seqs, PosVec);
+
 		asserta(SIZE(PosVec) == ShapeCount);
 		for (uint ShapeIndex = 0; ShapeIndex + 1 < ShapeCount; ++ShapeIndex)
 			{

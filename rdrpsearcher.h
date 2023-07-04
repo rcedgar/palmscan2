@@ -124,6 +124,7 @@ public:
 	void WriteCFilterHit(const RPHit &Hit) const;
 
 	const PSSM &GetPSSM(uint GroupIndex, uint MotifIndex) const;
+	void GetShapesTrainABC(string &A, string &B, string &C) const;
 
 public:
 	//static void InitOutput();

@@ -1,7 +1,6 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 
-static double MIN_PRED_SCORE = 0.6;
 static int MAX_SHIFT = 4;
 
 static uint g_NoRefCount;
@@ -64,7 +63,8 @@ void ShapeSearcher::LogShape(const string &Msg, uint ShapeIndex, uint Pos) const
 
 void ShapeSearcher::TestABC(const Shapes &S,
   const vector<PDBChain *> &Chains,
-  vector<vector<string> > &MotifSeqsVec)
+  vector<vector<string> > &MotifSeqsVec,
+  double MinPredScore)
 	{
 	const uint N = SIZE(Chains);
 	asserta(SIZE(MotifSeqsVec) == N);
@@ -75,7 +75,7 @@ void ShapeSearcher::TestABC(const Shapes &S,
 	for (uint i = 0; i < N; ++i)
 		{
 		ProgressStep(i, N, "Test ABC");
-		SS.TestABC1(*Chains[i], MotifSeqsVec[i]);
+		SS.TestABC1(*Chains[i], MotifSeqsVec[i], MinPredScore);
 		}
 
 	ProgressLog("Agree %u, disagree %u, pred higher %u, permuted %u, no pred %u, no ref %u, too low %u (%.4f)\n",
@@ -86,7 +86,7 @@ void ShapeSearcher::TestABC(const Shapes &S,
 	  g_NoPredCount,
 	  g_NoRefCount,
 	  g_PredScoreTooLowCount,
-	  MIN_PRED_SCORE);
+	  MinPredScore);
 
 	uint RevHitCount = 0;
 	for (uint i = 0; i < N; ++i)
@@ -97,10 +97,10 @@ void ShapeSearcher::TestABC(const Shapes &S,
 		Chain.GetReverse(RevChain);
 		SS.SetQuery(RevChain);
 		double RevScore = SS.SearchABC();
-		if (RevScore >= MIN_PRED_SCORE)
+		if (RevScore >= MinPredScore)
 			++RevHitCount;
 		}
-	Log("%u rev hits\n", RevHitCount);
+	ProgressLog("%u rev hits\n", RevHitCount);
 	}
 
 static bool ShiftOk(uint RefPos, uint PredPos)
@@ -110,8 +110,9 @@ static bool ShiftOk(uint RefPos, uint PredPos)
 	}
 
 void ShapeSearcher::TestABC1(const PDBChain &Chain,
-  const vector<string> &RefMotifSeqs)
+  const vector<string> &RefMotifSeqs, double MinPredScore)
 	{
+	const char *Label = Chain.m_Label.c_str();
 	const string &Seq = Chain.m_Seq;
 	size_t stPosA = Seq.find(RefMotifSeqs[m_ShapeIndexA]);
 	size_t stPosB = Seq.find(RefMotifSeqs[m_ShapeIndexB]);
@@ -131,13 +132,22 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 
 	if (RefPosA == UINT_MAX || RefPosB == UINT_MAX || RefPosC == UINT_MAX)
 		{
+		Log("No ref>%s\n", Chain.m_Label.c_str());
 		++g_NoRefCount;
 		return;
 		}
 
 	double PredScore = SearchABC();
-	if (PredScore < MIN_PRED_SCORE)
+	if (PredScore == 0)
 		{
+		Log("No pred (zero score) >%s\n", Label);
+		++g_NoPredCount;
+		return;
+		}
+
+	if (PredScore < MinPredScore)
+		{
+		Log("Pred score too low %6.4f >%s\n", PredScore, Label);
 		++g_PredScoreTooLowCount;
 		return;
 		}
@@ -179,10 +189,10 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 
 	++g_DisagreeCount;
 
-	Log("\n");
-	Log(">%s  ref %.3g, pred %.3g\n",
+	Log(">%s disagree ref %.3g, pred %.3g\n",
 	  m_Query->m_Label.c_str(), RefScore, PredScore);
-
+#if 0
+	{
 	LogShape("RefA", m_ShapeIndexA, RefPosA);
 	if (PredPosA != RefPosA)
 		LogShape("PrdA", m_ShapeIndexA, PredPosA);
@@ -236,6 +246,8 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 		Log("color salmon, sele\n");
 		}
 	Log("deselect\n");
+	}
+#endif
 	}
 
 void ShapeSearcher::ToPmlABC(FILE *f) const

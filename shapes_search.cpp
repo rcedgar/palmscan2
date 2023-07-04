@@ -15,15 +15,18 @@ void ShapeSearcher::ToTsv(FILE *f) const
 	static bool HdrDone = false;
 #pragma omp critical
 	{
-	Log("\n");
-	Log("# score %.3g\n", m_ScoreABC);
-	Log("fetch %s\n", m_Query->m_Label.c_str());
-	ToPmlABC(g_fLog);
+	//Log("\n");
+	//Log("# score %.3g\n", m_ScoreABC);
+	//Log("fetch %s\n", m_Query->m_Label.c_str());
+//	ToPmlABC(g_fLog);
 
 	if (!HdrDone)
 		{
 		HdrDone = true;
 		fprintf(f, "Label");
+		fprintf(f, "\tpalm_score");
+		fprintf(f, "\tpp_score");
+		fprintf(f, "\tgate");
 		for (uint i = 0; i < m_ShapeCount; ++i)
 			{
 			const char *ShapeName = GetShapeName(i);
@@ -34,7 +37,11 @@ void ShapeSearcher::ToTsv(FILE *f) const
 		fprintf(f, "\n");
 		}
 
+	char Gate = GetGate();
 	fprintf(f, "%s", m_Query->m_Label.c_str());
+	fprintf(f, "\t%.3g", m_PalmScore);
+	fprintf(f, "\t%.3g", m_ScoreABC);
+	fprintf(f, "\t%c", Gate);
 	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
 		double Score = m_ShapeScores[i];
@@ -44,7 +51,7 @@ void ShapeSearcher::ToTsv(FILE *f) const
 		if (Pos == UINT_MAX)
 			fprintf(f, "\t.");
 		else
-			fprintf(f, "\t%u", Pos);
+			fprintf(f, "\t%u", Pos+1);
 		fprintf(f, "\t%s", Seq.c_str());
 		fprintf(f, "\t%.3g", Score);
 		}
@@ -63,7 +70,7 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	uint IXB = SS.m_ShapeIndexB;
 	uint IXC = SS.m_ShapeIndexC;
 	bool IsHit = (SS.m_ScoreABC >= SS.m_MinScoreABC);
-	if (IsHit)
+	if (opt_misses || IsHit)
 		SS.ToTsv(g_ftsv);
 	return IsHit;
 	}
@@ -82,7 +89,7 @@ static void Thread(ChainReader &CR, const Shapes &S)
 
 #pragma omp critical
 		{
-		if (++g_DoneCount%100 == 0)
+		if (++g_DoneCount%1000 == 0)
 			{
 			string sPct;
 			CR.GetStrPctDone(sPct);
@@ -126,6 +133,7 @@ void cmd_shapes_search()
 	if (Secs <= 0)
 		Secs = 1;
 	double Throughput = double(g_DoneCount)/(Secs*ThreadCount);
-	ProgressLog("%u done, %u hits, %s secs (%u threads, %.1f/ sec/ thread)\n",
-	  g_DoneCount, g_HitCount, IntToStr(Secs), ThreadCount, Throughput);
+	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/ sec/ thread)\n",
+	  g_HitCount, g_DoneCount, GetPct(g_HitCount, g_DoneCount),
+	  IntToStr(Secs), ThreadCount, Throughput);
 	}

@@ -16,9 +16,11 @@ public:
 	uint m_ShapeIndexA = UINT_MAX;
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
-	double m_ScoreABC = 0;
 	double m_MinScoreABC = 0.6;
 	uint m_MaxTopHitCountABC = 8;
+
+	double m_ScoreABC = 0;
+	double m_PalmScore = 0;
 
 	vector<uint> m_ShapePosVec;
 	vector<double> m_ShapeScores;
@@ -30,6 +32,10 @@ public:
 		m_PosA = UINT_MAX;
 		m_PosB = UINT_MAX;
 		m_PosC = UINT_MAX;
+		m_ScoreABC = 0;
+		m_PalmScore = 0;
+		m_ShapePosVec.resize(0);
+		m_ShapeScores.resize(0);
 		}
 
 	void Init(const Shapes &S);
@@ -98,10 +104,11 @@ public:
 	double GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
-	double SearchABC();
+	double SearchABC(bool DoTrace = false);
 
 	void TestABC1(const PDBChain &Chain,
-	  const vector<string> &MotifSeqs);
+	  const vector<string> &MotifSeqs,
+	  double MinPredScore);
 
 	void GetShapeSeq(uint ShapeIndex, string &Seq) const;
 
@@ -114,10 +121,13 @@ public:
 	void LogShapes(const vector<uint> &ShapeIndexes,
 	  const vector<string> &ShapeSeqs) const;
 
+	char GetGate() const;
+
 public:
 	static void TestABC(const Shapes &S,
 	  const vector<PDBChain *> &Chains,
-	  vector<vector<string> > &MotifSeqsVec);
+	  vector<vector<string> > &MotifSeqsVec,
+	  double MinPredScore);
 
 	static void SearchABCX(const Shapes &S,
 	  const vector<PDBChain *> &Chains, double MinScoreX,

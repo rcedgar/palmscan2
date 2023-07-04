@@ -177,6 +177,7 @@ FLAG_OPT(subchainc)
 FLAG_OPT(delete_hetatm)
 FLAG_OPT(before_abc)
 FLAG_OPT(after_abc)
+FLAG_OPT(misses)
 
 #undef FLAG_OPT
 #undef UNS_OPT

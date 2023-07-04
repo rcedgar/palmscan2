@@ -81,11 +81,14 @@ void WritePML(const PDBChain &Chain, const string &PDBFileName)
 		}
 	if (g_EPos != UINT_MAX)
 		{
-		int Res1 = Chain.GetResidueNr(g_EPos);
-		int Res2 = Chain.GetResidueNr(g_EPos + 6);
-		fprintf(g_fpml, "cmd.select(\"motifE\", \"%s and resi %u-%u\")\n",
-			Label.c_str(), Res1, Res2);
-		fprintf(g_fpml, "color orange, motifE\n");
+		int Res1 = Chain.GetResidueNr(g_EPos, -999);
+		int Res2 = Chain.GetResidueNr(g_EPos + 6, -999);
+		if (Res1 != -999 && Res2 != -999)
+			{
+			fprintf(g_fpml, "cmd.select(\"motifE\", \"%s and resi %u-%u\")\n",
+				Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color orange, motifE\n");
+			}
 
 		fprintf(g_fpml, "cmd.select(\"motifE_X\", \"%s and resi %d and name CA\")\n",
 			Label.c_str(), Res1+3);
@@ -94,16 +97,19 @@ void WritePML(const PDBChain &Chain, const string &PDBFileName)
 		}
 	if (g_F2Pos != UINT_MAX)
 		{
-		int Res1 = Chain.GetResidueNr(g_F2Pos);
-		int Res2 = Chain.GetResidueNr(g_F2Pos + 6);
-		fprintf(g_fpml, "cmd.select(\"motifF\", \"%s and resi %u-%u\")\n",
-			Label.c_str(), Res1, Res2);
-		fprintf(g_fpml, "color cyan, motifF\n");
+		int Res1 = Chain.GetResidueNr(g_F2Pos, -999);
+		int Res2 = Chain.GetResidueNr(g_F2Pos + 6, -999);
+		if (Res1 != -999 && Res2 != -999)
+			{
+			fprintf(g_fpml, "cmd.select(\"motifF\", \"%s and resi %u-%u\")\n",
+				Label.c_str(), Res1, Res2);
+			fprintf(g_fpml, "color cyan, motifF\n");
 
-		fprintf(g_fpml, "cmd.select(\"motifF_R\", \"%s and resi %d and name CA\")\n",
-			Label.c_str(), Res1+2);
-		fprintf(g_fpml, "show sphere, motifF_R\n");
-		fprintf(g_fpml, "set sphere_transparency, 0.3\n");
+			fprintf(g_fpml, "cmd.select(\"motifF_R\", \"%s and resi %d and name CA\")\n",
+				Label.c_str(), Res1+2);
+			fprintf(g_fpml, "show sphere, motifF_R\n");
+			fprintf(g_fpml, "set sphere_transparency, 0.3\n");
+			}
 		}
 	fprintf(g_fpml, "deselect\n");
 	if (optset_png)

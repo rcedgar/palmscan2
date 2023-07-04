@@ -91,7 +91,7 @@ public:
 	void ToPML(FILE *f, const string &PDBFileName) const;
 	void ToPML_Seqs(FILE *f, const string &PDBFileName) const;
 	void GetCAAtomLine(uint Pos, string &Line) const;
-	int GetResidueNr(uint Pos) const;
+	int GetResidueNr(uint Pos, int ValueIfNotFound = INT_MAX) const;
 	void GetResidueRange(uint PosLo, uint ResidueCount, int &ResLo,
 	  int &ResHi) const;
 	void GetSphere(uint Pos, double Radius,

@@ -309,15 +309,20 @@ void PDBChain::GetCAAtomLine(uint Pos, string &Line) const
 	assert(false);
 	}
 
-int PDBChain::GetResidueNr(uint Pos) const
+int PDBChain::GetResidueNr(uint Pos, int ValueIfNotFound) const
 	{
 	//string CALine;
 	//GetCAAtomLine(Pos, CALine);
 	//int ResNr = GetResidueNrFromATOMLine(CALine);
 	if (SIZE(m_ResNrs) == 0)
 		return (int) (Pos+1);
-	asserta(Pos < SIZE(m_ResNrs));
-	return m_ResNrs[Pos];
+	uint L = SIZE(m_ResNrs);
+	if (Pos < L)
+		return m_ResNrs[Pos];
+	if (ValueIfNotFound != INT_MAX)
+		return ValueIfNotFound;
+	Die("GetResideNr(Pos=%u) L=%u", Pos, L);
+	return -999;
 	}
 
 void PDBChain::GetResidueRange(uint PosLo, uint ResidueCount,

@@ -2,7 +2,7 @@
 #include "shapesearcher.h"
 #include "sort.h"
 
-double ShapeSearcher::SearchABC()
+double ShapeSearcher::SearchABC(bool DoTrace)
 	{
 	m_PosA = UINT_MAX;
 	m_PosB = UINT_MAX;
@@ -21,9 +21,9 @@ double ShapeSearcher::SearchABC()
 	uint Offset_G_MotifB = m_Shapes->m_Offset_G_MotifB;
 	uint Offset_D_MotifC = m_Shapes->m_Offset_D_MotifC;
 
-#if TRACE
-	Log("ShapeSearcher::SearchABC >%s QL=%u\n", m_Query->m_Label.c_str(), QL);
-#endif
+	if (DoTrace)
+		Log("ShapeSearcher::SearchABC >%s QL=%u\n",
+		  m_Query->m_Label.c_str(), QL);
 
 	double TopScore = 0;
 
@@ -42,10 +42,10 @@ double ShapeSearcher::SearchABC()
 	SearchShapeSelf(m_ShapeIndexA, m_MinScoreABC, MinStartA, MaxStartA,
 	  'D', Offset_D_MotifA, HitsA, ScoresA);
 	const uint NA = SIZE(HitsA);
-#if TRACE
-	Log("SearchShapeSelf(A, MinScore=%.2f, MinStartA=%u, MaxStartA=%u) %u hits\n",
-	  m_MinScoreABC, MinStartA, MaxStartA, NA);
-#endif
+
+	if (DoTrace)
+		Log("SearchShapeSelf(A, MinScore=%.2f, MinStartA=%u, MaxStartA=%u) %u hits\n",
+		  m_MinScoreABC, MinStartA, MaxStartA, NA);
 
 	vector<uint> ABCIndexes;
 	ABCIndexes.push_back(m_ShapeIndexA);
@@ -61,9 +61,8 @@ double ShapeSearcher::SearchABC()
 		uint MinStartB = PosA + MinDistAB;
 		if (MinStartB >= QL - BL - CL)
 			{
-#if TRACE
-			Log("PosA %u, MinStartB > QL - BL - CL\n", PosA);
-#endif
+			if (DoTrace)
+				Log("PosA %u, MinStartB > QL - BL - CL\n", PosA);
 			continue;
 			}
 		uint MaxStartB = PosA + MaxDistAB;
@@ -75,10 +74,9 @@ double ShapeSearcher::SearchABC()
 		SearchShapeSelf(m_ShapeIndexB, m_MinScoreABC, MinStartB, MaxStartB,
 		  'G', Offset_G_MotifB, HitsB, ScoresB);
 		const uint NB = SIZE(HitsB);
-#if TRACE
-		Log(" [%u] PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
-		  ia, PosA, m_MinScoreABC, MinStartB, MaxStartB, NB);
-#endif
+		if (DoTrace)
+			Log(" [%u] PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
+			  ia, PosA, m_MinScoreABC, MinStartB, MaxStartB, NB);
 
 		for (uint ib = 0; ib < NB; ++ib)
 			{
@@ -89,9 +87,8 @@ double ShapeSearcher::SearchABC()
 			uint MinStartC = PosB + MinDistBC;
 			if (MinStartC >= QL - CL)
 				{
-#if TRACE
-				Log("PosB %u, MinStartC > QL - CL\n", PosB);
-#endif
+				if (DoTrace)
+					Log("PosB %u, MinStartC > QL - CL\n", PosB);
 				continue;
 				}
 			uint MaxStartC = PosB + MaxDistBC;
@@ -103,10 +100,9 @@ double ShapeSearcher::SearchABC()
 			SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC, MinStartC, MaxStartC,
 			  'D', Offset_D_MotifC, HitsC, ScoresC);
 			const uint NC = SIZE(HitsC);
-#if TRACE
-			Log("  [%u,%u] PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
-			  ia, ib, PosA, PosB, m_MinScoreABC, MinStartC, MaxStartC, NC);
-#endif
+			if (DoTrace)
+				Log("  [%u,%u] PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
+				  ia, ib, PosA, PosB, m_MinScoreABC, MinStartC, MaxStartC, NC);
 			for (uint ic = 0; ic < NC; ++ic)
 				{
 				uint PosC = HitsC[ic];
@@ -116,10 +112,9 @@ double ShapeSearcher::SearchABC()
 				PosVec.push_back(PosB);
 				PosVec.push_back(PosC);
 				double ScoreABC = GetScoreShapes(ABCIndexes, PosVec);
-#if TRACE
-				Log("   [%u,%u,%u] PosC %u ScoreABC %.4f\n",
-				  ia, ib, ic, PosC, ScoreABC);
-#endif
+				if (DoTrace)
+					Log("   [%u,%u,%u] PosC %u ScoreABC %.4f\n",
+					  ia, ib, ic, PosC, ScoreABC);
 
 				if (ScoreABC > TopScore)
 					{

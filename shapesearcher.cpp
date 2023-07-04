@@ -36,6 +36,23 @@ void ShapeSearcher::SetQuery(const PDBChain &Query)
 		}
 	}
 
+char ShapeSearcher::GetGate() const
+	{
+	if (m_Query == 0)
+		return '.';
+	if (m_ShapeIndexA == UINT_MAX)
+		return '.';
+	asserta(m_ShapeIndexA < SIZE(m_ShapePosVec));
+	if (m_PosA == UINT_MAX)
+		return '.';
+	const string &Seq = m_Query->m_Seq;
+	uint Pos = m_PosA + m_Shapes->m_Offset_D_MotifA + 5;
+	if (Pos >= SIZE(Seq))
+		return '.';
+	char Gate = Seq[Pos];
+	return Gate;
+	}
+
 void ShapeSearcher::GetSubSeq(uint Pos, uint n, string &Seq) const
 	{
 	m_Query->GetSubSeq(Pos, n, Seq);

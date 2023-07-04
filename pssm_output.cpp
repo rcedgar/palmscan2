@@ -460,22 +460,11 @@ void RdRpSearcher::WriteTsv(FILE *f) const
 	fprintf(f, "\n");
 	}
 
-void RdRpSearcher::WriteShapesTrainTsv(FILE *f) const
+void RdRpSearcher::GetShapesTrainABC(string &A, string &B, string &C) const
 	{
-	if (f == 0)
-		return;
-
-	static bool HdrDone = false;
-	if (!HdrDone)
-		{
-		HdrDone = true;
-
-		fprintf(f, "Label");
-		fprintf(f, "\tA");
-		fprintf(f, "\tB");
-		fprintf(f, "\tC");
-		fprintf(f, "\n");
-		}
+	A = ".";
+	B = ".";
+	C = ".";
 
 	double MinScore = 15;
 	if (optset_minscore)
@@ -519,20 +508,35 @@ void RdRpSearcher::WriteShapesTrainTsv(FILE *f) const
 	if (PosA < 2)
 		return;
 
+	GetSubSeq(PosA-2, 12+4, A);
+	GetSubSeq(PosB, 12+8, B);
+	GetSubSeq(PosC-2, 8+4, C);
+	}
+
+void RdRpSearcher::WriteShapesTrainTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	static bool HdrDone = false;
+	if (!HdrDone)
+		{
+		HdrDone = true;
+
+		fprintf(f, "Label");
+		fprintf(f, "\tA");
+		fprintf(f, "\tB");
+		fprintf(f, "\tC");
+		fprintf(f, "\n");
+		}
+
+
 	string SeqA, SeqB, SeqC;
-
-	GetSubSeq(PosA-2, 12+4, SeqA);
-	GetSubSeq(PosB, 12+8, SeqB);
-	GetSubSeq(PosC-2, 8+4, SeqC);
-
-	if (SeqA == "" || SeqA == ".")
-		return;
-	if (SeqB == "" || SeqB == ".")
-		return;
-	if (SeqC == "" || SeqC == ".")
+	GetShapesTrainABC(SeqA, SeqB, SeqC);
+	if (SeqA == "."|| SeqB == "." || SeqC == ".")
 		return;
 
-	fprintf(f, "%s", QueryLabel.c_str());
+	fprintf(f, "%s", m_QueryLabel.c_str());
 	fprintf(f, "\t%s", SeqA.c_str());
 	fprintf(f, "\t%s", SeqB.c_str());
 	fprintf(f, "\t%s", SeqC.c_str());

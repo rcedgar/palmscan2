@@ -551,6 +551,12 @@
     <ClCompile Include="joinabcx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="make_trunc_bench.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shape_search_debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
