@@ -28,10 +28,6 @@ public:
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
 
-	uint m_Offset_D_MotifA = UINT_MAX;
-	uint m_Offset_G_MotifB = UINT_MAX;
-	uint m_Offset_D_MotifC = UINT_MAX;
-
 public:
 	void Clear()
 		{
@@ -41,6 +37,7 @@ public:
 		m_StdDevMx3.clear();
 		}
 
+	void InitFromCmdLine();
 	uint GetShapeCount() const { return SIZE(m_Names); }
 	uint GetShapeLength(uint ShapeIndex) const;
 	uint GetShapeIndex(const string &Name) const;
@@ -72,9 +69,13 @@ public:
 	  uint Offset1, uint Offset2) const;
 	void GetMinMaxDist(uint ShapeIndex, const vector<uint> &NeighborDists,
 	  uint &MinDist, uint &MaxDist) const;
+
+public:
+	static void GetDefaultShapesLines(vector<string> &Lines);
 	};
 
 void GetTrainingMotifs(const string &FileName,
   const vector<PDBChain *> &Chains, vector<string> &ChainLabels,
   vector<string> &MotifNames, vector<uint> &MotifLengths,
   vector<vector<string> > &MotifSeqsVec);
+

@@ -15,6 +15,7 @@ void cmd_remove_dupes()
 	const uint N = SIZE(Chains);
 	for (uint i = 0; i < N; ++i)
 		{
+		ProgressStep(i, N, "Removing, %u dupes", DupeCount);
 		const PDBChain &Chain = *Chains[i];
 		const string &Seq = Chain.m_Seq;
 		if (Seqs.find(Seq) != Seqs.end())

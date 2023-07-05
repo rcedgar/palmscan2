@@ -95,10 +95,57 @@ void ShapeSearcher::JoinABCX2(
 	asserta(SIZE(Lengths) == 4);
 	}
 
-void ShapeSearcher::JoinABCX1(const vector<string> &ChainLabels,
+bool ShapeSearcher::GetBeforeABC(const vector<PDBChain *> &Chains,
+  vector<vector<string> > &ABCs, vector<string> &Xs)
+	{
+	const uint N = SIZE(Chains);
+	asserta(SIZE(ABCs) == N);
+	asserta(SIZE(Xs) == N);
+	uint BeforeCount = 0;
+	uint AfterCount = 0;
+	for (uint i = 0; i < N; ++i)
+		{
+		const PDBChain &Chain = *Chains[i];
+		const string &Seq = Chain.m_Seq;
+		const vector<string> &ABC = ABCs[i];
+		const string &X = Xs[i];
+		const string &A = ABC[0];
+		const string &C = ABC[2];
+		if (X == "" || X == ".")
+			continue;
+		if (A == "" || A == ".")
+			continue;
+		if (C == "" || C == ".")
+			continue;
+		size_t stPosA = Seq.find(A);
+		size_t stPosC = Seq.find(C);
+		size_t stPosX = Seq.find(X);
+		if (stPosA == string::npos || stPosC == string::npos ||
+		  stPosX == string::npos)
+			continue;
+		if (stPosX < min(stPosA, stPosC))
+			++BeforeCount;
+		else if (stPosX > max(stPosA, stPosC))
+			++AfterCount;
+		}
+	asserta(BeforeCount + AfterCount > 10);
+	if (BeforeCount > AfterCount)
+		{
+		asserta(double(AfterCount)/BeforeCount < 0.1);
+		return true;
+		}
+	else
+		{
+		asserta(double(BeforeCount)/AfterCount < 0.1);
+		return false;
+		}
+	}
+
+bool ShapeSearcher::JoinABCX1(
+  const vector<PDBChain *> &Chains,
+  const vector<string> &ChainLabels,
   const map<string, vector<string> > &LabelToABC,
   const map<string, string> &LabelToX,
-  bool BeforeABC,
   vector<string> &Xs,
   vector<vector<string> > &ABCs,
   vector<vector<string> > &ABCXs,
@@ -141,5 +188,8 @@ void ShapeSearcher::JoinABCX1(const vector<string> &ChainLabels,
 		ABCs.push_back(ABC);
 		}
 
+	bool BeforeABC = GetBeforeABC(Chains, ABCs, Xs);
+
 	JoinABCX2(ABCs, Xs, BeforeABC, ABCXs, Names, Lengths);
+	return BeforeABC;
 	}

@@ -1,5 +1,6 @@
 #include "myutils.h"
 #include "shapesearcher.h"
+#include "motifsettings.h"
 
 #define TRACE	0
 
@@ -36,6 +37,29 @@ void ShapeSearcher::SetQuery(const PDBChain &Query)
 		}
 	}
 
+void ShapeSearcher::GetFoundMotifsStr(string &Str) const
+	{
+	Str.resize(0);
+	if (SIZE(m_ShapePosVec) != m_ShapeCount)
+		{
+		Str = "*";
+		return;
+		}
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		bool Found = (m_ShapePosVec[i] != UINT_MAX);
+		const string Name = (string) GetShapeName(i);
+		if (Found)
+			Str += Name;
+		else
+			{
+			Str += "-";
+			for (uint j = 1; j < SIZE(Name); ++j)
+				Str += ".";
+			}
+		}
+	}
+
 char ShapeSearcher::GetGate() const
 	{
 	if (m_Query == 0)
@@ -46,7 +70,7 @@ char ShapeSearcher::GetGate() const
 	if (m_PosA == UINT_MAX)
 		return '.';
 	const string &Seq = m_Query->m_Seq;
-	uint Pos = m_PosA + m_Shapes->m_Offset_D_MotifA + 5;
+	uint Pos = m_PosA + g_OffAd + 5;
 	if (Pos >= SIZE(Seq))
 		return '.';
 	char Gate = Seq[Pos];
@@ -58,8 +82,26 @@ void ShapeSearcher::GetSubSeq(uint Pos, uint n, string &Seq) const
 	m_Query->GetSubSeq(Pos, n, Seq);
 	}
 
+void ShapeSearcher::GetA(string &A) const
+	{
+	GetShapeSeq(m_ShapeIndexA, A);
+	}
+
+void ShapeSearcher::GetB(string &B) const
+	{
+	GetShapeSeq(m_ShapeIndexB, B);
+	}
+
+void ShapeSearcher::GetC(string &C) const
+	{
+	GetShapeSeq(m_ShapeIndexC, C);
+	}
+
 void ShapeSearcher::GetShapeSeq(uint ShapeIndex, string &Seq) const
 	{
+	Seq = ".";
+	if (ShapeIndex == UINT_MAX)
+		return;
 	uint ShapeLength = GetShapeLength(ShapeIndex);
 	asserta(ShapeIndex < SIZE(m_ShapePosVec));
 	uint Pos = m_ShapePosVec[ShapeIndex];
@@ -90,10 +132,13 @@ double ShapeSearcher::GetScoreShapes(const vector<uint> &ShapeIndexes,
 	if (N == 0)
 		return 0;
 	uint Pairs = 0;
+	uint FoundCount = 0;
 	for (uint i = 0; i < N; ++i)
 		{
 		uint ShapeIndexi = ShapeIndexes[i];
 		uint Posi = PosVec[i];
+		if (Posi != UINT_MAX)
+			++FoundCount;
 		for (uint j = 0; j <= i; ++j)
 			{
 			uint ShapeIndexj = ShapeIndexes[j];
@@ -102,12 +147,19 @@ double ShapeSearcher::GetScoreShapes(const vector<uint> &ShapeIndexes,
 			++Pairs;
 			}
 		}
-	return Sum/Pairs;
+	double Avg = Sum/Pairs;
+//	double Score = Avg*double(FoundCount)/N;
+	double Score = Avg;
+	return Score;
 	}
 
 double ShapeSearcher::GetScoreShapePair(uint ShapeIndex1, uint ShapeIndex2,
   uint Pos1, uint Pos2) const
 	{
+	if (ShapeIndex1 == UINT_MAX || ShapeIndex2 == UINT_MAX)
+		return 0;
+	if (Pos1 == UINT_MAX || Pos2 == UINT_MAX)
+		return 0;
 	double Sum = 0;
 	uint L1 = GetShapeLength(ShapeIndex1);
 	uint L2 = GetShapeLength(ShapeIndex2);
@@ -283,4 +335,156 @@ void ShapeSearcher::SearchShape(uint ShapeIndex, const vector<uint> &PosVec,
 		HitPosVec.push_back(Pos);
 		HitScores.push_back(Score);
 		}
+	}
+
+void ShapeSearcher::ToTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	static bool HdrDone = false;
+#pragma omp critical
+	{
+	if (!HdrDone)
+		{
+		HdrDone = true;
+		fprintf(f, "Label");
+		fprintf(f, "\tClass");
+		fprintf(f, "\tPalm_score");
+		fprintf(f, "\tPP_score");
+		fprintf(f, "\tMotifs");
+		fprintf(f, "\tGate");
+		for (uint i = 0; i < m_ShapeCount; ++i)
+			{
+			const char *ShapeName = GetShapeName(i);
+			fprintf(f, "\t%s_pos", ShapeName);
+			fprintf(f, "\t%s_seq", ShapeName);
+			fprintf(f, "\t%s_score", ShapeName);
+			}
+		fprintf(f, "\n");
+		}
+
+	char Gate = GetGate();
+	string FoundMotifsStr;
+	GetFoundMotifsStr(FoundMotifsStr);
+
+	string Class = ".";
+	if (m_ScoreABC >= m_MinScoreABC)
+		{
+		Class = "PP+";
+
+		switch (Gate)
+			{
+		case 'D':
+		case 'S':
+		case 'T':
+		case 'G':
+		case 'C':
+			Class = "RdRp+";
+			break;
+
+		case 'Y':
+		case 'F':
+		case 'E':
+			Class = "RdRp-";
+			break;
+			}
+		}
+
+	fprintf(f, "%s", m_Query->m_Label.c_str());
+	fprintf(f, "\t%s", Class.c_str());
+	fprintf(f, "\t%.3g", m_PalmScore);
+	fprintf(f, "\t%.3g", m_ScoreABC);
+	fprintf(f, "\t%s", FoundMotifsStr.c_str());
+	fprintf(f, "\t%c", Gate);
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		double Score = m_ShapeScores[i];
+		string Seq;
+		GetShapeSeq(i, Seq);
+		uint Pos = m_ShapePosVec[i];
+		if (Pos == UINT_MAX)
+			fprintf(f, "\t.");
+		else
+			fprintf(f, "\t%u", Pos+1);
+		fprintf(f, "\t%s", Seq.c_str());
+		fprintf(f, "\t%.3g", Score);
+		}
+	fprintf(f, "\n");
+	}
+	}
+
+void ShapeSearcher::ToPmlABC(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
+	if (m_PosA == UINT_MAX || m_PosB == UINT_MAX || m_PosC == UINT_MAX)
+		return;
+
+	string SeqA, SeqB, SeqC;
+	GetShapeSeq(m_ShapeIndexA, SeqA);
+	GetShapeSeq(m_ShapeIndexB, SeqB);
+	GetShapeSeq(m_ShapeIndexC, SeqC);
+
+	fprintf(f, "color gray70\n");
+	fprintf(f, "select pepseq %s\n", SeqA.c_str());
+	fprintf(f, "color tv_blue, sele\n");
+	fprintf(f, "select pepseq %s\n", SeqB.c_str());
+	fprintf(f, "color tv_green, sele\n");
+	fprintf(f, "select pepseq %s\n", SeqC.c_str());
+	fprintf(f, "color tv_red, sele\n");
+	fprintf(f, "deselect\n");
+	}
+
+void ShapeSearcher::ToPml(FILE *f, const string &LoadName) const
+	{
+	if (f == 0)
+		return;
+
+	fprintf(f, "reinitialize;\n");
+	if (LoadName != "")
+		fprintf(f, "load %s;\n", LoadName.c_str());
+	fprintf(f, "color gray70;\n");
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		string Seq, Color;
+		GetShapeSeq(i, Seq);
+		if (Seq == "" || Seq == ".")
+			continue;
+
+		const char *Name = GetShapeName(i);
+		GetColor(i, Color);
+
+		fprintf(f, "select Motif_%s, pepseq %s;\n", Name, Seq.c_str());
+		fprintf(f, "color %s, Motif_%s;\n", Color.c_str(), Name);
+		}
+	fprintf(f, "deselect\n");
+	if (opt_pml_save)
+		{
+		const string &SaveName = m_Query->m_Label;
+		fprintf(f, "save %s.pse\n", SaveName.c_str());
+		}
+	}
+
+void ShapeSearcher::GetColor(unsigned MotifIndex, string &Color) const
+	{
+	string Name = (string) GetShapeName(MotifIndex);
+	if (Name == "A")
+		Color = "tv_blue";
+	else if (Name == "B")
+		Color = "tv_green";
+	else if (Name == "C")
+		Color = "tv_red";
+	else if (Name == "F1")
+		Color = "deepteal";
+	else if (Name == "F2")
+		Color = "cyan";
+	else if (Name == "D")
+		Color = "yellow";
+	else if (Name == "E")
+		Color = "orange";
+	else if (Name == "H")
+		Color = "salmon";
+	else if (Name == "J")
+		Color = "magenta";
 	}

@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "timing.h"
 #include "outputfiles.h"
+#include "motifsettings.h"
 
 int g_Frame = 0;
 
@@ -39,6 +40,8 @@ int main(int argc, char **argv)
 
 	else
 		Die("No command specified");
+
+	WriteMotifSettings(g_fLog);
 
 	CloseOutputFiles();
 

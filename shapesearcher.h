@@ -17,6 +17,7 @@ public:
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
 	double m_MinScoreABC = 0.6;
+	double m_MinScoreShapePalm = 0.5;
 	uint m_MaxTopHitCountABC = 8;
 
 	double m_ScoreABC = 0;
@@ -49,6 +50,8 @@ public:
 
 	const char *GetShapeName(uint ShapeIndex) const
 		{
+		asserta(m_Shapes != 0);
+		asserta(ShapeIndex < SIZE(m_Shapes->m_Names));
 		return m_Shapes->m_Names[ShapeIndex].c_str();
 		}
 
@@ -111,17 +114,23 @@ public:
 	  double MinPredScore);
 
 	void GetShapeSeq(uint ShapeIndex, string &Seq) const;
+	void GetA(string &Seq) const;
+	void GetB(string &Seq) const;
+	void GetC(string &Seq) const;
 
 	void GetSubSeq(uint Pos, uint n, string &Seq) const;
 
 	void LogShape(const string &Msg, uint ShapeIndex, uint Pos) const;
 
 	void ToPmlABC(FILE *f) const;
+	void ToPml(FILE *f, const string &LoadName) const;
+	void GetColor(uint MotifIndex, string &Color) const;
 
 	void LogShapes(const vector<uint> &ShapeIndexes,
 	  const vector<string> &ShapeSeqs) const;
 
 	char GetGate() const;
+	void GetFoundMotifsStr(string &Str) const;
 
 public:
 	static void TestABC(const Shapes &S,
@@ -133,10 +142,14 @@ public:
 	  const vector<PDBChain *> &Chains, double MinScoreX,
 	  vector<string> &SeqXs, vector<double> &Scores);
 
-	static void JoinABCX1(const vector<string> &ChainLabels,
+	static bool GetBeforeABC(const vector<PDBChain *> &Chains,
+	  vector<vector<string> > &ABCs, vector<string> &Xs);
+
+	static bool JoinABCX1(
+	  const vector<PDBChain *> &Chains,
+	  const vector<string> &ChainLabels,
 	  const map<string, vector<string> > &LabelToABC,
 	  const map<string, string> &LabelToX,
-	  bool BeforeABC,
 	  vector<string> &Xs,
 	  vector<vector<string> > &ABCs,
 	  vector<vector<string> > &ABCXs,
@@ -162,7 +175,7 @@ public:
 	  vector<double> &ScoreX2s,
 	  vector<double> &ScoreX3s);
 
-	static void GetTrainStats(double MinScoreX,
+	static void LogTrainStats(double MinScoreX,
 	  const vector<PDBChain *> &Chains,
 	  vector<string> &SeqX2s,
 	  vector<string> &SeqX3s,

@@ -209,7 +209,7 @@ void cmd_struct_prof()
 	Search3D(InputFN);
 	}
 
-void cmd_search3d()
+void old_cmd_search3d()
 	{
 	const string &InputFN = opt_search3d;
 	Search3D(InputFN);

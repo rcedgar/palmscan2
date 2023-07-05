@@ -48,6 +48,7 @@ HDRS = \
   lockobj.h \
   lockobjs.h \
   motifprofile.h \
+  motifsettings.h \
   mpcluster.h \
   msaqc.h \
   msaqc2.h \
@@ -90,6 +91,8 @@ HDRS = \
   seqinfo.h \
   seqsource.h \
   sfasta.h \
+  shapes.h \
+  shapesearcher.h \
   sort.h \
   spher.h \
   stock.h \
@@ -140,9 +143,12 @@ OBJS = \
   $(OBJDIR)/cluster_ppc.o \
   $(OBJDIR)/cluster_ppm.o \
   $(OBJDIR)/dali.o \
+  $(OBJDIR)/default_shapes.o \
   $(OBJDIR)/distmx.o \
   $(OBJDIR)/fasta_xlat.o \
   $(OBJDIR)/findcavity.o \
+  $(OBJDIR)/firstchain_pssms.o \
+  $(OBJDIR)/getshapestrainingmotifs.o \
   $(OBJDIR)/gspalign.o \
   $(OBJDIR)/gspaligner.o \
   $(OBJDIR)/gsprof.o \
@@ -150,6 +156,9 @@ OBJS = \
   $(OBJDIR)/hse.o \
   $(OBJDIR)/hse_cmp.o \
   $(OBJDIR)/hse_train.o \
+  $(OBJDIR)/joinabcx.o \
+  $(OBJDIR)/make_trunc_bench.o \
+  $(OBJDIR)/motifsettings.o \
   $(OBJDIR)/palmprint_pssms.o \
   $(OBJDIR)/pamerger.o \
   $(OBJDIR)/pamerge.o \
@@ -212,8 +221,10 @@ OBJS = \
   $(OBJDIR)/readchains.o \
   $(OBJDIR)/gddgateprob.o \
   $(OBJDIR)/calpp2ppc.o \
+  $(OBJDIR)/reverse_chains.o \
   $(OBJDIR)/scop40.o \
   $(OBJDIR)/scop40_firstfp.o \
+  $(OBJDIR)/search3d.o \
   $(OBJDIR)/search3d_tri.o \
   $(OBJDIR)/pdbchain.o \
   $(OBJDIR)/psms.o \
@@ -222,6 +233,7 @@ OBJS = \
   $(OBJDIR)/rdrpsearcher.o \
   $(OBJDIR)/search3d_cal.o \
   $(OBJDIR)/searchaatop.o \
+  $(OBJDIR)/searchabcx.o \
   $(OBJDIR)/searchc.o \
   $(OBJDIR)/search_ppp.o \
   $(OBJDIR)/search_pssms.o \
@@ -231,6 +243,16 @@ OBJS = \
   $(OBJDIR)/search3d_ppc.o \
   $(OBJDIR)/searchtriangle.o \
   $(OBJDIR)/segs.o \
+  $(OBJDIR)/shapes.o \
+  $(OBJDIR)/shapesearchabc.o \
+  $(OBJDIR)/shapesearcher.o \
+  $(OBJDIR)/shapesearchpalm.o \
+  $(OBJDIR)/shapes_score1.o \
+  $(OBJDIR)/shapes_train.o \
+  $(OBJDIR)/shapes_search.o \
+  $(OBJDIR)/shapes_train1.o \
+  $(OBJDIR)/shapes_train_score.o \
+  $(OBJDIR)/shape_search_debug.o \
   $(OBJDIR)/smooth.o \
   $(OBJDIR)/spher.o \
   $(OBJDIR)/split_train_test.o \
@@ -240,6 +262,7 @@ OBJS = \
   $(OBJDIR)/structprof.o \
   $(OBJDIR)/structprofheuristics.o \
   $(OBJDIR)/sw.o \
+  $(OBJDIR)/testabc.o \
   $(OBJDIR)/test_pssms.o \
   $(OBJDIR)/seqdb.o \
   $(OBJDIR)/seqinfo.o \
@@ -255,6 +278,7 @@ OBJS = \
   $(OBJDIR)/tmscore.o \
   $(OBJDIR)/tm_ppc.o \
   $(OBJDIR)/tracebackbitmem.o \
+  $(OBJDIR)/trainabcx.o \
   $(OBJDIR)/triangle.o \
   $(OBJDIR)/triangles.o \
   $(OBJDIR)/trifinder.o \
@@ -266,6 +290,7 @@ OBJS = \
   $(OBJDIR)/cmpsearcher.o \
   $(OBJDIR)/validate.o \
   $(OBJDIR)/viterbifastmem.o \
+  $(OBJDIR)/writepml.o \
   $(OBJDIR)/xalign.o \
   $(OBJDIR)/xalign2.o \
   $(OBJDIR)/xalign_calibrate.o \

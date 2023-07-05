@@ -1,5 +1,6 @@
 #include "myutils.h"
 #include "shapesearcher.h"
+#include "motifsettings.h"
 
 static int MAX_SHIFT = 4;
 
@@ -9,7 +10,9 @@ static uint g_AgreeCount;
 static uint g_DisagreeCount;
 static uint g_RefPermutedCount;
 static uint g_PredScoreHigherCount;
+static uint g_PredScoreLowerCount;
 static uint g_PredScoreTooLowCount;
+static uint g_RevHitsCount;
 
 void ShapeSearcher::LogShapes(const vector<uint> &ShapeIndexes,
   const vector<string> &ShapeSeqs) const
@@ -78,17 +81,6 @@ void ShapeSearcher::TestABC(const Shapes &S,
 		SS.TestABC1(*Chains[i], MotifSeqsVec[i], MinPredScore);
 		}
 
-	ProgressLog("Agree %u, disagree %u, pred higher %u, permuted %u, no pred %u, no ref %u, too low %u (%.4f)\n",
-	  g_AgreeCount,
-	  g_DisagreeCount,
-	  g_PredScoreHigherCount,
-	  g_RefPermutedCount,
-	  g_NoPredCount,
-	  g_NoRefCount,
-	  g_PredScoreTooLowCount,
-	  MinPredScore);
-
-	uint RevHitCount = 0;
 	for (uint i = 0; i < N; ++i)
 		{
 		ProgressStep(i, N, "Test ABC reverse");
@@ -98,9 +90,21 @@ void ShapeSearcher::TestABC(const Shapes &S,
 		SS.SetQuery(RevChain);
 		double RevScore = SS.SearchABC();
 		if (RevScore >= MinPredScore)
-			++RevHitCount;
+			++g_RevHitsCount;
 		}
-	ProgressLog("%u rev hits\n", RevHitCount);
+
+	ProgressLog("%10u  Sequences (min score %.3g)\n", N, MinPredScore);
+#define X(x)	ProgressLog("%10u  (%5.1f%%)  %s\n", g_##x##Count, GetPct(g_##x##Count, N), #x)
+	X(Agree);
+	X(Disagree);
+	X(PredScoreHigher);
+	X(PredScoreLower);
+	X(RefPermuted);
+	X(NoRef);
+	X(NoPred);
+	X(PredScoreTooLow);
+	X(RevHits);
+#undef X
 	}
 
 static bool ShiftOk(uint RefPos, uint PredPos)
@@ -156,6 +160,16 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 	uint PredPosB = m_ShapePosVec[m_ShapeIndexB];
 	uint PredPosC = m_ShapePosVec[m_ShapeIndexC];
 
+	{
+	string A, B, C;
+	GetShapeSeq(m_ShapeIndexA, A);
+	GetShapeSeq(m_ShapeIndexB, B);
+	GetShapeSeq(m_ShapeIndexC, C);
+	CheckA(A);
+	CheckB(B);
+	CheckC(C);
+	}
+
 	if (ShiftOk(PredPosA, RefPosA) &&
 	  ShiftOk(PredPosB, RefPosB) &&
 	  ShiftOk(PredPosC,RefPosC))
@@ -186,6 +200,8 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 		++g_PredScoreHigherCount;
 		return;
 		}
+	if (PredScore < RefScore)
+		++g_PredScoreLowerCount;
 
 	++g_DisagreeCount;
 
@@ -248,27 +264,4 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 	Log("deselect\n");
 	}
 #endif
-	}
-
-void ShapeSearcher::ToPmlABC(FILE *f) const
-	{
-	if (f == 0)
-		return;
-
-	if (m_PosA == UINT_MAX || m_PosB == UINT_MAX || m_PosC == UINT_MAX)
-		return;
-
-	string SeqA, SeqB, SeqC;
-	GetShapeSeq(m_ShapeIndexA, SeqA);
-	GetShapeSeq(m_ShapeIndexB, SeqB);
-	GetShapeSeq(m_ShapeIndexC, SeqC);
-
-	fprintf(f, "color gray70\n");
-	fprintf(f, "select pepseq %s\n", SeqA.c_str());
-	fprintf(f, "color tv_blue, sele\n");
-	fprintf(f, "select pepseq %s\n", SeqB.c_str());
-	fprintf(f, "color tv_green, sele\n");
-	fprintf(f, "select pepseq %s\n", SeqC.c_str());
-	fprintf(f, "color tv_red, sele\n");
-	fprintf(f, "deselect\n");
 	}

@@ -297,6 +297,7 @@
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="cluster_ppm.cpp" />
     <ClCompile Include="dali.cpp" />
+    <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="findcavity.cpp" />
@@ -311,6 +312,7 @@
     <ClCompile Include="hse_train.cpp" />
     <ClCompile Include="joinabcx.cpp" />
     <ClCompile Include="make_trunc_bench.cpp" />
+    <ClCompile Include="motifsettings.cpp" />
     <ClCompile Include="palmprint_pssms.cpp" />
     <ClCompile Include="pamerger.cpp" />
     <ClCompile Include="pamerge.cpp" />
@@ -373,6 +375,7 @@
     <ClCompile Include="readchains.cpp" />
     <ClCompile Include="gddgateprob.cpp" />
     <ClCompile Include="calpp2ppc.cpp" />
+    <ClCompile Include="reverse_chains.cpp" />
     <ClCompile Include="scop40.cpp" />
     <ClCompile Include="scop40_firstfp.cpp" />
     <ClCompile Include="search3d.cpp" />
@@ -447,6 +450,7 @@
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
+    <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
     <ClInclude Include="shapes.h" />
     <ClInclude Include="shapesearcher.h" />

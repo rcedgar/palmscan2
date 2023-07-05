@@ -557,6 +557,15 @@
     <ClCompile Include="shape_search_debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="motifsettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reverse_chains.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="default_shapes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -815,6 +824,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shapesearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="motifsettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

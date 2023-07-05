@@ -1,5 +1,6 @@
 #include "myutils.h"
 #include "shapesearcher.h"
+#include "motifsettings.h"
 #include "sort.h"
 
 double ShapeSearcher::SearchABC(bool DoTrace)
@@ -16,10 +17,6 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 	uint AL = GetShapeLength(m_ShapeIndexA);
 	uint BL = GetShapeLength(m_ShapeIndexB);
 	uint CL = GetShapeLength(m_ShapeIndexC);
-
-	uint Offset_D_MotifA = m_Shapes->m_Offset_D_MotifA;
-	uint Offset_G_MotifB = m_Shapes->m_Offset_G_MotifB;
-	uint Offset_D_MotifC = m_Shapes->m_Offset_D_MotifC;
 
 	if (DoTrace)
 		Log("ShapeSearcher::SearchABC >%s QL=%u\n",
@@ -40,7 +37,7 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 	vector<uint> HitsA;
 	vector<double> ScoresA;
 	SearchShapeSelf(m_ShapeIndexA, m_MinScoreABC, MinStartA, MaxStartA,
-	  'D', Offset_D_MotifA, HitsA, ScoresA);
+	  'D', g_OffAd, HitsA, ScoresA);
 	const uint NA = SIZE(HitsA);
 
 	if (DoTrace)
@@ -72,7 +69,7 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 		vector<uint> HitsB;
 		vector<double> ScoresB;
 		SearchShapeSelf(m_ShapeIndexB, m_MinScoreABC, MinStartB, MaxStartB,
-		  'G', Offset_G_MotifB, HitsB, ScoresB);
+		  'G', g_OffBg, HitsB, ScoresB);
 		const uint NB = SIZE(HitsB);
 		if (DoTrace)
 			Log(" [%u] PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
@@ -98,7 +95,7 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 			vector<uint> HitsC;
 			vector<double> ScoresC;
 			SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC, MinStartC, MaxStartC,
-			  'D', Offset_D_MotifC, HitsC, ScoresC);
+			  'D', g_OffCd, HitsC, ScoresC);
 			const uint NC = SIZE(HitsC);
 			if (DoTrace)
 				Log("  [%u,%u] PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",

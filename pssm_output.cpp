@@ -2,6 +2,7 @@
 #include "rdrpsearcher.h"
 #include "outputfiles.h"
 #include "abcxyz.h"
+#include "motifsettings.h"
 
 extern vector<string> g_ExcludeNames;
 
@@ -505,12 +506,18 @@ void RdRpSearcher::GetShapesTrainABC(string &A, string &B, string &C) const
 	uint PosC = GetMotifPos(2);
 
 	asserta(PosA < PosB && PosB < PosC);
-	if (PosA < 2)
+	if (PosA < g_LeftSubA)
+		return;
+	if (PosC + g_LC > QL)
 		return;
 
-	GetSubSeq(PosA-2, 12+4, A);
-	GetSubSeq(PosB, 12+8, B);
-	GetSubSeq(PosC-2, 8+4, C);
+	GetSubSeq(PosA-g_LeftSubA, g_LA, A);
+	GetSubSeq(PosB-g_LeftSubB, g_LB, B);
+	GetSubSeq(PosC-g_LeftSubC, g_LC, C);
+	
+	CheckA(A);
+	CheckB(B);
+	CheckC(C);
 	}
 
 void RdRpSearcher::WriteShapesTrainTsv(FILE *f) const

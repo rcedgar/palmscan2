@@ -1,6 +1,19 @@
 #include "myutils.h"
 #include "shapes.h"
 #include "quarts.h"
+#include "motifsettings.h"
+
+void Shapes::InitFromCmdLine()
+	{
+	if (optset_shapes)
+		FromFile(opt_shapes);
+	else
+		{
+		vector<string> Lines;
+		GetDefaultShapesLines(Lines);
+		FromLines(Lines);
+		}
+	}
 
 uint Shapes::GetShapeLength(uint ShapeIndex) const
 	{
@@ -105,10 +118,7 @@ void Shapes::TrainGetCatalytic3Ds(const PDBChain &Chain, const vector<uint> &Pos
 	if (
 	  m_ShapeIndexA == UINT_MAX ||
 	  m_ShapeIndexB == UINT_MAX ||
-	  m_ShapeIndexC == UINT_MAX ||
-	  m_Offset_D_MotifA == UINT_MAX ||
-	  m_Offset_G_MotifB == UINT_MAX ||
-	  m_Offset_D_MotifC == UINT_MAX)
+	  m_ShapeIndexC == UINT_MAX)
 		return;
 
 	asserta(m_ShapeIndexA < SIZE(PosVec));
@@ -120,27 +130,19 @@ void Shapes::TrainGetCatalytic3Ds(const PDBChain &Chain, const vector<uint> &Pos
 
 	uint L = Chain.GetSeqLength();
 	if (
-	  PosA + m_Offset_D_MotifA >= L ||
-	  PosB + m_Offset_G_MotifB >= L ||
-	  PosC + m_Offset_D_MotifC >= L)
+	  PosA + g_OffAd >= L ||
+	  PosB + g_OffBg >= L ||
+	  PosC + g_OffCd >= L)
 		return;
 
-	AB = Chain.GetDist(PosA + m_Offset_D_MotifA, PosB + m_Offset_G_MotifB);
-	AC = Chain.GetDist(PosA + m_Offset_D_MotifA, PosC + m_Offset_D_MotifC);
-	BC = Chain.GetDist(PosB + m_Offset_G_MotifB, PosC + m_Offset_D_MotifC);
+	AB = Chain.GetDist(PosA + g_OffAd, PosB + g_OffBg);
+	AC = Chain.GetDist(PosA + g_OffAd, PosC + g_OffCd);
+	BC = Chain.GetDist(PosB + g_OffBg, PosC + g_OffCd);
 	}
 
 void Shapes::Train(const vector<PDBChain *> &Chains,
   const vector<vector<string> > &SeqsVec)
 	{
-	asserta(optset_abcoffsets);
-	vector<string> Fields;
-	Split(opt_abcoffsets, Fields, '/');
-	asserta(SIZE(Fields) == 3);
-	m_Offset_D_MotifA = StrToUint(Fields[0]);
-	m_Offset_G_MotifB = StrToUint(Fields[1]);
-	m_Offset_D_MotifC = StrToUint(Fields[2]);
-
 	const uint ChainCount = SIZE(Chains);
 	asserta(SIZE(SeqsVec) == ChainCount);
 	const uint ShapeCount = GetShapeCount();
@@ -458,10 +460,7 @@ void Shapes::ToFile(const string &FileName) const
 	FILE *f = CreateStdioFile(FileName);
 	uint ShapeCount = GetShapeCount();
 	fprintf(f, "shapes\t%u\n", ShapeCount);
-	fprintf(f, "AD_BG_CD\t%u\t%u\t%u\n",
-	  m_Offset_D_MotifA,
-	  m_Offset_G_MotifB,
-	  m_Offset_D_MotifC);
+	MotifSettingsToFile(f);
 	for (uint ShapeIndex = 0; ShapeIndex < ShapeCount; ++ShapeIndex)
 		fprintf(f, "%u\t%s\t%u\t%u\t%u\n",
 		  ShapeIndex, m_Names[ShapeIndex].c_str(),
@@ -494,12 +493,7 @@ void Shapes::FromLines(const vector<string> &Lines)
 	const string &Line1 = Lines[LineNr];
 	++LineNr;
 
-	Split(Line1, Fields, '\t');
-	asserta(SIZE(Fields) == 4);
-	asserta(Fields[0] == "AD_BG_CD");
-	m_Offset_D_MotifA = StrToUint(Fields[1]);
-	m_Offset_G_MotifB = StrToUint(Fields[2]);
-	m_Offset_D_MotifC = StrToUint(Fields[3]);
+	MotifSettingsFromLine(Line1);
 
 	for (uint ShapeIndex = 0; ShapeIndex < ShapeCount; ++ShapeIndex)
 		{

@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 #include "outputfiles.h"
+#include "motifsettings.h"
 
 /***
 shapes_train1
@@ -16,7 +17,7 @@ shapes_train1
 
 static const double MINSCOREX = 0.4;
 
-void ShapeSearcher::GetTrainStats(double MinScoreX,
+void ShapeSearcher::LogTrainStats(double MinScoreX,
   const vector<PDBChain *> &Chains,
   vector<string> &X1s,
   vector<string> &X2s,
@@ -81,8 +82,8 @@ void ShapeSearcher::GetTrainStats(double MinScoreX,
 				++ShiftGt4;
 			}
 		}
-	Log("Min score %.4f\n", MinScoreX);
-#define X(x)	Log("%16.16s  %u (%.1f%%)\n", #x, x, GetPct(x, ChainCount));
+	ProgressLog("Min score %.4f\n", MinScoreX);
+#define X(x)	ProgressLog("%16.16s  %u (%.1f%%)\n", #x, x, GetPct(x, ChainCount));
 	X(ChainCount);
 	X(Hits);
 	X(SameSeq);
@@ -106,9 +107,6 @@ void cmd_shapes_train1()
 	const string &TsvFN_ABC = opt_input;
 	const string &TsvFN_X = opt_input1;
 
-	asserta(optset_abcoffsets);
-	asserta(optset_before_abc || optset_after_abc);
-	
 	vector<PDBChain *> Chains;
 	Progress("Reading chains\n");
 	ReadChains(ChainsFN, Chains);
@@ -141,6 +139,7 @@ void cmd_shapes_train1()
 		ABC.push_back(Fields[2]);
 		ABC.push_back(Fields[3]);
 		LabelToABC[Label] = ABC;
+		CheckABC(ABC);
 		}
 	CloseStdioFile(f);
 
@@ -166,8 +165,12 @@ void cmd_shapes_train1()
 	vector<vector<string> > ABCX1s;
 	vector<string> MotifNames1;
 	vector<uint> MotifLengths1;
-	ShapeSearcher::JoinABCX1(ChainLabels, LabelToABC, LabelToX,
-	  opt_before_abc, X1s, ABC1s, ABCX1s, MotifNames1, MotifLengths1);
+	bool BeforeABC = 
+	  ShapeSearcher::JoinABCX1(Chains, ChainLabels, LabelToABC, LabelToX,
+	  X1s, ABC1s, ABCX1s, MotifNames1, MotifLengths1);
+	ProgressLog("%s  %s\n", 
+	  MotifNameX.c_str(),
+	  BeforeABC ? "before ABC" : "after ABC");
 
 	Shapes S1;
 	Shapes S2;
@@ -175,10 +178,10 @@ void cmd_shapes_train1()
 	vector<string> X3s;
 	vector<double> ScoreX2s;
 	vector<double> ScoreX3s;
-	ShapeSearcher::TrainABCX(Chains, ABC1s, X1s, opt_before_abc,
+	ShapeSearcher::TrainABCX(Chains, ABC1s, X1s, BeforeABC,
 	  S1, S2, X2s, X3s, ScoreX2s, ScoreX3s);
 
-	ShapeSearcher::GetTrainStats(0.4, Chains, X2s, X3s, ScoreX2s, ScoreX3s);
+	ShapeSearcher::LogTrainStats(0.4, Chains, X2s, X3s, ScoreX2s, ScoreX3s);
 
 	Shapes S3;
 	Shapes S4;
@@ -186,10 +189,10 @@ void cmd_shapes_train1()
 	vector<string> X5s;
 	vector<double> ScoreX4s;
 	vector<double> ScoreX5s;
-	ShapeSearcher::TrainABCX(Chains, ABC1s, X3s, opt_before_abc,
+	ShapeSearcher::TrainABCX(Chains, ABC1s, X3s, BeforeABC,
 	  S3, S4, X4s, X5s, ScoreX4s, ScoreX5s);
 
-	ShapeSearcher::GetTrainStats(0.4, Chains, X4s, X5s, ScoreX4s, ScoreX5s);
+	ShapeSearcher::LogTrainStats(0.4, Chains, X4s, X5s, ScoreX4s, ScoreX5s);
 
 	if (g_ftsv != 0)
 		{

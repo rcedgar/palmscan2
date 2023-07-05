@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 #include "rdrpsearcher.h"
+#include "motifsettings.h"
 
 void GetTrainingMotifs(const string &FileName,
   const vector<PDBChain *> &Chains, vector<string> &ChainLabels,
@@ -21,10 +22,20 @@ void GetTrainingMotifs(const string &FileName,
 	asserta(Fields[0] == "Label");
 	asserta(SIZE(Fields) > 1);
 	const uint MotifCount = SIZE(Fields) - 1;
+	uint IxA = UINT_MAX;
+	uint IxB = UINT_MAX;
+	uint IxC = UINT_MAX;
 	for (uint i = 0; i < MotifCount; ++i)
 		{
+		const string &Name = Fields[i+1];
+		if (Name == "A")
+			IxA = i;
+		else if (Name == "B")
+			IxB = i;
+		else if (Name == "C")
+			IxC = i;
 		MotifLengths.push_back(UINT_MAX);
-		MotifNames.push_back(Fields[i+1]);
+		MotifNames.push_back(Name);
 		}
 
 	while (ReadLineStdioFile(f, Line))
@@ -40,6 +51,13 @@ void GetTrainingMotifs(const string &FileName,
 			MotifSeqs.push_back(Fields[i+1]);
 		MotifSeqsVec.push_back(MotifSeqs);
 
+		if (IxA != UINT_MAX)
+			CheckA(MotifSeqs[IxA]);
+		if (IxB != UINT_MAX)
+			CheckB(MotifSeqs[IxB]);
+		if (IxC != UINT_MAX)
+			CheckC(MotifSeqs[IxC]);
+
 		for (uint i = 0; i < MotifCount; ++i)
 			{
 			const string &MotifSeq = MotifSeqs[i];
@@ -53,4 +71,6 @@ void GetTrainingMotifs(const string &FileName,
 			}
 		}
 	CloseStdioFile(f);
+	WriteMotifSettings(g_fLog);
+	ClearMotifGoodCounts();
 	}
