@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 #include "motifsettings.h"
+#include "sort.h"
 
 #define TRACE	0
 
@@ -20,6 +21,8 @@ void ShapeSearcher::Init(const Shapes &S)
 		else if (S.m_Names[i] == "C")
 			m_ShapeIndexC = i;
 		}
+	if (optset_minscore_pp)
+		m_MinScoreABC = opt_minscore_pp;
 	}
 
 void ShapeSearcher::SetQuery(const PDBChain &Query)
@@ -227,6 +230,33 @@ double ShapeSearcher::GetScore(uint ShapeIndex, uint Pos,
 	return Score;
 	}
 
+void ShapeSearcher::SearchShapeSelfTop(uint ShapeIndex,
+  double MinScore, uint MaxHits, vector<uint> &HitPosVec) const
+	{
+	HitPosVec.clear();
+	uint QL = GetQL();
+	uint Length = GetShapeLength(ShapeIndex);
+	if (QL < Length + 10)
+		return;
+
+	vector<uint> TmpHitPosVec;
+	vector<double> TmpHitScores;
+	SearchShapeSelf(ShapeIndex, m_MinSelfScore, 0, QL-Length, 0, UINT_MAX,
+	  TmpHitPosVec, TmpHitScores);
+	const uint N = SIZE(TmpHitPosVec);
+	asserta(SIZE(TmpHitScores) == N);
+	if (N == 0)
+		return;
+	vector<uint> Order(N);
+	QuickSortOrderDesc(TmpHitScores.data(), N, Order.data());
+	uint M = min(N, MaxHits);
+	for (uint k = 0; k < M; ++k)
+		{
+		uint i = Order[k];
+		HitPosVec.push_back(TmpHitPosVec[i]);
+		}
+	}
+
 void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
   uint Lo, uint Hi, char Letter, uint LetterOffset,
   vector<uint> &HitPosVec, vector<double> &HitScores) const
@@ -237,9 +267,16 @@ void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
 	HitScores.clear();
 	uint L = GetShapeLength(ShapeIndex);
 	uint QL = GetQL();
-	if (Hi + L > QL)
+	if (Lo + L > QL)
 		return;
-	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+	uint Top = Hi;
+	if (Top + L > QL)
+		{
+		if (QL < L)
+			return;
+		Top = QL - L;
+		}
+	for (uint Pos = Lo; Pos <= Top; ++Pos)
 		{
 		if (Letter != 0 && LetterOffset != UINT_MAX &&
 		  m_Query->m_Seq[Pos+LetterOffset] != Letter)
@@ -487,4 +524,18 @@ void ShapeSearcher::GetColor(unsigned MotifIndex, string &Color) const
 		Color = "salmon";
 	else if (Name == "J")
 		Color = "magenta";
+	}
+
+void ShapeSearcher::GetShapeIndexes(vector<uint> &Indexes) const
+	{
+	Indexes.resize(m_ShapeCount);
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		Indexes[i] = i;
+	}
+
+void ShapeSearcher::GetIncludes(vector<bool> &Includes) const
+	{
+	Includes.resize(m_ShapeCount);
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		Includes[i] = true;
 	}

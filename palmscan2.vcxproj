@@ -313,6 +313,7 @@
     <ClCompile Include="joinabcx.cpp" />
     <ClCompile Include="make_trunc_bench.cpp" />
     <ClCompile Include="motifsettings.cpp" />
+    <ClCompile Include="old_search3d.cpp" />
     <ClCompile Include="palmprint_pssms.cpp" />
     <ClCompile Include="pamerger.cpp" />
     <ClCompile Include="pamerge.cpp" />
@@ -398,6 +399,7 @@
     <ClCompile Include="searchtriangle.cpp" />
     <ClCompile Include="segs.cpp" />
     <ClCompile Include="shapes.cpp" />
+    <ClCompile Include="shapesearch.cpp" />
     <ClCompile Include="shapesearchabc.cpp" />
     <ClCompile Include="shapesearcher.cpp" />
     <ClCompile Include="shapesearchpalm.cpp" />

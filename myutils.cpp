@@ -1949,6 +1949,9 @@ void Version(FILE *f)
 	fprintf(f, "\n");
 
 	fprintf(f, "palmscan2 v%s.%s%s\n", MY_VERSION, GetPlatform(), Flags);
+
+#include "build_date.txt"
+	fprintf(f, "compiled %s\n", build_date);
 	}
 
 void PrintHelp()

@@ -11,8 +11,12 @@ static uint g_HitCount;
 
 static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
-	SS.SearchPalm(Q);
-	bool IsHit = (SS.m_ScoreABC >= SS.m_MinScoreABC);
+	SS.ClearSearch();
+	SS.SetQuery(Q);
+	vector<bool> Includes;
+	SS.GetIncludes(Includes);
+	SS.Search(Includes);
+	bool IsHit = (SS.m_Score >= 0.5);//@@TODO
 	if (opt_misses || IsHit)
 		SS.ToTsv(g_ftsv);
 	if (IsHit)
@@ -61,8 +65,9 @@ static void Thread(ChainReader &CR, const Shapes &S)
 		}
 	}
 
-static void ShapesSearch(const string &QueryFN)
+void cmd_shapes_search()
 	{
+	const string &QueryFN = opt_shapes_search;
 	Shapes S;
 	S.InitFromCmdLine();
 
@@ -82,16 +87,4 @@ static void ShapesSearch(const string &QueryFN)
 	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/ sec/ thread)\n",
 	  g_HitCount, g_DoneCount, GetPct(g_HitCount, g_DoneCount),
 	  IntToStr(Secs), ThreadCount, Throughput);
-	}
-
-void cmd_shapes_search()
-	{
-	const string &QueryFN = opt_shapes_search;
-	ShapesSearch(QueryFN);
-	}
-
-void cmd_search3d()
-	{
-	const string &QueryFN = opt_search3d;
-	ShapesSearch(QueryFN);
 	}

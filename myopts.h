@@ -125,6 +125,7 @@ UNS_OPT(sample_size,		16,			1,			UINT_MAX)
 UNS_OPT(topn,				16,			1,			UINT_MAX)
 
 FLT_OPT(minscore,			10.0,		-9e9,		+9e9)
+FLT_OPT(minscore_pp,		10.0,		-9e9,		+9e9)
 FLT_OPT(maxscore,			10.0,		-9e9,		+9e9)
 FLT_OPT(motif_cluster_minscore,			0.0,		-9e9,		+9e9)
 FLT_OPT(minscore1,			0.0,		-9e9,		+9e9)

@@ -16,13 +16,22 @@ public:
 	uint m_ShapeIndexA = UINT_MAX;
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
-	double m_MinScoreABC = 0.6;
+	double m_MinScoreABC = 0.55;
 	double m_MinScoreShapePalm = 0.5;
+	double m_MinSelfScore = 0.7;
+	uint m_MaxTopHitCount = 8;
 	uint m_MaxTopHitCountABC = 8;
 
 	double m_ScoreABC = 0;
 	double m_PalmScore = 0;
 
+// m_IncludeShapes[i] is true/false to include i'th shape.
+	vector<bool> m_IncludeShapes;
+
+	vector<vector<uint> > m_SelfTopHits;
+
+// Search results
+	double m_Score = 0;
 	vector<uint> m_ShapePosVec;
 	vector<double> m_ShapeScores;
 
@@ -33,10 +42,13 @@ public:
 		m_PosA = UINT_MAX;
 		m_PosB = UINT_MAX;
 		m_PosC = UINT_MAX;
+		m_Score = 0;
 		m_ScoreABC = 0;
 		m_PalmScore = 0;
-		m_ShapePosVec.resize(0);
-		m_ShapeScores.resize(0);
+		m_SelfTopHits.clear();
+		m_IncludeShapes.clear();
+		m_ShapePosVec.clear();
+		m_ShapeScores.clear();
 		}
 
 	void Init(const Shapes &S);
@@ -73,6 +85,10 @@ public:
 		}
 
 	uint GetShapeCount() const { return m_ShapeCount; }
+	void GetShapeIndexes(vector<uint> &Indexes) const;
+	void GetIncludes(vector<bool> &Includes) const;
+	void GetFirstIndexes(vector<uint> &Indexes) const;
+	bool GetNextIndexes(vector<uint> &Indexes) const;
 
 	void SetQuery(const PDBChain &Query);
 
@@ -93,6 +109,9 @@ public:
 	  uint Lo, uint Hi, char Letter, uint LetterOffset,
 	  vector<uint> &HitPosVec, vector<double> &HitScores) const;
 
+	void SearchShapeSelfTop(uint ShapeIndex, double MinScore,
+	  uint MaxHits, vector<uint> &HitPosVec) const;
+
 	double GetSelfScore(uint ShapeIndex, uint Pos) const;
 
 	double GetScore(uint ShapeIndex, uint Pos,
@@ -108,6 +127,7 @@ public:
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
 	double SearchABC(bool DoTrace = false);
+	void Search(const vector<bool> &IncludeShapes);
 
 	void TestABC1(const PDBChain &Chain,
 	  const vector<string> &MotifSeqs,
@@ -121,10 +141,10 @@ public:
 	void GetSubSeq(uint Pos, uint n, string &Seq) const;
 
 	void LogShape(const string &Msg, uint ShapeIndex, uint Pos) const;
+	void GetColor(uint MotifIndex, string &Color) const;
 
 	void ToPmlABC(FILE *f) const;
 	void ToPml(FILE *f, const string &LoadName) const;
-	void GetColor(uint MotifIndex, string &Color) const;
 
 	void LogShapes(const vector<uint> &ShapeIndexes,
 	  const vector<string> &ShapeSeqs) const;
