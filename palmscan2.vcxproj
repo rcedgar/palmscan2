@@ -389,6 +389,7 @@
     <ClCompile Include="search3d_cal.cpp" />
     <ClCompile Include="searchaatop.cpp" />
     <ClCompile Include="searchabcx.cpp" />
+    <ClCompile Include="searchcab.cpp" />
     <ClCompile Include="searchc.cpp" />
     <ClCompile Include="search_ppp.cpp" />
     <ClCompile Include="search_pssms.cpp" />
@@ -408,7 +409,8 @@
     <ClCompile Include="shapes_search.cpp" />
     <ClCompile Include="shapes_train1.cpp" />
     <ClCompile Include="shapes_train_score.cpp" />
-    <ClCompile Include="shape_search_debug.cpp" />
+    <ClCompile Include="shapes_search_debug.cpp" />
+    <ClCompile Include="shapes_search_cab.cpp" />
     <ClCompile Include="smooth.cpp" />
     <ClCompile Include="spher.cpp" />
     <ClCompile Include="split_train_test.cpp" />

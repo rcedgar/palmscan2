@@ -178,6 +178,7 @@ FLAG_OPT(subchainc)
 FLAG_OPT(delete_hetatm)
 FLAG_OPT(misses)
 FLAG_OPT(pml_save)
+FLAG_OPT(traceabc)
 
 #undef FLAG_OPT
 #undef UNS_OPT

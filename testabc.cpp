@@ -88,8 +88,8 @@ void ShapeSearcher::TestABC(const Shapes &S,
 		PDBChain RevChain;
 		Chain.GetReverse(RevChain);
 		SS.SetQuery(RevChain);
-		double RevScore = SS.SearchABC();
-		if (RevScore >= MinPredScore)
+		SS.SearchABC();
+		if (SS.m_ScoreABC >= MinPredScore)
 			++g_RevHitsCount;
 		}
 
@@ -141,17 +141,17 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 		return;
 		}
 
-	double PredScore = SearchABC();
-	if (PredScore == 0)
+	SearchABC();
+	if (m_ScoreABC == 0)
 		{
 		Log("No pred (zero score) >%s\n", Label);
 		++g_NoPredCount;
 		return;
 		}
 
-	if (PredScore < MinPredScore)
+	if (m_ScoreABC < MinPredScore)
 		{
-		Log("Pred score too low %6.4f >%s\n", PredScore, Label);
+		Log("Pred score too low %6.4f >%s\n", m_ScoreABC, Label);
 		++g_PredScoreTooLowCount;
 		return;
 		}
@@ -189,24 +189,30 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 	ShapeIndexes.push_back(m_ShapeIndexB);
 	ShapeIndexes.push_back(m_ShapeIndexC);
 
+	vector<uint> PredPosVec;
+	PredPosVec.push_back(PredPosA);
+	PredPosVec.push_back(PredPosB);
+	PredPosVec.push_back(PredPosC);
+	double PredScore = GetScoreShapes(ShapeIndexes, PredPosVec);
+
 	vector<uint> RefPosVec;
 	RefPosVec.push_back(RefPosA);
 	RefPosVec.push_back(RefPosB);
 	RefPosVec.push_back(RefPosC);
 	double RefScore = GetScoreShapes(ShapeIndexes, RefPosVec);
 
-	if (PredScore > RefScore)
+	if (m_ScoreABC > RefScore)
 		{
 		++g_PredScoreHigherCount;
 		return;
 		}
-	if (PredScore < RefScore)
+	if (m_ScoreABC < RefScore)
 		++g_PredScoreLowerCount;
 
 	++g_DisagreeCount;
 
 	Log(">%s disagree ref %.3g, pred %.3g\n",
-	  m_Query->m_Label.c_str(), RefScore, PredScore);
+	  m_Query->m_Label.c_str(), RefScore, m_ScoreABC);
 #if 0
 	{
 	LogShape("RefA", m_ShapeIndexA, RefPosA);

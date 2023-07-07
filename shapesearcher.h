@@ -24,6 +24,7 @@ public:
 
 	double m_ScoreABC = 0;
 	double m_PalmScore = 0;
+	bool m_Permuted = false;
 
 // m_IncludeShapes[i] is true/false to include i'th shape.
 	vector<bool> m_IncludeShapes;
@@ -49,6 +50,7 @@ public:
 		m_IncludeShapes.clear();
 		m_ShapePosVec.clear();
 		m_ShapeScores.clear();
+		m_Permuted = false;
 		}
 
 	void Init(const Shapes &S);
@@ -105,7 +107,7 @@ public:
 	  double MinScore, uint Lo, uint Hi, char Letter, uint LetterOffset,
 	  uint &Pos, double &Score) const;
 
-	void SearchShapeSelf(uint ShapeIndex, double MinScore,
+	double SearchShapeSelf(uint ShapeIndex, double MinScore,
 	  uint Lo, uint Hi, char Letter, uint LetterOffset,
 	  vector<uint> &HitPosVec, vector<double> &HitScores) const;
 
@@ -126,7 +128,8 @@ public:
 	double GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
-	double SearchABC(bool DoTrace = false);
+	void SearchABC(bool DoTrace = false);
+	void SearchCAB(bool DoTrace = false);
 	void Search(const vector<bool> &IncludeShapes);
 
 	void TestABC1(const PDBChain &Chain,

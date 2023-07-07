@@ -23,7 +23,7 @@ bool ShapeSearcher::GetNextIndexes(vector<uint> &Indexes) const
 	bool Ok = false;
 	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
-		uint n = m_SelfTopHits[i].size();
+		uint n = SIZE(m_SelfTopHits[i]);
 		if (n == 0)
 			continue;
 		uint CurrentIndex = Indexes[i];

@@ -86,17 +86,13 @@ void cmd_shapes_search_debug()
 	{
 	const string &QueryFN = opt_shapes_search_debug;
 
-	if (!optset_shapes)
-		Die("Must specify -shapes");
-	const string &ShapesFileName = opt_shapes;
-
 	Shapes S;
-	S.FromFile(ShapesFileName);
+	S.InitFromCmdLine();
+	ShapeSearcher SS;
+	SS.Init(S);
 
 	ChainReader CR;
 	CR.Open(QueryFN);
-	ShapeSearcher SS;
-	SS.Init(S);
 
 	RdRpModel Model;
 	GetRdrpModel(Model);

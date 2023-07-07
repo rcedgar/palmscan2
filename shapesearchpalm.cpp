@@ -8,7 +8,7 @@ void ShapeSearcher::SearchPalm(const PDBChain &Q)
 	uint QL = GetQL();
 	const uint ShapeCount = GetShapeCount();
 
-	m_ScoreABC = SearchABC();
+	SearchABC(opt_traceabc);
 	if (m_ScoreABC == 0)
 		return;
 

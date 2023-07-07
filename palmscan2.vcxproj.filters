@@ -554,7 +554,7 @@
     <ClCompile Include="make_trunc_bench.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shape_search_debug.cpp">
+    <ClCompile Include="shapes_search_debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="motifsettings.cpp">
@@ -570,6 +570,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="old_search3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="searchcab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shapes_search_cab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

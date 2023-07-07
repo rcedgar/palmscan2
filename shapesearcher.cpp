@@ -61,6 +61,19 @@ void ShapeSearcher::GetFoundMotifsStr(string &Str) const
 				Str += ".";
 			}
 		}
+
+	if (m_Permuted)
+		{
+		size_t n = Str.find("ABC");
+		if (n == string::npos)
+			Str += "-permuted";
+		else
+			{
+			Str[n] = 'C';
+			Str[n+1] = 'A';
+			Str[n+2] = 'B';
+			}
+		}
 	}
 
 char ShapeSearcher::GetGate() const
@@ -257,23 +270,24 @@ void ShapeSearcher::SearchShapeSelfTop(uint ShapeIndex,
 		}
 	}
 
-void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
+double ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
   uint Lo, uint Hi, char Letter, uint LetterOffset,
   vector<uint> &HitPosVec, vector<double> &HitScores) const
 	{
 	if (Lo == UINT_MAX || Hi == UINT_MAX)
-		return;
+		return 0;
 	HitPosVec.clear();
 	HitScores.clear();
 	uint L = GetShapeLength(ShapeIndex);
 	uint QL = GetQL();
 	if (Lo + L > QL)
-		return;
+		return 0;
+	double TopScore = 0;
 	uint Top = Hi;
 	if (Top + L > QL)
 		{
 		if (QL < L)
-			return;
+			return 0;
 		Top = QL - L;
 		}
 	for (uint Pos = Lo; Pos <= Top; ++Pos)
@@ -282,9 +296,10 @@ void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
 		  m_Query->m_Seq[Pos+LetterOffset] != Letter)
 			continue;
 		double Score = GetSelfScore(ShapeIndex, Pos);
-		//Log("Pos=%u score=%.3g\n", Pos, Score);
 		if (Score < MinScore)
 			continue;
+		if (Score > TopScore)
+			TopScore = Score;
 		uint HitCount = SIZE(HitPosVec);
 		if (HitCount > 0)
 			{
@@ -303,6 +318,7 @@ void ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
 		HitPosVec.push_back(Pos);
 		HitScores.push_back(Score);
 		}
+	return TopScore;
 	}
 
 void ShapeSearcher::SearchShapeTopHit(uint ShapeIndex,
@@ -421,7 +437,6 @@ void ShapeSearcher::ToTsv(FILE *f) const
 
 		case 'Y':
 		case 'F':
-		case 'E':
 			Class = "RdRp-";
 			break;
 			}

@@ -89,5 +89,6 @@ C(shapes_train_score)
 C(make_trunc_bench)
 C(shapes_search_debug)
 C(reverse_chains)
+C(shapes_search_cab)
 
 #undef C

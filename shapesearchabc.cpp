@@ -3,11 +3,12 @@
 #include "motifsettings.h"
 #include "sort.h"
 
-double ShapeSearcher::SearchABC(bool DoTrace)
+void ShapeSearcher::SearchABC(bool DoTrace)
 	{
 	m_PosA = UINT_MAX;
 	m_PosB = UINT_MAX;
 	m_PosC = UINT_MAX;
+	m_Permuted = false;
 
 	asserta(m_ShapeIndexA != UINT_MAX);
 	asserta(m_ShapeIndexB != UINT_MAX);
@@ -18,11 +19,14 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 	uint BL = GetShapeLength(m_ShapeIndexB);
 	uint CL = GetShapeLength(m_ShapeIndexC);
 
+	m_ScoreABC = 0;
+	if (QL < 2*AL + 2*BL + 2*CL)
+		return;
+
 	if (DoTrace)
 		Log("ShapeSearcher::SearchABC >%s QL=%u\n",
 		  m_Query->m_Label.c_str(), QL);
 
-	double TopScore = 0;
 
 	uint MaxStartC = QL - CL;
 
@@ -31,7 +35,7 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 
 	uint MinStartA = 0;
 	if (MinDistAC > MaxStartC)
-		return 0;
+		return;
 	uint MaxStartA = MaxStartC - MinDistAC;
 
 	vector<uint> HitsA;
@@ -72,8 +76,8 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 		  'G', g_OffBg, HitsB, ScoresB);
 		const uint NB = SIZE(HitsB);
 		if (DoTrace)
-			Log(" [%u] PosA=%u SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
-			  ia, PosA, m_MinScoreABC, MinStartB, MaxStartB, NB);
+			Log(" [%u] PosA=%u scoreA %.4f SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
+			  ia, PosA, ScoresA[ia], m_MinScoreABC, MinStartB, MaxStartB, NB);
 
 		for (uint ib = 0; ib < NB; ++ib)
 			{
@@ -92,14 +96,38 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 			if (MaxStartC > QL - CL)
 				MaxStartC = QL - CL;
 
+		// Non-permuted
 			vector<uint> HitsC;
 			vector<double> ScoresC;
-			SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC, MinStartC, MaxStartC,
-			  'D', g_OffCd, HitsC, ScoresC);
+			double TopC1 = SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC,
+			  MinStartC, MaxStartC, 'D', g_OffCd, HitsC, ScoresC);
+
+		// Permuted
+			if (PosA > CL)
+				{
+				int iMinStartC2 = int(PosA) - 40;
+				if (iMinStartC2 < 0)
+					iMinStartC2 = 0;
+				uint MinStartC2 = uint(iMinStartC2);
+				uint MaxStartC2 = PosA - CL + 8;
+				vector<uint> HitsC2;
+				vector<double> ScoresC2;
+				double TopC2 = SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC,
+				  MinStartC2, MaxStartC2, 'D', g_OffCd, HitsC2, ScoresC2);
+				if (TopC2 > TopC1)
+					{
+					for (uint k = 0; k < SIZE(HitsC2); ++k)
+						{
+						HitsC.push_back(HitsC2[k]);
+						ScoresC.push_back(ScoresC2[k]);
+						}
+					}
+				}
+
 			const uint NC = SIZE(HitsC);
 			if (DoTrace)
-				Log("  [%u,%u] PosA,B=%u,%u SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
-				  ia, ib, PosA, PosB, m_MinScoreABC, MinStartC, MaxStartC, NC);
+				Log("  [%u,%u] PosA,B=%u,%u scoreB %.4f SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
+				  ia, ib, PosA, PosB, ScoresB[ib], m_MinScoreABC, MinStartC, MaxStartC, NC);
 			for (uint ic = 0; ic < NC; ++ic)
 				{
 				uint PosC = HitsC[ic];
@@ -110,12 +138,16 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 				PosVec.push_back(PosC);
 				double ScoreABC = GetScoreShapes(ABCIndexes, PosVec);
 				if (DoTrace)
-					Log("   [%u,%u,%u] PosC %u ScoreABC %.4f\n",
-					  ia, ib, ic, PosC, ScoreABC);
-
-				if (ScoreABC > TopScore)
 					{
-					TopScore = ScoreABC;
+					string SeqC;
+					GetSubSeq(PosC, CL, SeqC);
+					Log("   [%u,%u,%u] PosC %u %s scoreC %.4f ScoreABC %.4f\n",
+					  ia, ib, ic, PosC, SeqC.c_str(), ScoresC[ic], ScoreABC);
+					}
+
+				if (ScoreABC > m_ScoreABC)
+					{
+					m_ScoreABC = ScoreABC;
 					m_PosA = PosA;
 					m_PosB = PosB;
 					m_PosC = PosC;
@@ -124,13 +156,16 @@ double ShapeSearcher::SearchABC(bool DoTrace)
 					m_ShapePosVec[m_ShapeIndexB] = PosB;
 					m_ShapePosVec[m_ShapeIndexC] = PosC;
 
-					m_ShapeScores[m_ShapeIndexA] = TopScore;
-					m_ShapeScores[m_ShapeIndexB] = TopScore;
-					m_ShapeScores[m_ShapeIndexC] = TopScore;
+					double ScoreA = ScoresA[ia];
+					double ScoreB = ScoresB[ib];
+					double ScoreC = ScoresC[ic];
+
+					m_ShapeScores[m_ShapeIndexA] = ScoreA;
+					m_ShapeScores[m_ShapeIndexB] = ScoreB;
+					m_ShapeScores[m_ShapeIndexC] = ScoreC;
 					}
 				}
 			}
 		}
-
-	return TopScore;
+	m_Permuted = (m_PosC != UINT_MAX && m_PosA != UINT_MAX && m_PosC < m_PosA);
 	}
