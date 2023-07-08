@@ -11,11 +11,11 @@ static uint g_HitCount;
 
 static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
-	SS.SearchPalm(Q);
-	bool IsHit = (SS.m_ScoreABC >= SS.m_MinScoreABC);
-	if (opt_misses || IsHit)
+	SS.SearchDom(Q);
+	bool Hit = SS.IsHit();
+	if (opt_misses || Hit)
 		SS.ToTsv(g_ftsv);
-	if (IsHit)
+	if (Hit)
 		{
 		string LoadName;
 		if (optset_loaddir)
@@ -24,13 +24,15 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 		LoadName += ".pdb";
 		SS.ToPml(g_fpml, LoadName.c_str());
 		}
-	return IsHit;
+	return Hit;
 	}
 
 static void Thread(ChainReader &CR, const Shapes &S)
 	{
 	ShapeSearcher SS;
 	SS.Init(S);
+	if (GetThreadIndex() == 0)
+		SS.LogParams();
 
 	PDBChain Q;
 	for (;;)
@@ -80,7 +82,11 @@ void cmd_search3d()
 	if (Secs <= 0)
 		Secs = 1;
 	double Throughput = double(g_DoneCount)/(Secs*ThreadCount);
-	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/ sec/ thread)\n",
+	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/sec/thread)\n",
 	  g_HitCount, g_DoneCount, GetPct(g_HitCount, g_DoneCount),
 	  IntToStr(Secs), ThreadCount, Throughput);
+
+	ShapeSearcher::LogStats();
+	Log("@FEV\t");
+	ShapeSearcher::StatsToFev(g_fLog);
 	}

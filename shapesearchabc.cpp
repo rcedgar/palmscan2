@@ -19,7 +19,7 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 	uint BL = GetShapeLength(m_ShapeIndexB);
 	uint CL = GetShapeLength(m_ShapeIndexC);
 
-	m_ScoreABC = 0;
+	m_ABCScore = 0;
 	if (QL < 2*AL + 2*BL + 2*CL)
 		return;
 
@@ -40,13 +40,13 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 
 	vector<uint> HitsA;
 	vector<double> ScoresA;
-	SearchShapeSelf(m_ShapeIndexA, m_MinScoreABC, MinStartA, MaxStartA,
+	SearchShapeSelf(m_ShapeIndexA, m_MinSelfScoreABC, MinStartA, MaxStartA,
 	  'D', g_OffAd, HitsA, ScoresA);
 	const uint NA = SIZE(HitsA);
 
 	if (DoTrace)
 		Log("SearchShapeSelf(A, MinScore=%.2f, MinStartA=%u, MaxStartA=%u) %u hits\n",
-		  m_MinScoreABC, MinStartA, MaxStartA, NA);
+		  m_MinSelfScoreABC, MinStartA, MaxStartA, NA);
 
 	vector<uint> ABCIndexes;
 	ABCIndexes.push_back(m_ShapeIndexA);
@@ -72,12 +72,12 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 
 		vector<uint> HitsB;
 		vector<double> ScoresB;
-		SearchShapeSelf(m_ShapeIndexB, m_MinScoreABC, MinStartB, MaxStartB,
+		SearchShapeSelf(m_ShapeIndexB, m_MinSelfScoreABC, MinStartB, MaxStartB,
 		  'G', g_OffBg, HitsB, ScoresB);
 		const uint NB = SIZE(HitsB);
 		if (DoTrace)
 			Log(" [%u] PosA=%u scoreA %.4f SearchShapeSelf(B, MinScore=%.2f, MinStartB=%u, MaxStartB=%u) %u hits\n",
-			  ia, PosA, ScoresA[ia], m_MinScoreABC, MinStartB, MaxStartB, NB);
+			  ia, PosA, ScoresA[ia], m_MinSelfScoreABC, MinStartB, MaxStartB, NB);
 
 		for (uint ib = 0; ib < NB; ++ib)
 			{
@@ -99,7 +99,7 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 		// Non-permuted
 			vector<uint> HitsC;
 			vector<double> ScoresC;
-			double TopC1 = SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC,
+			double TopC1 = SearchShapeSelf(m_ShapeIndexC, m_MinSelfScoreABC,
 			  MinStartC, MaxStartC, 'D', g_OffCd, HitsC, ScoresC);
 
 		// Permuted
@@ -112,7 +112,7 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 				uint MaxStartC2 = PosA - CL + 8;
 				vector<uint> HitsC2;
 				vector<double> ScoresC2;
-				double TopC2 = SearchShapeSelf(m_ShapeIndexC, m_MinScoreABC,
+				double TopC2 = SearchShapeSelf(m_ShapeIndexC, m_MinSelfScoreABC,
 				  MinStartC2, MaxStartC2, 'D', g_OffCd, HitsC2, ScoresC2);
 				if (TopC2 > TopC1)
 					{
@@ -127,16 +127,17 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 			const uint NC = SIZE(HitsC);
 			if (DoTrace)
 				Log("  [%u,%u] PosA,B=%u,%u scoreB %.4f SearchShapeSelf(C, MinScore=%.2f, MinStartC=%u, MaxStartC=%u) %u hits\n",
-				  ia, ib, PosA, PosB, ScoresB[ib], m_MinScoreABC, MinStartC, MaxStartC, NC);
+				  ia, ib, PosA, PosB, ScoresB[ib], m_MinSelfScoreABC,
+				  MinStartC, MaxStartC, NC);
 			for (uint ic = 0; ic < NC; ++ic)
 				{
 				uint PosC = HitsC[ic];
 
-				vector<uint> PosVec;
-				PosVec.push_back(PosA);
-				PosVec.push_back(PosB);
-				PosVec.push_back(PosC);
-				double ScoreABC = GetScoreShapes(ABCIndexes, PosVec);
+				vector<uint> PosVec(m_ShapeCount, UINT_MAX);
+				PosVec[m_ShapeIndexA] = PosA;
+				PosVec[m_ShapeIndexB] = PosB;
+				PosVec[m_ShapeIndexC] = PosC;
+				double ScoreABC = GetScoreShapes(PosVec);
 				if (DoTrace)
 					{
 					string SeqC;
@@ -145,9 +146,9 @@ void ShapeSearcher::SearchABC(bool DoTrace)
 					  ia, ib, ic, PosC, SeqC.c_str(), ScoresC[ic], ScoreABC);
 					}
 
-				if (ScoreABC > m_ScoreABC)
+				if (ScoreABC > m_ABCScore)
 					{
-					m_ScoreABC = ScoreABC;
+					m_ABCScore = ScoreABC;
 					m_PosA = PosA;
 					m_PosB = PosB;
 					m_PosC = PosC;

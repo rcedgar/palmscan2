@@ -112,6 +112,6 @@ void cmd_cmp_search()
 	if (Secs <= 0)
 		Secs = 1;
 	double Throughput = double(g_DoneCount)/(Secs*ThreadCount);
-	ProgressLog("%u done, %u hits, %s secs (%u threads, %.1f/ sec/ thread)\n",
+	ProgressLog("%u done, %u hits, %s secs (%u threads, %.1f/sec/thread)\n",
 	  g_DoneCount, g_HitCount, IntToStr(Secs), ThreadCount, Throughput);
 	}

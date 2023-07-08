@@ -1,14 +1,23 @@
-Command:
-    -search_pssms seqs.fasta    # input sequences, must be aa
+3D search:
+	palmscan2 -search3d INPUT -tsv hits.tsv
 
-Optional arguments:
-    -report_pssms report.txt    # human-readable text report
-    -tsv hits.tsv               # hits in tab-separated text
-	-fev hits.fev               # hits in field-equals-value
-    -threads N                  # threads, default min(number of cores, 10)
-	-fasta pp.fa                # pamlmprints, FASTA
-	-core core.fa               # palmcore, FASTA
-	-minflanklen n              # minimum flank for palmcore (default 0)
+Convert PDB to CAL format:
+	palmscan2 -pdb2cal INPUT -cal chains.cal
 
-Typical usage:
-    palmscan -search_pssms seqs.fasta -tsv hits.tsv
+INPUT:
+	(1) PDB format file with one or more chains
+	(2) CAL format file with one or more chains
+	(3) Text file with one PDB or CAL pathname per line
+
+Options:
+	-tsv hits.tsv   Tab-separated file with hits
+	-misses         Include non-matches in tsv
+	-pml hits.pml   Pymol script to annotate chain(s)
+	-pml_save       Include save command to generate pse
+	-loaddir DIR    Directory where pdb files are stored so that
+					  load commands in pml scripts work as-is
+
+CAL format:
+	Sequence and C-alpha coordinates only
+	More compact than PDB for faster search
+	Use pdb2cal command to convert PDB to CAL

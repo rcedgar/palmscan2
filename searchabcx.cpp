@@ -54,7 +54,7 @@ void ShapeSearcher::SearchABCX(const Shapes &S,
 		MotifSeqs.push_back(".");
 
 		SS.SearchABC();
-		if (SS.m_ScoreABC < SS.m_MinScoreABC)
+		if (SS.m_ABCScore < SS.m_MinABCScore)
 			{
 			SeqXs.push_back(".");
 			Scores.push_back(0);

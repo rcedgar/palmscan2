@@ -403,7 +403,7 @@
     <ClCompile Include="shapesearch.cpp" />
     <ClCompile Include="shapesearchabc.cpp" />
     <ClCompile Include="shapesearcher.cpp" />
-    <ClCompile Include="shapesearchpalm.cpp" />
+    <ClCompile Include="shapesearchdom.cpp" />
     <ClCompile Include="shapes_score1.cpp" />
     <ClCompile Include="shapes_train.cpp" />
     <ClCompile Include="shapes_search.cpp" />

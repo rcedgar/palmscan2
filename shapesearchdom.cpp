@@ -1,16 +1,22 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 
-void ShapeSearcher::SearchPalm(const PDBChain &Q)
+void ShapeSearcher::SearchDom(const PDBChain &Q)
 	{
-	m_ScoreABC = 0;
+	m_ABCScore = 0;
+	m_DomScore = 0;
 	SetQuery(Q);
 	uint QL = GetQL();
 	const uint ShapeCount = GetShapeCount();
 
 	SearchABC(opt_traceabc);
-	if (m_ScoreABC == 0)
+	if (m_ABCScore < m_MinABCScore)
 		return;
+	if (m_SearchABCOnly)
+		{
+		m_DomScore = m_ABCScore;
+		return;
+		}
 
 	const Shapes &S = *m_Shapes;
 	asserta(m_ShapeIndexB == m_ShapeIndexA + 1);
@@ -63,19 +69,15 @@ void ShapeSearcher::SearchPalm(const PDBChain &Q)
 		uint HitPos = UINT_MAX;
 		double HitScore = 0;
 		SearchShapeTopHit(ShapeIndex, m_ShapePosVec,
-		  m_MinScoreShapePalm, Lo, Hi,
+		  m_MinSelfScoreNonABC, Lo, Hi,
 		  0, UINT_MAX, HitPos, HitScore);
 
 		m_ShapeScores[ShapeIndex] = HitScore;
 		m_ShapePosVec[ShapeIndex] = HitPos;
 		}
 
-	m_PalmScore = 0;
-	if (m_ScoreABC > 0)
-		{
-		vector<uint> AllShapeIndexes;
-		for (uint i = 0; i < ShapeCount; ++i)
-			AllShapeIndexes.push_back(i);
-		m_PalmScore = GetScoreShapes(AllShapeIndexes, m_ShapePosVec);
-		}
+	vector<uint> ScoreShapeIndexes;
+	BoolsToIndexVec2(m_ScoreShapes, ScoreShapeIndexes);
+	m_DomScore = GetScoreShapes(m_ShapePosVec);
+	//LogPairwiseScores(m_ShapePosVec);
 	}

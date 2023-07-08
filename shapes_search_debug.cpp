@@ -55,16 +55,16 @@ static bool Search1(const PDBChain &Q,
 	ABCIndexes.push_back(SS.m_ShapeIndexB);
 	ABCIndexes.push_back(SS.m_ShapeIndexC);
 
-	vector<uint> PosVec;
-	PosVec.push_back(PSSM_PosA);
-	PosVec.push_back(PSSM_PosB);
-	PosVec.push_back(PSSM_PosC);
+	vector<uint> PosVec(SS.m_ShapeCount, UINT_MAX);
+	PosVec[SS.m_ShapeIndexA] = PSSM_PosA;
+	PosVec[SS.m_ShapeIndexB] = PSSM_PosB;
+	PosVec[SS.m_ShapeIndexC] = PSSM_PosC;
 
 	SS.SetQuery(Q);
 	double ScoreA = SS.GetSelfScore(SS.m_ShapeIndexA, PSSM_PosA);
 	double ScoreB = SS.GetSelfScore(SS.m_ShapeIndexB, PSSM_PosB);
 	double ScoreC = SS.GetSelfScore(SS.m_ShapeIndexC, PSSM_PosC);
-	double ScoreABC = SS.GetScoreShapes(ABCIndexes, PosVec);
+	double ScoreABC = SS.GetScoreShapes(PosVec);
 	Log("  ScoreABC PSSM pos A=%.4g B=%.4g C=%.4g ABC=%.4g\n",
 	  ScoreA, ScoreB, ScoreC, ScoreABC);
 
@@ -76,7 +76,7 @@ static bool Search1(const PDBChain &Q,
 	uint IXA = SS.m_ShapeIndexA;
 	uint IXB = SS.m_ShapeIndexB;
 	uint IXC = SS.m_ShapeIndexC;
-	bool IsHit = (SS.m_ScoreABC >= SS.m_MinScoreABC);
+	bool IsHit = (SS.m_ABCScore >= SS.m_MinABCScore);
 	if (opt_misses || IsHit)
 		SS.ToTsv(g_ftsv);
 	return IsHit;

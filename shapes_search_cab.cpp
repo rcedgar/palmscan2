@@ -6,6 +6,8 @@
 #include "motifsettings.h"
 #include <time.h>
 
+#if 0
+
 static uint g_DoneCount;
 static uint g_HitCount;
 
@@ -82,7 +84,15 @@ void cmd_shapes_search_cab()
 	if (Secs <= 0)
 		Secs = 1;
 	double Throughput = double(g_DoneCount)/(Secs*ThreadCount);
-	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/ sec/ thread)\n",
+	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/sec/thread)\n",
 	  g_HitCount, g_DoneCount, GetPct(g_HitCount, g_DoneCount),
 	  IntToStr(Secs), ThreadCount, Throughput);
 	}
+
+#else
+void cmd_shapes_search_cab()
+	{
+	Die("cmd_shapes_search_cab");
+	}
+
+#endif

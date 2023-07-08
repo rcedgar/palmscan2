@@ -15,6 +15,10 @@ make_trunc_bench
 		  to check for FP motifs due to edge effects
 ***/
 
+static FILE *g_fpp;
+static FILE *g_fgrow;
+static FILE *g_fshrink;
+
 static void Do1(const PDBChain &Chain, const string &A, const string &C, uint CL);
 
 void cmd_make_trunc_bench()
@@ -22,6 +26,10 @@ void cmd_make_trunc_bench()
 	const string &InputFileName1 = opt_make_trunc_bench;
 	asserta(optset_input);
 	const string &InputFileName2 = opt_input;
+
+	g_fpp = CreateStdioFile("trunc_bench_pp.cal");
+	g_fgrow = CreateStdioFile("trunc_bench_grow.cal");
+	g_fshrink = CreateStdioFile("trunc_bench_shrink.cal");
 	
 	vector<string> ChainLabels;
 	vector<string> MotifNames;
@@ -86,10 +94,9 @@ static void Do1(const PDBChain &Chain, const string &A, const string &C, uint CL
 	PDBChain TruncChain;
 	Chain.GetRange(PosA, PosC, TruncChain);
 	string Annot;
-	Ps(Annot, ".00 A:%s C:%s", A.c_str(), C.c_str());
-	TruncChain.m_Label += Annot;
-	TruncChain.ToCal(g_fcal);
-	return;//@@@@@@@@@@@
+	Ps(Annot, "A:%s C:%s", A.c_str(), C.c_str());
+	TruncChain.m_Label += ".00 " + Annot;
+	TruncChain.ToCal(g_fpp);
 	for (uint i = 0; i < 4; ++i)
 		{
 		uint Left = randu32()%32 + 4;
@@ -108,29 +115,29 @@ static void Do1(const PDBChain &Chain, const string &A, const string &C, uint CL
 		if (HiShrink - LoShrink > 40)
 			{
 			Chain.GetRange(uint(LoShrink), uint(HiShrink), TruncChain);
-			TruncChain.m_Label += ".ss";
-			TruncChain.ToCal(g_fcal);
+			TruncChain.m_Label += ".ss " + Annot;
+			TruncChain.ToCal(g_fshrink);
 			}
 
 		if (HiGrow - LoShrink > 40)
 			{
 			Chain.GetRange(uint(LoShrink), uint(HiGrow), TruncChain);
-			TruncChain.m_Label += ".sg";
-			TruncChain.ToCal(g_fcal);
+			TruncChain.m_Label += ".sg " + Annot;
+			TruncChain.ToCal(g_fshrink);
 			}
 
 		if (HiShrink - LoGrow > 40)
 			{
 			Chain.GetRange(uint(LoGrow), uint(HiShrink), TruncChain);
-			TruncChain.m_Label += ".gs";
-			TruncChain.ToCal(g_fcal);
+			TruncChain.m_Label += ".gs " + Annot;
+			TruncChain.ToCal(g_fshrink);
 			}
 
 		if (HiGrow - LoGrow > 40)
 			{
 			Chain.GetRange(uint(LoGrow), uint(HiGrow), TruncChain);
-			TruncChain.m_Label += ".gg";
-			TruncChain.ToCal(g_fcal);
+			TruncChain.m_Label += ".gg " + Annot;
+			TruncChain.ToCal(g_fgrow);
 			}
 		}
 	}

@@ -89,7 +89,7 @@ void ShapeSearcher::TestABC(const Shapes &S,
 		Chain.GetReverse(RevChain);
 		SS.SetQuery(RevChain);
 		SS.SearchABC();
-		if (SS.m_ScoreABC >= MinPredScore)
+		if (SS.m_ABCScore >= MinPredScore)
 			++g_RevHitsCount;
 		}
 
@@ -142,16 +142,16 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 		}
 
 	SearchABC();
-	if (m_ScoreABC == 0)
+	if (m_ABCScore == 0)
 		{
 		Log("No pred (zero score) >%s\n", Label);
 		++g_NoPredCount;
 		return;
 		}
 
-	if (m_ScoreABC < MinPredScore)
+	if (m_ABCScore < MinPredScore)
 		{
-		Log("Pred score too low %6.4f >%s\n", m_ScoreABC, Label);
+		Log("Pred score too low %6.4f >%s\n", m_ABCScore, Label);
 		++g_PredScoreTooLowCount;
 		return;
 		}
@@ -189,30 +189,30 @@ void ShapeSearcher::TestABC1(const PDBChain &Chain,
 	ShapeIndexes.push_back(m_ShapeIndexB);
 	ShapeIndexes.push_back(m_ShapeIndexC);
 
-	vector<uint> PredPosVec;
-	PredPosVec.push_back(PredPosA);
-	PredPosVec.push_back(PredPosB);
-	PredPosVec.push_back(PredPosC);
-	double PredScore = GetScoreShapes(ShapeIndexes, PredPosVec);
+	vector<uint> PredPosVec(m_ShapeCount, UINT_MAX);
+	PredPosVec[m_ShapeIndexA] = PredPosA;
+	PredPosVec[m_ShapeIndexB] = PredPosB;
+	PredPosVec[m_ShapeIndexC] = PredPosC;
+	double PredScore = GetScoreShapes(PredPosVec);
 
-	vector<uint> RefPosVec;
-	RefPosVec.push_back(RefPosA);
-	RefPosVec.push_back(RefPosB);
-	RefPosVec.push_back(RefPosC);
-	double RefScore = GetScoreShapes(ShapeIndexes, RefPosVec);
+	vector<uint> RefPosVec(m_ShapeCount, UINT_MAX);
+	RefPosVec[m_ShapeIndexA] = RefPosA;
+	RefPosVec[m_ShapeIndexB] = RefPosB;
+	RefPosVec[m_ShapeIndexC] = RefPosC;
+	double RefScore = GetScoreShapes(RefPosVec);
 
-	if (m_ScoreABC > RefScore)
+	if (m_ABCScore > RefScore)
 		{
 		++g_PredScoreHigherCount;
 		return;
 		}
-	if (m_ScoreABC < RefScore)
+	if (m_ABCScore < RefScore)
 		++g_PredScoreLowerCount;
 
 	++g_DisagreeCount;
 
 	Log(">%s disagree ref %.3g, pred %.3g\n",
-	  m_Query->m_Label.c_str(), RefScore, m_ScoreABC);
+	  m_Query->m_Label.c_str(), RefScore, m_ABCScore);
 #if 0
 	{
 	LogShape("RefA", m_ShapeIndexA, RefPosA);

@@ -524,16 +524,13 @@
     <ClCompile Include="shapes_train_score.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testabc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="getshapestrainingmotifs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shapes_score1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shapesearchpalm.cpp">
+    <ClCompile Include="shapesearchdom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shapesearchabc.cpp">
@@ -576,6 +573,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shapes_search_cab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testabc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

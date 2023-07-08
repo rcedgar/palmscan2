@@ -6,6 +6,7 @@
 #include "motifsettings.h"
 #include <time.h>
 
+#if 0
 static uint g_DoneCount;
 static uint g_HitCount;
 
@@ -13,10 +14,8 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
 	SS.ClearSearch();
 	SS.SetQuery(Q);
-	vector<bool> Includes;
-	SS.GetIncludes(Includes);
-	SS.Search(Includes);
-	bool IsHit = (SS.m_Score >= 0.5);//@@TODO
+////	SS.Search();
+	bool IsHit = (SS.m_Score >= 0.5);
 	if (opt_misses || IsHit)
 		SS.ToTsv(g_ftsv);
 	if (IsHit)
@@ -64,9 +63,12 @@ static void Thread(ChainReader &CR, const Shapes &S)
 			++g_HitCount;
 		}
 	}
+#endif 
 
 void cmd_shapes_search()
 	{
+	Die("shapes_search");
+#if 0
 	const string &QueryFN = opt_shapes_search;
 	Shapes S;
 	S.InitFromCmdLine();
@@ -84,7 +86,8 @@ void cmd_shapes_search()
 	if (Secs <= 0)
 		Secs = 1;
 	double Throughput = double(g_DoneCount)/(Secs*ThreadCount);
-	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/ sec/ thread)\n",
+	ProgressLog("%u/%u hits (%.3g%%), %s secs (%u threads, %.1f/sec/thread)\n",
 	  g_HitCount, g_DoneCount, GetPct(g_HitCount, g_DoneCount),
 	  IntToStr(Secs), ThreadCount, Throughput);
+#endif
 	}

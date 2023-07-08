@@ -3,6 +3,8 @@
 #include "motifsettings.h"
 #include "sort.h"
 
+#if 0
+
 void ShapeSearcher::SearchCAB(bool DoTrace)
 	{
 	m_PosA = UINT_MAX;
@@ -114,3 +116,5 @@ void ShapeSearcher::SearchCAB(bool DoTrace)
 			}
 		}
 	}
+
+#endif // 0

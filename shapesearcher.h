@@ -12,24 +12,30 @@ public:
 	uint m_PosC = UINT_MAX;
 	const Shapes *m_Shapes = 0;
 	uint m_ShapeCount = UINT_MAX;
-	double m_Sigmas = 2.5;
 	uint m_ShapeIndexA = UINT_MAX;
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
-	double m_MinScoreABC = 0.55;
-	double m_MinScoreShapePalm = 0.5;
-	double m_MinSelfScore = 0.7;
 	uint m_MaxTopHitCount = 8;
 	uint m_MaxTopHitCountABC = 8;
-
-	double m_ScoreABC = 0;
-	double m_PalmScore = 0;
-	bool m_Permuted = false;
-
-// m_IncludeShapes[i] is true/false to include i'th shape.
-	vector<bool> m_IncludeShapes;
-
 	vector<vector<uint> > m_SelfTopHits;
+	double m_Sigmas = 2.5;
+
+// m_*Shapes[i] is true/false to include i'th shape.
+	vector<bool> m_SearchShapes;
+	vector<bool> m_ScoreShapes;
+	vector<bool> m_RequireShapes;
+	bool m_SearchABCOnly = false;
+
+// For IsHit()
+	double m_MinSelfScoreABC = DBL_MAX;
+	double m_MinSelfScoreNonABC = DBL_MAX;
+	double m_MinABCScore = DBL_MAX;
+	double m_MinDomScore = DBL_MAX;
+
+// Search results
+	double m_ABCScore = 0;
+	double m_DomScore = 0;
+	bool m_Permuted = false;
 
 // Search results
 	double m_Score = 0;
@@ -44,18 +50,22 @@ public:
 		m_PosB = UINT_MAX;
 		m_PosC = UINT_MAX;
 		m_Score = 0;
-		m_ScoreABC = 0;
-		m_PalmScore = 0;
+		m_ABCScore = 0;
+		m_DomScore = 0;
 		m_SelfTopHits.clear();
-		m_IncludeShapes.clear();
 		m_ShapePosVec.clear();
 		m_ShapeScores.clear();
 		m_Permuted = false;
 		}
 
 	void Init(const Shapes &S);
+	void LogParams() const;
+	void SetParamOpts(const string &Mode = "");
+	void SetShapeIndexesABC();
 
 	void ToTsv(FILE *f) const;
+
+	bool IsHit() const;
 
 	uint GetQL() const
 		{
@@ -88,16 +98,21 @@ public:
 
 	uint GetShapeCount() const { return m_ShapeCount; }
 	void GetShapeIndexes(vector<uint> &Indexes) const;
-	void GetIncludes(vector<bool> &Includes) const;
-	void GetFirstIndexes(vector<uint> &Indexes) const;
-	bool GetNextIndexes(vector<uint> &Indexes) const;
+	void IncludesStrToBools(const string &Str,
+	  vector<bool> &Includes) const;
+	void IncludesBoolsToStr(const vector<bool> &Includes,
+	  string &Str) const;
+	void BoolsToIndexVec1(const vector<bool> &Includes,
+	  vector<uint> &ShapeIndexes) const;
+	void BoolsToIndexVec2(const vector<bool> &Includes,
+	  vector<uint> &ShapeIndexes) const;
 
 	void SetQuery(const PDBChain &Query);
 
 	void GetDistRange(uint ShapeIndex, uint ShapeIndex2, 
 	  uint &MinDist, uint &MaxDist) const;
 
-	void SearchPalm(const PDBChain &Q);
+	void SearchDom(const PDBChain &Q);
 
 	void SearchShape(uint ShapeIndex, const vector<uint> &PosVec,
 	  double MinScore, uint Lo, uint Hi, char Letter, uint LetterOffset,
@@ -122,19 +137,14 @@ public:
 	double GetScoreShapePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2) const;
 
-	double GetScoreShapes(const vector<uint> &ShapeIndexes,
-	  const vector<uint> &PosVec) const;
+	double GetScoreShapes(const vector<uint> &PosVec) const;
 
 	double GetScoreResiduePair(uint ShapeIndex1, uint ShapeIndex2,
 	  uint Pos1, uint Pos2, uint Offset1, uint Offset2) const;
 
-	void SearchABC(bool DoTrace = false);
-	void SearchCAB(bool DoTrace = false);
-	void Search(const vector<bool> &IncludeShapes);
+	void LogPairwiseScores(const vector<uint> &PosVec) const;
 
-	void TestABC1(const PDBChain &Chain,
-	  const vector<string> &MotifSeqs,
-	  double MinPredScore);
+	void SearchABC(bool DoTrace = false);
 
 	void GetShapeSeq(uint ShapeIndex, string &Seq) const;
 	void GetA(string &Seq) const;
@@ -155,7 +165,11 @@ public:
 	char GetGate() const;
 	void GetFoundMotifsStr(string &Str) const;
 
+	void TestABC1(const PDBChain &Chain, const vector<string> &MotifSeqs,
+	  double MinPredScore);
+
 public:
+
 	static void TestABC(const Shapes &S,
 	  const vector<PDBChain *> &Chains,
 	  vector<vector<string> > &MotifSeqsVec,
@@ -204,6 +218,9 @@ public:
 	  vector<string> &SeqX3s,
 	  vector<double> &ScoreX2s,
 	  vector<double> &ScoreX3s);
+
+	static void LogStats();
+	static void StatsToFev(FILE *f);
 	};
 
 double GetNormal(double Mu, double Sigma, double x);

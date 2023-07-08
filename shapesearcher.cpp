@@ -5,24 +5,209 @@
 
 #define TRACE	0
 
+static uint g_Queries;
+static uint g_Hits;
+static uint g_Misses;
+static uint g_LowABCScore;
+static uint g_LowDomScore;
+static uint g_Permuted;
+static uint g_MissingMotif;
+
+static void IncStat(uint &i)
+	{
+#pragma omp critical
+		{
+		++i;
+		}
+	}
+
+void ShapeSearcher::StatsToFev(FILE *f)
+	{
+	if (f == 0)
+		return;
+	string CmdLine;
+	GetCmdLine(CmdLine);
+
+	g_Misses = g_Queries - g_Hits;
+#define X(x)	fprintf(f, "\t%s=%u", #x, g_##x);
+	X(Hits);
+	X(Misses);
+	X(LowABCScore);
+	X(LowDomScore);
+	X(Permuted);
+	X(MissingMotif);
+#undef X
+	fprintf(f, "\tcmdline=%s", CmdLine.c_str());
+	fprintf(f, "\n");
+	}
+
+void ShapeSearcher::LogStats()
+	{
+	g_Misses = g_Queries - g_Hits;
+#define X(x)	Log("%10u  %s\n", g_##x, #x);
+	X(Hits);
+	X(Misses);
+	X(LowABCScore);
+	X(LowDomScore);
+	X(Permuted);
+	X(MissingMotif);
+#undef X
+	}
+
+void ShapeSearcher::SetShapeIndexesABC()
+	{
+	m_ShapeIndexA = UINT_MAX;
+	m_ShapeIndexB = UINT_MAX;
+	m_ShapeIndexC = UINT_MAX;
+	const vector<string> &Names = m_Shapes->m_Names;
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		if (Names[i] == "A")
+			m_ShapeIndexA = i;
+		else if (Names[i] == "B")
+			m_ShapeIndexB = i;
+		else if (Names[i] == "C")
+			m_ShapeIndexC = i;
+		}
+	}
+
 void ShapeSearcher::Init(const Shapes &S)
 	{
 	m_Shapes = &S;
 	m_ShapeCount = S.GetShapeCount();
-	m_ShapeIndexA = UINT_MAX;
-	m_ShapeIndexB = UINT_MAX;
-	m_ShapeIndexC = UINT_MAX;
+
+	SetShapeIndexesABC();
+	SetParamOpts(opt_mode);
+
+	IncludesStrToBools(opt_searchmfs,  m_SearchShapes);
+	IncludesStrToBools(opt_requiremfs, m_RequireShapes);
+	IncludesStrToBools(opt_scoremfs,   m_ScoreShapes);
+
+	m_MinABCScore = opt_minscorepp;
+	m_MinDomScore = opt_minscoredom;
+	m_MinSelfScoreABC = opt_minselfscorepp;
+	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
+
+	vector<bool> BoolsABC;
+	IncludesStrToBools("ABC", BoolsABC);
+	m_SearchABCOnly = false;
+	if (m_SearchShapes == BoolsABC &&
+	  m_ScoreShapes == BoolsABC)
+		m_SearchABCOnly = true;
+	}
+
+void ShapeSearcher::SetParamOpts(const string &Mode)
+	{
+#define S(x, y)	if (!optset_##x) { optset_##x = true; opt_##x = (y); }
+	if (Mode == "" || Mode == "annot")
+		{
+		S(minselfscorepp, 0.50);
+		S(minselfscorenonpp, 0.50);
+		S(minscorepp, 0.55);
+		S(minscoredom, 0.55);
+		S(searchmfs, "*");
+		S(requiremfs, "ABC");
+		S(scoremfs, "ABC");
+		}
+	else if (Mode == "search_pp_sensitive")
+		{
+		S(minselfscorepp, 0.50);
+		S(minselfscorenonpp, 0.50);
+		S(minscorepp, 0.55);
+		S(minscoredom, 0.55);
+		S(searchmfs, "ABC");
+		S(requiremfs, "ABC");
+		S(scoremfs, "ABC");
+		}
+	else if (Mode == "search_pp_lowerrors")
+		{
+		S(minselfscorepp, 0.50);
+		S(minselfscorenonpp, 0.50);
+		S(minscorepp, 0.6);
+		S(minscoredom, 0.6);
+		S(searchmfs, "ABC");
+		S(requiremfs, "ABC");
+		S(scoremfs, "ABC");
+		}
+	else if (Mode == "search_ftoe_sensitive")
+		{
+		S(minselfscorepp, 0.50);
+		S(minselfscorenonpp, 0.50);
+		S(minscorepp, 0.55);
+		S(minscoredom, 0.45);
+		S(searchmfs, "F1F2ABCDE");
+		S(requiremfs, "F1F2ABCDE");
+		S(scoremfs, "ABC");
+		}
+	else if (Mode == "search_ftoe_lowerrors")
+		{
+		S(minselfscorepp, 0.50);
+		S(minselfscorenonpp, 0.50);
+		S(minscorepp, 0.55);
+		S(minscoredom, 0.6);
+		S(searchmfs, "F1F2ABCDE");
+		S(requiremfs, "F1F2ABCDE");
+		S(scoremfs, "F1F2ABCDE");
+		}
+#undef S
+	}
+
+void ShapeSearcher::LogParams() const
+	{
 	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
-		if (S.m_Names[i] == "A")
-			m_ShapeIndexA = i;
-		else if (S.m_Names[i] == "B")
-			m_ShapeIndexB = i;
-		else if (S.m_Names[i] == "C")
-			m_ShapeIndexC = i;
+		string s = "Motif_" + string(GetShapeName(i));
+		Log("%12.12s", s.c_str());
+		Log("  L=%2u", GetShapeLength(i));
+		Log("  search=%c", yon(m_SearchShapes[i]));
+		Log("  score=%c", yon(m_ScoreShapes[i]));
+		Log("  require=%c", yon(m_RequireShapes[i]));
+		Log("\n");
 		}
-	if (optset_minscore_pp)
-		m_MinScoreABC = opt_minscore_pp;
+	Log("%12c  SearchABCOnly\n", yon(m_SearchABCOnly));
+
+#define Sf(x)	Log("%12.4g  %s\n", m_##x, #x);
+	Sf(MinABCScore);
+	Sf(MinDomScore);
+	Sf(MinSelfScoreNonABC);
+	Sf(MinSelfScoreABC);
+	Sf(Sigmas);
+#undef Sf
+
+#define Si(x)	Log("%12u  %s\n", m_##x, #x);
+	Si(MaxTopHitCount);
+	Si(MaxTopHitCountABC);
+	Si(ShapeCount);
+#undef Si
+	}
+
+bool ShapeSearcher::IsHit() const
+	{
+	if (m_Query == 0)
+		return false;
+	IncStat(g_Queries);
+	if (m_ABCScore < m_MinABCScore)
+		{
+		IncStat(g_LowABCScore);
+		return false;
+		}
+	if (m_DomScore < m_MinDomScore)
+		{
+		IncStat(g_LowDomScore);
+		return false;
+		}
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		if (m_RequireShapes[i] && m_ShapePosVec[i] == UINT_MAX)
+			{
+			IncStat(g_MissingMotif);
+			return false;
+			}
+		}
+	if (m_Permuted)
+		IncStat(g_Permuted);
+	IncStat(g_Hits);
+	return true;
 	}
 
 void ShapeSearcher::SetQuery(const PDBChain &Query)
@@ -140,33 +325,68 @@ void ShapeSearcher::GetDistRange(uint ShapeIndexi, uint ShapeIndexj,
 		}
 	}
 
-double ShapeSearcher::GetScoreShapes(const vector<uint> &ShapeIndexes,
-  const vector<uint> &PosVec) const
+double ShapeSearcher::GetScoreShapes(const vector<uint> &PosVec) const
 	{
 	double Sum = 0;
-	const uint N = SIZE(ShapeIndexes);
-	if (N == 0)
-		return 0;
 	uint Pairs = 0;
 	uint FoundCount = 0;
-	for (uint i = 0; i < N; ++i)
+	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
-		uint ShapeIndexi = ShapeIndexes[i];
 		uint Posi = PosVec[i];
-		if (Posi != UINT_MAX)
-			++FoundCount;
+		if (Posi == UINT_MAX)
+			continue;
+
 		for (uint j = 0; j <= i; ++j)
 			{
-			uint ShapeIndexj = ShapeIndexes[j];
 			uint Posj = PosVec[j];
-			Sum += GetScoreShapePair(ShapeIndexi, ShapeIndexj, Posi, Posj);
+			if (Posj == UINT_MAX)
+				continue;
+
+			double Score =
+			  GetScoreShapePair(i, j, Posi, Posj);
+			Sum += Score;
 			++Pairs;
 			}
 		}
-	double Avg = Sum/Pairs;
-//	double Score = Avg*double(FoundCount)/N;
-	double Score = Avg;
+	if (Pairs == 0)
+		return 0;
+	double Score = Sum/Pairs;
 	return Score;
+	}
+
+void ShapeSearcher::LogPairwiseScores(const vector<uint> &PosVec) const
+	{
+	Log("\n");
+	double Sum = 0;
+	Log(">%s\n", m_Query->m_Label.c_str());
+
+	uint Pairs = 0;
+	uint FoundCount = 0;
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		uint Posi = PosVec[i];
+		if (Posi == UINT_MAX)
+			continue;
+		const string Namei = GetShapeName(i);
+		Log("%2s[%4u]: ", Namei.c_str(), Posi);
+		for (uint j = 0; j <= i; ++j)
+			{
+			uint Posj = PosVec[j];
+			if (Posj == UINT_MAX)
+				continue;
+			const string Namej = GetShapeName(j);
+
+			double Score =
+			  GetScoreShapePair(i, j, Posi, Posj);
+			Sum += Score;
+			Log(" %s(%.3g)", Namej.c_str(), Score);
+			++Pairs;
+			}
+		Log("\n");
+		}
+	double Avg = Sum/Pairs;
+	double Score = Avg;
+	Log(" /%u = %.3g\n", Pairs, Score);
 	}
 
 double ShapeSearcher::GetScoreShapePair(uint ShapeIndex1, uint ShapeIndex2,
@@ -246,6 +466,8 @@ double ShapeSearcher::GetScore(uint ShapeIndex, uint Pos,
 void ShapeSearcher::SearchShapeSelfTop(uint ShapeIndex,
   double MinScore, uint MaxHits, vector<uint> &HitPosVec) const
 	{
+	Die("SearchShapeSelfTop");
+#if 0
 	HitPosVec.clear();
 	uint QL = GetQL();
 	uint Length = GetShapeLength(ShapeIndex);
@@ -268,6 +490,7 @@ void ShapeSearcher::SearchShapeSelfTop(uint ShapeIndex,
 		uint i = Order[k];
 		HitPosVec.push_back(TmpHitPosVec[i]);
 		}
+#endif
 	}
 
 double ShapeSearcher::SearchShapeSelf(uint ShapeIndex, double MinScore,
@@ -421,7 +644,7 @@ void ShapeSearcher::ToTsv(FILE *f) const
 	GetFoundMotifsStr(FoundMotifsStr);
 
 	string Class = ".";
-	if (m_ScoreABC >= m_MinScoreABC)
+	if (m_ABCScore >= m_MinABCScore)
 		{
 		Class = "PP+";
 
@@ -444,8 +667,8 @@ void ShapeSearcher::ToTsv(FILE *f) const
 
 	fprintf(f, "%s", m_Query->m_Label.c_str());
 	fprintf(f, "\t%s", Class.c_str());
-	fprintf(f, "\t%.3g", m_PalmScore);
-	fprintf(f, "\t%.3g", m_ScoreABC);
+	fprintf(f, "\t%.3g", m_DomScore);
+	fprintf(f, "\t%.3g", m_ABCScore);
 	fprintf(f, "\t%s", FoundMotifsStr.c_str());
 	fprintf(f, "\t%c", Gate);
 	for (uint i = 0; i < m_ShapeCount; ++i)
@@ -548,9 +771,72 @@ void ShapeSearcher::GetShapeIndexes(vector<uint> &Indexes) const
 		Indexes[i] = i;
 	}
 
-void ShapeSearcher::GetIncludes(vector<bool> &Includes) const
+void ShapeSearcher::IncludesBoolsToStr(const vector<bool> &Includes,
+  string &Str) const
+	{
+	asserta(SIZE(Includes) == m_ShapeCount);
+	Str.clear();
+	for (uint ShapeIndex = 0; ShapeIndex < m_ShapeCount; ++ShapeIndex)
+		{
+		const string ShapeName = (string) GetShapeName(ShapeIndex);
+		if (Includes[ShapeIndex])
+			Str += ShapeName;
+		else
+			{
+			uint n = SIZE(ShapeName);
+			Str += "-";
+			for (uint i = 1; i < n; ++i)
+				Str += ".";
+			}
+		}
+	}
+
+void ShapeSearcher::IncludesStrToBools(const string &Str,
+  vector<bool> &Includes) const
 	{
 	Includes.resize(m_ShapeCount);
+	if (Str == "*")
+		{
+		for (uint i = 0; i < m_ShapeCount; ++i)
+			Includes[i] = true;
+		return;
+		}
+
+	bool AnyFound = false;
+	for (uint ShapeIndex = 0; ShapeIndex < m_ShapeCount; ++ShapeIndex)
+		{
+		const string ShapeName = (string) GetShapeName(ShapeIndex);
+		size_t n = Str.find(ShapeName);
+		bool Found = (n >= 0 && n < SIZE(Str));
+		if (Found)
+			AnyFound = true;
+		Includes[ShapeIndex] = Found;
+		}
+	if (!AnyFound)
+		Die("No valid motif names found in '%s'", Str.c_str());
+	}
+
+void ShapeSearcher::BoolsToIndexVec1(const vector<bool> &Includes,
+  vector<uint> &ShapeIndexes) const
+	{
+	ShapeIndexes.clear();
+	asserta(SIZE(Includes) == m_ShapeCount);
 	for (uint i = 0; i < m_ShapeCount; ++i)
-		Includes[i] = true;
+		if (Includes[i])
+			ShapeIndexes.push_back(i);
+	}
+
+void ShapeSearcher::BoolsToIndexVec2(const vector<bool> &Includes,
+  vector<uint> &ShapeIndexes) const
+	{
+	ShapeIndexes.clear();
+	asserta(SIZE(Includes) == m_ShapeCount);
+	for (uint i = 0; i < m_ShapeCount; ++i)
+		{
+		if (Includes[i])
+			ShapeIndexes.push_back(i);
+		else
+			ShapeIndexes.push_back(UINT_MAX);
+		}
+	asserta(SIZE(ShapeIndexes) == m_ShapeCount);
 	}
