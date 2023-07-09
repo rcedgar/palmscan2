@@ -45,6 +45,7 @@ public:
 	void ToCalSeg(FILE *f, uint Pos, uint n) const;
 	void ToCal(const string &FileName) const;
 	void ToPDB(const string &FileName) const;
+	void ToPDB(FILE *f) const;
 	void GetTriFormChain_tR(
 	  const vector<double> &t,
 	  const vector<vector<double> > &R,
@@ -116,6 +117,8 @@ public:
 	  string &AtomName);
 	static void SetResidueNrInATOMLine(const string &InputLine,
 	  uint ResidueNr, string &OutputLine);
+	static void SetAtomNrInATOMLine(const string &InputLine,
+	  uint AtomNr, string &OutputLine);
 	static void GetXYZFromATOMLine(const string &InputLine,
 	  double &x, double &y, double &z);
 	static void SetXYZInATOMLine(const string &InputLine,

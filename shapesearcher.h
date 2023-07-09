@@ -22,7 +22,6 @@ public:
 
 // m_*Shapes[i] is true/false to include i'th shape.
 	vector<bool> m_SearchShapes;
-	vector<bool> m_ScoreShapes;
 	vector<bool> m_RequireShapes;
 	bool m_SearchABCOnly = false;
 
@@ -42,6 +41,8 @@ public:
 	vector<uint> m_ShapePosVec;
 	vector<double> m_ShapeScores;
 
+	string m_Class;
+
 public:
 	void ClearSearch()
 		{
@@ -56,16 +57,18 @@ public:
 		m_ShapePosVec.clear();
 		m_ShapeScores.clear();
 		m_Permuted = false;
+		m_Class = "";
 		}
 
 	void Init(const Shapes &S);
 	void LogParams() const;
-	void SetParamOpts(const string &Mode = "");
+	void SetParamOpts();
 	void SetShapeIndexesABC();
 
 	void ToTsv(FILE *f) const;
 
 	bool IsHit() const;
+	void SetClass();
 
 	uint GetQL() const
 		{
@@ -98,7 +101,7 @@ public:
 
 	uint GetShapeCount() const { return m_ShapeCount; }
 	void GetShapeIndexes(vector<uint> &Indexes) const;
-	void IncludesStrToBools(const string &Str,
+	void IncludesStrToBools(const string &What, const string &Str,
 	  vector<bool> &Includes) const;
 	void IncludesBoolsToStr(const vector<bool> &Includes,
 	  string &Str) const;
@@ -168,6 +171,9 @@ public:
 	void TestABC1(const PDBChain &Chain, const vector<string> &MotifSeqs,
 	  double MinPredScore);
 
+	void CalibrateAdd() const;
+	double GetFinalScore() const;
+
 public:
 
 	static void TestABC(const Shapes &S,
@@ -221,6 +227,7 @@ public:
 
 	static void LogStats();
 	static void StatsToFev(FILE *f);
+	static void CalibrateWrite();
 	};
 
 double GetNormal(double Mu, double Sigma, double x);

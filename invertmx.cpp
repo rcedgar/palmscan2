@@ -1,6 +1,24 @@
 #include "myutils.h"
 #include "abcxyz.h"
 
+void MulMxVec(const vector<vector<double> > &Mx,
+  const vector<double> &Vec,
+  vector<double> &Result)
+	{
+	asserta(SIZE(Mx) == 3);
+	asserta(SIZE(Vec) == 3);
+	Result.clear();
+	Result.resize(3);
+
+	for (uint i = 0; i < 3; ++i)
+		{
+		double Sum = 0;
+		for (uint j = 0; j < 3; ++j)
+			Sum += Mx[i][j]*Vec[j];
+		Result[i] = Sum;
+		}
+	}
+
 void MulMx(
   const vector<vector<double> > &A,
   const vector<vector<double> > &B,

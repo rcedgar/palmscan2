@@ -168,6 +168,15 @@ void PDBChain::ToPDB(const string &FileName) const
 		return;
 
 	FILE *f = CreateStdioFile(FileName);
+	ToPDB(f);
+	CloseStdioFile(f);
+	}
+
+void PDBChain::ToPDB(FILE *f) const
+	{
+	if (f == 0)
+		return;
+
 	fprintf(f, "TITLE %s\n", m_Label.c_str());
 
 	uint AtomCount = SIZE(m_ATOMs);
@@ -229,6 +238,7 @@ void PDBChain::RenumberResidues(uint Start)
 	asserta(N > 0);
 	uint CurrInputResidueNr = UINT_MAX;
 	vector<vector<string> > OutputAtoms;
+	uint AtomNr = 0;
 	for (uint OutputResidueIndex = 0; OutputResidueIndex < N;
 	  ++OutputResidueIndex)
 		{
@@ -238,11 +248,13 @@ void PDBChain::RenumberResidues(uint Start)
 		asserta(M > 0);
 		for (uint j = 0; j < M; ++j)
 			{
+			++AtomNr;
 			const string &InputLine = InputLines[j];
-			uint InputResidueNr = GetResidueNrFromATOMLine(InputLine);
 			string OutputLine;
 			SetResidueNrInATOMLine(InputLine,
 			  Start+OutputResidueIndex+1, OutputLine);
+			SetAtomNrInATOMLine(InputLine,
+			  AtomNr, OutputLine);
 			OutputLines.push_back(OutputLine);
 			}
 		OutputAtoms.push_back(OutputLines);
@@ -362,6 +374,27 @@ int PDBChain::GetResidueNrFromATOMLine(const string &Line)
 	return Nr;
 	}
 
+// Atom nr in Cols 7-11 (1-based)
+//   7 - 11        Integer       serial       Atom  serial number.
+void PDBChain::SetAtomNrInATOMLine(const string &InputLine,
+  uint AtomNr, string &OutputLine)
+	{
+	string s;
+	Ps(s, "%5u", AtomNr);
+	uint n = SIZE(s);
+	if (n != 5)
+		Die("Residue number %d overflow (max 9999)", AtomNr);
+	OutputLine.clear();
+	uint N = SIZE(InputLine);
+	for (uint i = 0; i < 6; ++i)
+		OutputLine += InputLine[i];
+	for (uint i = 0; i < 5; ++i)
+		OutputLine += s[i];
+	for (uint i = 6+5; i < N; ++i)
+		OutputLine += InputLine[i];
+	asserta(SIZE(OutputLine) == SIZE(InputLine));
+	}
+
 // Residue nr in Cols 23-26 (1-based)
 void PDBChain::SetResidueNrInATOMLine(const string &InputLine,
   uint ResidueNr, string &OutputLine)
@@ -373,11 +406,11 @@ void PDBChain::SetResidueNrInATOMLine(const string &InputLine,
 		Die("Residue number %d overflow (max 9999)", ResidueNr);
 	OutputLine.clear();
 	uint N = SIZE(InputLine);
-	for (uint i = 0; i < 23; ++i)
+	for (uint i = 0; i < 22; ++i)
 		OutputLine += InputLine[i];
 	for (uint i = 0; i < 4; ++i)
 		OutputLine += s[i];
-	for (uint i = 23+4; i < N; ++i)
+	for (uint i = 22+4; i < N; ++i)
 		OutputLine += InputLine[i];
 	asserta(SIZE(OutputLine) == SIZE(InputLine));
 	}
@@ -743,8 +776,32 @@ void PDBChain::GetReverse(PDBChain &Chain) const
 	rev(Xs);
 	rev(Ys);
 	rev(Zs);
-	rev(ResNrs);
 #undef rev
+
+	Chain.m_ResNrs.clear();
+	vector<vector<string> > NewATOMs;
+	const uint N = SIZE(m_ATOMs);
+	uint NewResNr = 0;
+	uint NewAtomNr = 0;
+	for (uint i = 0; i < N; ++i)
+		{
+		++NewResNr;
+		const vector<string> &v = m_ATOMs[N-i-1];
+		vector<string> Newv;
+		const uint M = SIZE(v);
+		for (uint j = 0; j < M; ++j)
+			{
+			++NewAtomNr;
+			const string &Line = v[j];
+			string NewLine;
+			SetResidueNrInATOMLine(Line, NewResNr, NewLine);
+			string NewLine2;
+			SetAtomNrInATOMLine(NewLine, NewAtomNr, NewLine2);
+			Newv.push_back(NewLine2);
+			}
+		NewATOMs.push_back(Newv);
+		}
+	Chain.m_ATOMs = NewATOMs;
 	}
 
 void PDBChain::WriteSeqWithCoords(FILE *f) const

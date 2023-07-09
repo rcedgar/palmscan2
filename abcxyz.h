@@ -21,6 +21,9 @@ void LogMx(const string &Msg, const vector<vector<double> > &Mx);
 double GetMxDeterminant(const vector<vector<double> > &Mx);
 void InvertMx(const vector<vector<double> > &Mx,
   vector<vector<double> > &InvMx);
+void MulMxVec(const vector<vector<double> > &Mx,
+  const vector<double> &Vec,
+  vector<double> &Result);
 void MulMx(
   const vector<vector<double> > &A,
   const vector<vector<double> > &B,

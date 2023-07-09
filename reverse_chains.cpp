@@ -5,7 +5,6 @@
 void cmd_reverse_chains()
 	{
 	const string &InputFN = opt_reverse_chains;
-	asserta(optset_cal);
 
 	vector<PDBChain *> Chains;
 	ReadChains(InputFN, Chains);
@@ -18,5 +17,10 @@ void cmd_reverse_chains()
 		PDBChain RevChain;
 		Chain.GetReverse(RevChain);
 		RevChain.ToCal(g_fcal);
+		if (optset_pdb)
+			{
+			RevChain.ToPDB(g_fpdb);
+			break;
+			}
 		}
 	}

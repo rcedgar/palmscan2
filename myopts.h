@@ -68,7 +68,6 @@ STR_OPT(include)
 STR_OPT(seg_fasta_prefix)
 STR_OPT(motif_coords)
 STR_OPT(shapename)
-STR_OPT(mode)
 
 STR_OPT(log)
 STR_OPT(input)
@@ -94,7 +93,6 @@ STR_OPT(fieldnrs)
 STR_OPT(png)
 STR_OPT(subchain)
 STR_OPT(searchmfs)
-STR_OPT(scoremfs)
 STR_OPT(requiremfs)
 
 UNS_OPT(threads,			8,			0,			UINT_MAX)
@@ -184,8 +182,11 @@ FLAG_OPT(dotproduct)
 FLAG_OPT(subchainc)
 FLAG_OPT(delete_hetatm)
 FLAG_OPT(misses)
-FLAG_OPT(pml_save)
+FLAG_OPT(pml_savepse)
 FLAG_OPT(traceabc)
+FLAG_OPT(calibrate)
+FLAG_OPT(sensitive)
+FLAG_OPT(lowerrors)
 
 #undef FLAG_OPT
 #undef UNS_OPT

@@ -12,9 +12,14 @@ static uint g_HitCount;
 static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
 	SS.SearchDom(Q);
+	SS.SetClass();
 	bool Hit = SS.IsHit();
+	if (opt_calibrate)
+		SS.CalibrateAdd();
 	if (opt_misses || Hit)
+		{
 		SS.ToTsv(g_ftsv);
+		}
 	if (Hit)
 		{
 		string LoadName;
@@ -89,4 +94,6 @@ void cmd_search3d()
 	ShapeSearcher::LogStats();
 	Log("@FEV\t");
 	ShapeSearcher::StatsToFev(g_fLog);
+	if (opt_calibrate)
+		ShapeSearcher::CalibrateWrite();
 	}

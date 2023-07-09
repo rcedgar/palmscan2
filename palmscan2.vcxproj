@@ -318,6 +318,7 @@
     <ClCompile Include="pamerger.cpp" />
     <ClCompile Include="pamerge.cpp" />
     <ClCompile Include="palmcator.cpp" />
+    <ClCompile Include="planec.cpp" />
     <ClCompile Include="pseudo_cb_angles.cpp" />
     <ClCompile Include="kabsch.cpp" />
     <ClCompile Include="palmcore.cpp" />

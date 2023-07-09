@@ -12,6 +12,91 @@ static uint g_LowABCScore;
 static uint g_LowDomScore;
 static uint g_Permuted;
 static uint g_MissingMotif;
+static uint g_RdRpPlus;
+static uint g_RdRpMinus;
+static uint g_RdRpLike;
+
+static vector<uint> g_CalibratePosScoreToCount(101);
+static vector<uint> g_CalibrateNegScoreToCount(101);
+
+double ShapeSearcher::GetFinalScore() const
+	{
+	return m_DomScore;
+	}
+
+void ShapeSearcher::CalibrateAdd() const
+	{
+	const string &Label = m_Query->m_Label;
+	double Score = GetFinalScore();
+	asserta(Score >= 0 && Score <= 1);
+	uint iScore = uint(Score*100);
+	asserta(iScore >= 0 && Score <= 100);
+#pragma omp critical
+		{
+		if (StartsWith(Label, "pos."))
+			g_CalibratePosScoreToCount[iScore] += 1;
+		else if (StartsWith(Label, "neg."))
+			g_CalibrateNegScoreToCount[iScore] += 1;
+		else
+			Die("Bad calibrate label >%s", Label.c_str());
+		}
+	}
+
+void ShapeSearcher::CalibrateWrite()
+	{
+	FILE *f = CreateStdioFile("calibrate.tsv");
+	asserta(SIZE(g_CalibratePosScoreToCount) == 101);
+	asserta(SIZE(g_CalibrateNegScoreToCount) == 101);
+	uint NT = 0;
+	uint NF = 0;
+	for (int i = 0; i <= 100; ++i)
+		{
+		NT += g_CalibratePosScoreToCount[i];
+		NF += g_CalibrateNegScoreToCount[i];
+		}
+
+	uint TotT = 0;
+	uint TotF = 0;
+	bool Done01 = false;
+	bool Done001 = false;
+	bool Done0001 = false;
+	bool Done00001 = false;
+	for (int i = 100; i >= 0; --i)
+		{
+		uint nt = g_CalibratePosScoreToCount[i];
+		uint nf = g_CalibrateNegScoreToCount[i];
+		TotT += nt;
+		TotF += nf;
+		double FractF = double(TotF)/NF;
+		double FractT = double(TotT)/NT;
+		if (!Done01 && FractF >= 0.01)
+			{
+			Log("Err 0.01000  Score %.4f  FractT %.4g\n",
+			  i/100.0, FractT);
+			Done01 = true;
+			}
+		if (!Done001 && FractF >= 0.001)
+			{
+			Log("Err 0.00100  Score %.4f  FractT %.4g\n",
+			  i/100.0, FractT);
+			Done001 = true;
+			}
+		if (!Done0001 && FractF >= 0.0001)
+			{
+			Log("Err 0.00010  Score %.4f  FractT %.4g\n",
+			  i/100.0, FractT);
+			Done0001 = true;
+			}
+		if (!Done00001 && FractF >= 0.00001)
+			{
+			Log("Err 0.00001  Score %.4f  FractT %.4g\n",
+			  i/100.0, FractT);
+			Done00001 = true;
+			}
+		fprintf(f, "%u\t%u\t%u\n", i, nt, nf);
+		}
+	CloseStdioFile(f);
+	}
 
 static void IncStat(uint &i)
 	{
@@ -29,14 +114,25 @@ void ShapeSearcher::StatsToFev(FILE *f)
 	GetCmdLine(CmdLine);
 
 	g_Misses = g_Queries - g_Hits;
+	double PctHits = GetPct(g_Hits, g_Queries);
+	double PctMisses = GetPct(g_Misses, g_Queries);
+
 #define X(x)	fprintf(f, "\t%s=%u", #x, g_##x);
 	X(Hits);
 	X(Misses);
+	X(RdRpPlus);
+	X(RdRpMinus);
+	X(RdRpLike);
 	X(LowABCScore);
 	X(LowDomScore);
 	X(Permuted);
 	X(MissingMotif);
 #undef X
+
+#define X(x)	fprintf(f, "\t%s=%.4g", #x, x);
+	X(PctHits);
+	X(PctMisses);
+#undef X	
 	fprintf(f, "\tcmdline=%s", CmdLine.c_str());
 	fprintf(f, "\n");
 	}
@@ -77,11 +173,10 @@ void ShapeSearcher::Init(const Shapes &S)
 	m_ShapeCount = S.GetShapeCount();
 
 	SetShapeIndexesABC();
-	SetParamOpts(opt_mode);
+	SetParamOpts();
 
-	IncludesStrToBools(opt_searchmfs,  m_SearchShapes);
-	IncludesStrToBools(opt_requiremfs, m_RequireShapes);
-	IncludesStrToBools(opt_scoremfs,   m_ScoreShapes);
+	IncludesStrToBools("-searchmfs", opt_searchmfs,  m_SearchShapes);
+	IncludesStrToBools("-requiremfs", opt_requiremfs, m_RequireShapes);
 
 	m_MinABCScore = opt_minscorepp;
 	m_MinDomScore = opt_minscoredom;
@@ -89,17 +184,34 @@ void ShapeSearcher::Init(const Shapes &S)
 	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
 
 	vector<bool> BoolsABC;
-	IncludesStrToBools("ABC", BoolsABC);
+	IncludesStrToBools("BoolsABC", "ABC", BoolsABC);
 	m_SearchABCOnly = false;
-	if (m_SearchShapes == BoolsABC &&
-	  m_ScoreShapes == BoolsABC)
+	if (m_SearchShapes == BoolsABC)
 		m_SearchABCOnly = true;
 	}
 
-void ShapeSearcher::SetParamOpts(const string &Mode)
+void ShapeSearcher::SetParamOpts()
 	{
 #define S(x, y)	if (!optset_##x) { optset_##x = true; opt_##x = (y); }
-	if (Mode == "" || Mode == "annot")
+	if (optset_lowerrors)
+		{
+		S(minselfscorepp, 0.55);
+		S(minselfscorenonpp, 0.55);
+		S(minscorepp, 0.6);
+		S(minscoredom, 0.6);
+		S(searchmfs, "*");
+		S(requiremfs, "JABCD");
+		}
+	else if (optset_calibrate)
+		{
+		S(minselfscorepp, 0.4);
+		S(minselfscorenonpp, 0.4);
+		S(minscorepp, 0.2);
+		S(minscoredom, 0.2);
+		S(searchmfs, "*");
+		S(requiremfs, "*");
+		}
+	else // if (optset_sensitive)
 		{
 		S(minselfscorepp, 0.50);
 		S(minselfscorenonpp, 0.50);
@@ -107,47 +219,6 @@ void ShapeSearcher::SetParamOpts(const string &Mode)
 		S(minscoredom, 0.55);
 		S(searchmfs, "*");
 		S(requiremfs, "ABC");
-		S(scoremfs, "ABC");
-		}
-	else if (Mode == "search_pp_sensitive")
-		{
-		S(minselfscorepp, 0.50);
-		S(minselfscorenonpp, 0.50);
-		S(minscorepp, 0.55);
-		S(minscoredom, 0.55);
-		S(searchmfs, "ABC");
-		S(requiremfs, "ABC");
-		S(scoremfs, "ABC");
-		}
-	else if (Mode == "search_pp_lowerrors")
-		{
-		S(minselfscorepp, 0.50);
-		S(minselfscorenonpp, 0.50);
-		S(minscorepp, 0.6);
-		S(minscoredom, 0.6);
-		S(searchmfs, "ABC");
-		S(requiremfs, "ABC");
-		S(scoremfs, "ABC");
-		}
-	else if (Mode == "search_ftoe_sensitive")
-		{
-		S(minselfscorepp, 0.50);
-		S(minselfscorenonpp, 0.50);
-		S(minscorepp, 0.55);
-		S(minscoredom, 0.45);
-		S(searchmfs, "F1F2ABCDE");
-		S(requiremfs, "F1F2ABCDE");
-		S(scoremfs, "ABC");
-		}
-	else if (Mode == "search_ftoe_lowerrors")
-		{
-		S(minselfscorepp, 0.50);
-		S(minselfscorenonpp, 0.50);
-		S(minscorepp, 0.55);
-		S(minscoredom, 0.6);
-		S(searchmfs, "F1F2ABCDE");
-		S(requiremfs, "F1F2ABCDE");
-		S(scoremfs, "F1F2ABCDE");
 		}
 #undef S
 	}
@@ -160,7 +231,6 @@ void ShapeSearcher::LogParams() const
 		Log("%12.12s", s.c_str());
 		Log("  L=%2u", GetShapeLength(i));
 		Log("  search=%c", yon(m_SearchShapes[i]));
-		Log("  score=%c", yon(m_ScoreShapes[i]));
 		Log("  require=%c", yon(m_RequireShapes[i]));
 		Log("\n");
 		}
@@ -179,6 +249,37 @@ void ShapeSearcher::LogParams() const
 	Si(MaxTopHitCountABC);
 	Si(ShapeCount);
 #undef Si
+	}
+
+void ShapeSearcher::SetClass()
+	{
+	m_Class = ".";
+	char Gate = GetGate();
+	if (m_ABCScore >= m_MinABCScore)
+		{
+		switch (Gate)
+			{
+		case 'D':
+		case 'S':
+		case 'T':
+		case 'G':
+		case 'C':
+			m_Class = "RdRp+";
+			IncStat(g_RdRpPlus);
+			break;
+
+		case 'Y':
+		case 'F':
+			m_Class = "RdRp-";
+			IncStat(g_RdRpMinus);
+			break;
+
+		default:
+			m_Class = "RdRp_like";
+			IncStat(g_RdRpLike);
+			break;
+			}
+		}
 	}
 
 bool ShapeSearcher::IsHit() const
@@ -639,34 +740,12 @@ void ShapeSearcher::ToTsv(FILE *f) const
 		fprintf(f, "\n");
 		}
 
-	char Gate = GetGate();
 	string FoundMotifsStr;
 	GetFoundMotifsStr(FoundMotifsStr);
 
-	string Class = ".";
-	if (m_ABCScore >= m_MinABCScore)
-		{
-		Class = "PP+";
-
-		switch (Gate)
-			{
-		case 'D':
-		case 'S':
-		case 'T':
-		case 'G':
-		case 'C':
-			Class = "RdRp+";
-			break;
-
-		case 'Y':
-		case 'F':
-			Class = "RdRp-";
-			break;
-			}
-		}
-
+	char Gate = GetGate();
 	fprintf(f, "%s", m_Query->m_Label.c_str());
-	fprintf(f, "\t%s", Class.c_str());
+	fprintf(f, "\t%s", m_Class.c_str());
 	fprintf(f, "\t%.3g", m_DomScore);
 	fprintf(f, "\t%.3g", m_ABCScore);
 	fprintf(f, "\t%s", FoundMotifsStr.c_str());
@@ -734,7 +813,7 @@ void ShapeSearcher::ToPml(FILE *f, const string &LoadName) const
 		fprintf(f, "color %s, Motif_%s;\n", Color.c_str(), Name);
 		}
 	fprintf(f, "deselect\n");
-	if (opt_pml_save)
+	if (opt_pml_savepse)
 		{
 		const string &SaveName = m_Query->m_Label;
 		fprintf(f, "save %s.pse\n", SaveName.c_str());
@@ -791,8 +870,8 @@ void ShapeSearcher::IncludesBoolsToStr(const vector<bool> &Includes,
 		}
 	}
 
-void ShapeSearcher::IncludesStrToBools(const string &Str,
-  vector<bool> &Includes) const
+void ShapeSearcher::IncludesStrToBools(const string &What,
+  const string &Str, vector<bool> &Includes) const
 	{
 	Includes.resize(m_ShapeCount);
 	if (Str == "*")
@@ -813,7 +892,8 @@ void ShapeSearcher::IncludesStrToBools(const string &Str,
 		Includes[ShapeIndex] = Found;
 		}
 	if (!AnyFound)
-		Die("No valid motif names found in '%s'", Str.c_str());
+		Die("No valid motif names found in %s '%s'",
+		  What.c_str(), Str.c_str());
 	}
 
 void ShapeSearcher::BoolsToIndexVec1(const vector<bool> &Includes,

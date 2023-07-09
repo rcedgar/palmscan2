@@ -1,6 +1,5 @@
 #include "myutils.h"
 #include "shapesearcher.h"
-#include "rdrpsearcher.h"
 #include <map>
 
 /***

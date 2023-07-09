@@ -159,6 +159,7 @@ OBJS = \
   $(OBJDIR)/joinabcx.o \
   $(OBJDIR)/make_trunc_bench.o \
   $(OBJDIR)/motifsettings.o \
+  $(OBJDIR)/old_search3d.o \
   $(OBJDIR)/palmprint_pssms.o \
   $(OBJDIR)/pamerger.o \
   $(OBJDIR)/pamerge.o \
@@ -234,6 +235,7 @@ OBJS = \
   $(OBJDIR)/search3d_cal.o \
   $(OBJDIR)/searchaatop.o \
   $(OBJDIR)/searchabcx.o \
+  $(OBJDIR)/searchcab.o \
   $(OBJDIR)/searchc.o \
   $(OBJDIR)/search_ppp.o \
   $(OBJDIR)/search_pssms.o \
@@ -244,15 +246,17 @@ OBJS = \
   $(OBJDIR)/searchtriangle.o \
   $(OBJDIR)/segs.o \
   $(OBJDIR)/shapes.o \
+  $(OBJDIR)/shapesearch.o \
   $(OBJDIR)/shapesearchabc.o \
   $(OBJDIR)/shapesearcher.o \
-  $(OBJDIR)/shapesearchpalm.o \
+  $(OBJDIR)/shapesearchdom.o \
   $(OBJDIR)/shapes_score1.o \
   $(OBJDIR)/shapes_train.o \
   $(OBJDIR)/shapes_search.o \
   $(OBJDIR)/shapes_train1.o \
   $(OBJDIR)/shapes_train_score.o \
-  $(OBJDIR)/shape_search_debug.o \
+  $(OBJDIR)/shapes_search_debug.o \
+  $(OBJDIR)/shapes_search_cab.o \
   $(OBJDIR)/smooth.o \
   $(OBJDIR)/spher.o \
   $(OBJDIR)/split_train_test.o \

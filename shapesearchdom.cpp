@@ -10,6 +10,7 @@ void ShapeSearcher::SearchDom(const PDBChain &Q)
 	const uint ShapeCount = GetShapeCount();
 
 	SearchABC(opt_traceabc);
+
 	if (m_ABCScore < m_MinABCScore)
 		return;
 	if (m_SearchABCOnly)
@@ -48,7 +49,14 @@ void ShapeSearcher::SearchDom(const PDBChain &Q)
 			if (MinDist > Pos2)
 				continue;
 			else
-				Hi = Pos2 - MinDist;
+				{
+				int iHi = int(Pos2) - int(MinDist) - int(ShapeLength);
+				if (iHi < 0)
+					continue;
+				Hi = uint(iHi);
+				if (Hi < Lo)
+					continue;
+				}
 			}
 		else if (ShapeIndex > m_ShapeIndexC)
 			{
@@ -76,8 +84,5 @@ void ShapeSearcher::SearchDom(const PDBChain &Q)
 		m_ShapePosVec[ShapeIndex] = HitPos;
 		}
 
-	vector<uint> ScoreShapeIndexes;
-	BoolsToIndexVec2(m_ScoreShapes, ScoreShapeIndexes);
 	m_DomScore = GetScoreShapes(m_ShapePosVec);
-	//LogPairwiseScores(m_ShapePosVec);
 	}

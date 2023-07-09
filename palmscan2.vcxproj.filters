@@ -578,6 +578,9 @@
     <ClCompile Include="testabc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="planec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
