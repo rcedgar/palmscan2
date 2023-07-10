@@ -46,7 +46,7 @@ public:
 	void ToCal(const string &FileName) const;
 	void ToPDB(const string &FileName) const;
 	void ToPDB(FILE *f) const;
-	void GetTriFormChain_tR(
+	void GetXFormChain_tR(
 	  const vector<double> &t,
 	  const vector<vector<double> > &R,
 	  PDBChain &XChain) const;

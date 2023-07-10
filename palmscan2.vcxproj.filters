@@ -581,6 +581,12 @@
     <ClCompile Include="planec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="filler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="filler_train.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -842,6 +848,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="motifsettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="filler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

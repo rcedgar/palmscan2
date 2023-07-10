@@ -91,5 +91,6 @@ C(shapes_search_debug)
 C(reverse_chains)
 C(shapes_search_cab)
 C(planec)
+C(filler_train)
 
 #undef C

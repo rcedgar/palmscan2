@@ -59,6 +59,16 @@ static inline void Resize3x3(vector<vector<double> > &Mx)
 		Mx[i].resize(3);
 	}
 
+static inline void MulVecScalar(const vector<double> &v,
+  double s, vector<double> &r)
+	{
+	asserta(SIZE(v) == 3);
+	r.resize(3);
+	r[0] = v[0]*s;
+	r[1] = v[1]*s;
+	r[2] = v[2]*s;
+	}
+
 static inline double GetDist2(
   const vector<double> &Pt1,
   const vector<double> &Pt2)
@@ -192,6 +202,15 @@ static inline double GetTheta3D(
 	return theta;
 	}
 
+static inline double GetTheta3D(
+  const vector<double> &vi,
+  const vector<double> &vj)
+	{
+	asserta(SIZE(vi) == 3);
+	asserta(SIZE(vj) == 3);
+	return GetTheta3D(vi[0], vi[1], vi[2], vj[0], vj[1], vj[2]);
+	}
+
 static inline void Sub_Vecs(const vector<double> &vi,
   const vector<double> &vj, vector<double> &Diff)
 	{
@@ -281,6 +300,22 @@ static void AssertCanonicalUnitBasis(const vector<vector<double> > &Basis)
 #else
 #define AssertCanonicalUnitBasis(x)	0
 #endif // DEBUG
+
+static void AssertUnitBasisA(const vector<vector<double> > &Basis)
+	{
+// check length of basis vectors is 1 and angles are PI/2
+	for (uint k = 0; k < 3; ++k)
+		{
+		double Modk = GetMod_Mxi(Basis, k);
+		assert(Modk >= 0.98 && Modk <= 1.02);
+
+		uint Axis_i = GetOtherAxis_i(k);
+		uint Axis_j = GetOtherAxis_j(k);
+
+		double theta = GetTheta_Mxij(Basis, Axis_i, Axis_j);
+		assert(feq(theta, PI/2));
+		}
+	}
 
 #if DEBUG
 static void AssertUnitBasis(const vector<vector<double> > &Basis)

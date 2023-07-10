@@ -234,6 +234,8 @@ void PDBChain::ToPDB(FILE *f) const
 
 void PDBChain::RenumberResidues(uint Start)
 	{
+	if (m_ATOMs.empty() && m_ResNrs.empty())
+		return;
 	uint N = SIZE(m_ATOMs);
 	asserta(N > 0);
 	uint CurrInputResidueNr = UINT_MAX;
@@ -968,7 +970,7 @@ void PDBChain::GetTriFormChain_DGD(PDBChain &XChain) const
 	vector<double> t;
 	vector<vector<double> > R;
 	GetTriForm(DGDCoords, t, R);
-	GetTriFormChain_tR(t, R, XChain);
+	GetXFormChain_tR(t, R, XChain);
 
 #if 0
 	{
@@ -1038,10 +1040,10 @@ void PDBChain::GetTriFormChain_MotifCoords(PDBChain &XChain) const
 	vector<vector<double> > R;
 	GetTriForm(MotifCoords, t, R);
 
-	GetTriFormChain_tR(t, R, XChain);
+	GetXFormChain_tR(t, R, XChain);
 	}
 
-void PDBChain::GetTriFormChain_tR(
+void PDBChain::GetXFormChain_tR(
   const vector<double> &t,
   const vector<vector<double> > &R,
   PDBChain &XChain) const
@@ -1264,7 +1266,7 @@ void PDBChain::GetPPC(PDBChain &PPC) const
 
 	vector<double> t;
 	vector<vector<double> > R;
-	GetTriFormChain_tR(t, R, PPC);
+	GetXFormChain_tR(t, R, PPC);
 
 	string MotifA, MotifB, MotifC;
 	GetSubSeq(PosA, AL, MotifA);

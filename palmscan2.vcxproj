@@ -300,6 +300,8 @@
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
+    <ClCompile Include="filler.cpp" />
+    <ClCompile Include="filler_train.cpp" />
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="firstchain_pssms.cpp" />
     <ClCompile Include="getshapestrainingmotifs.cpp" />
@@ -455,6 +457,7 @@
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
+    <ClInclude Include="filler.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
     <ClInclude Include="shapes.h" />
