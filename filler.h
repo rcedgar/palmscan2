@@ -15,9 +15,13 @@ public:
 	int m_RangeX = INT_MAX;
 	int m_RangeY = INT_MAX;
 	int m_RangeZ = INT_MAX;
+	double m_OverflowScore = -1;
+	const int m_Radius = 2;
 	vector<vector<vector<uint> > > m_CountMx;
+	vector<vector<vector<double> > > m_LocMx;
+	vector<vector<vector<double> > > m_MeanLocMx;
+	vector<vector<vector<double> > > m_FilledLocMx;
 	vector<vector<vector<double> > > m_ScoreMx;
-	vector<double> m_PositiveScores;
 
 	RdRpModel m_RdRpModel;
 	RdRpSearcher m_RS;
@@ -25,8 +29,6 @@ public:
 	uint m_TrainCount = 0;
 	uint m_NoPSSMHitCount = 0;
 	uint m_PermutedCount = 0;
-
-	vector<PDBChain *> m_TrainPPXs;
 
 public:
 	Filler()
@@ -36,19 +38,29 @@ public:
 		m_RangeZ = m_MaxZ - m_MinZ + 1;
 		}
 
-	void InitMxs();
+	void InitMx(vector<vector<vector<uint> > > &Mx);
+	void InitMx(vector<vector<vector<double> > > &Mx);
 	void ScoreMxToFile(FILE *f) const;
 	void FromLines(const vector<string> &Lines);
 	double CalcScoreFromCounts(int ix, int iy, int iz) const;
+	double CalcFilledLocMx1(int ix, int iy, int iz) const;
 	double CalcZeroScoreFromCounts(double Base,
 	  int ix, int iy, int iz) const;
 	void CalcScoreMx();
+	void CalcFilledLocMx();
 	void UpdateCountMx(const PDBChain &PPX);
 	void UpdateCountMx1(int xn, int yn, int zn);
+	void UpdateLocMx(const PDBChain &PPX);
+	void UpdateLocMx1(int xn, int yn, int zn, double Loc);
 	double GetPPScore(const PDBChain &PPX) const;
+	double GetPPLocScore(const PDBChain &PPX) const;
 	void Train(const vector<PDBChain *> &Chains);
 	void Train1(const PDBChain &Chain);
+	void Test1(const PDBChain &Chain,
+	  double &Score, double &RevScore);
 	void GetPPX(const PDBChain &Chain,
 	  uint PosA, uint PosB, uint PosC,
 	  PDBChain &PPX) const;
+	double GetScore(const PDBChain &Chain,
+	  uint PosA, uint PosB, uint PosC) const;
 	};

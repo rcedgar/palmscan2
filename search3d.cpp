@@ -4,10 +4,12 @@
 #include "chainreader.h"
 #include "shapesearcher.h"
 #include "motifsettings.h"
+#include "filler.h"
 #include <time.h>
 
 static uint g_DoneCount;
 static uint g_HitCount;
+static Filler *g_Filler;
 
 static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
@@ -15,7 +17,7 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	SS.SetClass();
 	bool Hit = SS.IsHit();
 	if (opt_calibrate)
-		SS.CalibrateAdd();
+		SS.CalibrateAdd(Hit);
 	if (opt_misses || Hit)
 		{
 		SS.ToTsv(g_ftsv);
@@ -76,6 +78,11 @@ void cmd_search3d()
 
 	ChainReader CR;
 	CR.Open(QueryFN);
+
+	g_Filler = new Filler;
+	vector<string> FillerLines;
+	ReadLinesFromFile("d:/a/res/ps3d/misc/filler.mx", FillerLines);
+	g_Filler->FromLines(FillerLines);
 
 	uint ThreadCount = GetRequestedThreadCount();
 

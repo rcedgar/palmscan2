@@ -13,6 +13,7 @@ void ShapeSearcher::SearchDom(const PDBChain &Q)
 
 	if (m_ABCScore < m_MinABCScore)
 		return;
+
 	if (m_SearchABCOnly)
 		{
 		m_DomScore = m_ABCScore;

@@ -171,7 +171,7 @@ public:
 	void TestABC1(const PDBChain &Chain, const vector<string> &MotifSeqs,
 	  double MinPredScore);
 
-	void CalibrateAdd() const;
+	void CalibrateAdd(bool Hit) const;
 	double GetFinalScore() const;
 
 public:

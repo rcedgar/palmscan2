@@ -15,35 +15,74 @@ static uint g_MissingMotif;
 static uint g_RdRpPlus;
 static uint g_RdRpMinus;
 static uint g_RdRpLike;
+static uint g_TPCount;
+static uint g_FPCount;
+static uint g_TNCount;
+static uint g_FNCount;
 
 static vector<uint> g_CalibratePosScoreToCount(101);
 static vector<uint> g_CalibrateNegScoreToCount(101);
+static vector<double> g_CalibrateNegScores;
+
+static void IncStat(uint &i)
+	{
+#pragma omp critical
+		{
+		++i;
+		}
+	}
 
 double ShapeSearcher::GetFinalScore() const
 	{
 	return m_DomScore;
 	}
 
-void ShapeSearcher::CalibrateAdd() const
+void ShapeSearcher::CalibrateAdd(bool Hit) const
 	{
 	const string &Label = m_Query->m_Label;
 	double Score = GetFinalScore();
 	asserta(Score >= 0 && Score <= 1);
 	uint iScore = uint(Score*100);
-	asserta(iScore >= 0 && Score <= 100);
+	asserta(iScore >= 0 && iScore <= 100);
+	bool IsPos = StartsWith(Label, "pos.");
+	bool IsNeg = StartsWith(Label, "neg.");
+	if (IsPos)
+		{
+		if (Hit)
+			IncStat(g_TPCount);
+		else
+			IncStat(g_FNCount);
+		}
+	else
+		{
+		if (Hit)
+			IncStat(g_FPCount);
+		else
+			IncStat(g_TNCount);
+		}
+
 #pragma omp critical
 		{
-		if (StartsWith(Label, "pos."))
+		if (IsPos)
 			g_CalibratePosScoreToCount[iScore] += 1;
-		else if (StartsWith(Label, "neg."))
-			g_CalibrateNegScoreToCount[iScore] += 1;
 		else
-			Die("Bad calibrate label >%s", Label.c_str());
+			{
+			g_CalibrateNegScoreToCount[iScore] += 1;
+			if (Score > 0)
+				g_CalibrateNegScores.push_back(Score);
+			}
 		}
 	}
 
 void ShapeSearcher::CalibrateWrite()
 	{
+	{
+	FILE *f = CreateStdioFile("calibrate_neg_scores.txt");
+	for (uint i = 0; i < SIZE(g_CalibrateNegScores); ++i)
+		fprintf(f, "%.6g\n", g_CalibrateNegScores[i]);
+	CloseStdioFile(f);
+	}
+
 	FILE *f = CreateStdioFile("calibrate.tsv");
 	asserta(SIZE(g_CalibratePosScoreToCount) == 101);
 	asserta(SIZE(g_CalibrateNegScoreToCount) == 101);
@@ -57,53 +96,40 @@ void ShapeSearcher::CalibrateWrite()
 
 	uint TotT = 0;
 	uint TotF = 0;
-	bool Done01 = false;
-	bool Done001 = false;
-	bool Done0001 = false;
-	bool Done00001 = false;
-	for (int i = 100; i >= 0; --i)
+	vector<double> Ts;
+	vector<bool> Dones;
+#define T(x)	Ts.push_back(x); Dones.push_back(false);
+	T(1e-3);
+	T(1e-4);
+	T(1e-5);
+	T(1e-6);
+	T(1e-7);
+	T(1e-8);
+#undef T
+	const uint TCount = SIZE(Ts);
+	asserta(SIZE(Dones) == TCount);
+
+	for (int i = 100; i > 0; --i)
 		{
 		uint nt = g_CalibratePosScoreToCount[i];
 		uint nf = g_CalibrateNegScoreToCount[i];
 		TotT += nt;
 		TotF += nf;
-		double FractF = double(TotF)/NF;
-		double FractT = double(TotT)/NT;
-		if (!Done01 && FractF >= 0.01)
+		double FractF = NF == 0 ? 0 : double(nf)/NF;
+		double FractT = NT == 0 ? 0 : double(nt)/NT;
+		for (uint k = 0; k < TCount; ++k)
 			{
-			Log("Err 0.01000  Score %.4f  FractT %.4g\n",
-			  i/100.0, FractT);
-			Done01 = true;
+			double T = Ts[k];
+			if (!Dones[k] && FractF >= T)
+				{
+				Log("Err %8.3e  Score %.4f  FractT %.4g\n",
+				  T, i/100.0, FractT);
+				Dones[k] = true;
+				}
 			}
-		if (!Done001 && FractF >= 0.001)
-			{
-			Log("Err 0.00100  Score %.4f  FractT %.4g\n",
-			  i/100.0, FractT);
-			Done001 = true;
-			}
-		if (!Done0001 && FractF >= 0.0001)
-			{
-			Log("Err 0.00010  Score %.4f  FractT %.4g\n",
-			  i/100.0, FractT);
-			Done0001 = true;
-			}
-		if (!Done00001 && FractF >= 0.00001)
-			{
-			Log("Err 0.00001  Score %.4f  FractT %.4g\n",
-			  i/100.0, FractT);
-			Done00001 = true;
-			}
-		fprintf(f, "%u\t%u\t%u\n", i, nt, nf);
+		fprintf(f, "%u\t%u\t%u\t%.5g\t%.5g\n", i, nt, nf, FractF, FractT);
 		}
 	CloseStdioFile(f);
-	}
-
-static void IncStat(uint &i)
-	{
-#pragma omp critical
-		{
-		++i;
-		}
 	}
 
 void ShapeSearcher::StatsToFev(FILE *f)
@@ -147,6 +173,13 @@ void ShapeSearcher::LogStats()
 	X(LowDomScore);
 	X(Permuted);
 	X(MissingMotif);
+	if (opt_calibrate)
+		{
+		X(TPCount);
+		X(TNCount);
+		X(FPCount);
+		X(FNCount);
+		}
 #undef X
 	}
 

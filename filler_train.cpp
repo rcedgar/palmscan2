@@ -17,7 +17,7 @@ void cmd_filler_train()
 
 	vector<string> Lines;
 	ReadLinesFromFile("filler.mx", Lines);
-	F.FromLines(Lines);
 
-	Log("");//@@
+	Filler F2;
+	F2.FromLines(Lines);
 	}
