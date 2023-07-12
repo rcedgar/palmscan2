@@ -2270,16 +2270,7 @@ unsigned GetRequestedThreadCount()
 	if (optset_threads)
 		N = opt_threads;
 	else
-		{
-		if (CoreCount > 10)
-			{
-			Progress("CPU has %u cores, defaulting to 10 threads\n", CoreCount);
-			N = 10;
-			MsgDone = true;
-			}
-		else
-			N = CoreCount;
-		}
+		N = CoreCount;
 	if (N > MaxN)
 		{
 		Warning("Max OMP threads %u", MaxN);
@@ -2290,7 +2281,8 @@ unsigned GetRequestedThreadCount()
 	Done = true;
 	if (!MsgDone)
 		{
-		Progress("Running %u threads (CPU has %u cores)\n", N, CoreCount);
+		Progress("Running %u threads (%u CPU cores, OMP max %u)\n",
+		  N, CoreCount, MaxN);
 		MsgDone = true;
 		}
 	return N;

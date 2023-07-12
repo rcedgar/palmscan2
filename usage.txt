@@ -12,13 +12,14 @@ INPUT:
 Options:
     -tsv hits.tsv   Tab-separated file with hits
     -misses         Include non-matches in tsv (default hits only)
+    -threads T      Run T threads (default nr CPU cores)
     -pml hits.pml   Pymol script to annotate chain(s)
     -pml_save       Include save commands in pml script to generate
                       one pse for each input chain.
     -loaddir DIR    Directory where pdb files are stored so that
                       load commands in pml scripts work as-is
-    -searchmfs      Motifs to report in tsv/pml (default *)
-    -requiremfs     Required motifs to report hits (default ABC)
+    -searchmfs      Motifs to search for (default *)
+    -requiremfs     Required motifs (default ABC)
     -minppscore     Minimum palmprint score 0..1 (default 0.5)
     -minpalmscore   Minimum palm domain score 0..1 (default 0.69)
     -minselfscorepp     Minimum ABC motif self-score (default 0.5)
@@ -29,9 +30,8 @@ Motifs
     The -searchmfs and -requiremfs options specify which
     motifs should be searched and which should be required
     to report a hit, respectively. ABC must be included.
-    If you only care about the hits and not the annotations,
-    then -searchmfs ABC may give a small gain in speed.
-    Star (*) is shorthand for all motifs, e.g. -searchmfs *.
+    Star (*) is wildcard, e.g. -searchmfs * means search
+    for all motifs.
 
 CAL format:
     Sequence and C-alpha coordinates only.

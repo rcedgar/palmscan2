@@ -29,7 +29,7 @@ public:
 	double m_MinSelfScoreABC = DBL_MAX;
 	double m_MinSelfScoreNonABC = DBL_MAX;
 	double m_MinABCScore = DBL_MAX;
-	double m_MinDomScore = DBL_MAX;
+	double m_MinPalmScore = DBL_MAX;
 
 // For E-value
 	double m_MeanFinalScore = 0.500537;

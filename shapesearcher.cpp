@@ -277,7 +277,7 @@ void ShapeSearcher::SetParamOpts()
 #undef S
 
 	m_MinABCScore = opt_minppscore;
-	m_MinDomScore = opt_minpalmscore;
+	m_MinPalmScore = opt_minpalmscore;
 	//m_MaxLEFPPM = opt_maxlefppm;
 	m_MinSelfScoreABC = opt_minselfscorepp;
 	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
@@ -322,6 +322,7 @@ void ShapeSearcher::LogParams() const
 
 #define Sf(x)	Log("%12.4g  %s\n", m_##x, #x);
 	Sf(MinABCScore);
+	Sf(MinPalmScore);
 	//Sf(MaxLEFPPM);
 	Sf(MinSelfScoreNonABC);
 	Sf(MinSelfScoreABC);
@@ -376,7 +377,7 @@ bool ShapeSearcher::IsHit() const
 		IncStat(g_Miss_LowABCScore);
 		return false;
 		}
-	if (m_DomScore < m_MinDomScore)
+	if (m_DomScore < m_MinPalmScore)
 		{
 		IncStat(g_Miss_LowPalmScore);
 		return false;
