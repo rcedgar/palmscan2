@@ -186,8 +186,8 @@ FLAG_OPT(misses)
 FLAG_OPT(pml_savepse)
 FLAG_OPT(traceabc)
 FLAG_OPT(calibrate)
-FLAG_OPT(sensitive)
-FLAG_OPT(lowerrors)
+//FLAG_OPT(sensitive)
+//FLAG_OPT(lowerrors)
 FLAG_OPT(pmlrevmotifs)
 
 #undef FLAG_OPT

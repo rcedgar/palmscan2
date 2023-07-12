@@ -205,7 +205,7 @@ OBJS = \
   $(OBJDIR)/fastqrec.o \
   $(OBJDIR)/fileseqsource.o \
   $(OBJDIR)/getss.o \
-  $(OBJDIR)/help.o \
+  $(OBJDIR)/usage.o \
   $(OBJDIR)/invertmx.o \
   $(OBJDIR)/linereader.o \
   $(OBJDIR)/lockobj.o \
