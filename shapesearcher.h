@@ -30,7 +30,6 @@ public:
 	double m_MinSelfScoreNonABC = DBL_MAX;
 	double m_MinABCScore = DBL_MAX;
 	double m_MinDomScore = DBL_MAX;
-	double m_MaxLEFPPM = DBL_MAX;
 
 // For E-value
 	double m_MeanFinalScore = 0.500537;
@@ -42,7 +41,7 @@ public:
 	double m_DomScore = 0;
 	bool m_Permuted = false;
 	double m_FinalScore = 0;
-	double m_LEFPPM = DBL_MAX;
+	//double m_LEFPPM = DBL_MAX;
 
 // Search results
 	double m_Score = 0;
@@ -67,7 +66,7 @@ public:
 		m_Permuted = false;
 		m_Class = "";
 		m_FinalScore = 0;
-		m_LEFPPM = DBL_MAX;
+		//m_LEFPPM = DBL_MAX;
 		}
 
 	void Init(const Shapes &S);
@@ -183,7 +182,7 @@ public:
 
 	void CalibrateAdd(bool Hit) const;
 	void SetFinalScore();
-	void SetLEFPPM();
+	//void SetLEFPPM();
 
 public:
 

@@ -13,7 +13,7 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
 	SS.SearchDom(Q);
 	SS.SetFinalScore();
-	SS.SetLEFPPM();
+	//SS.SetLEFPPM();
 	SS.SetClass();
 	bool Hit = SS.IsHit();
 	if (opt_calibrate)

@@ -104,7 +104,7 @@
     <ClCompile Include="search_pssms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="help.cpp">
+    <ClCompile Include="usage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="model_strings_rdrp.cpp">

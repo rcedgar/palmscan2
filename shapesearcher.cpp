@@ -11,7 +11,7 @@ static uint g_Hits;
 static uint g_Misses;
 static uint g_Miss_LowABCScore;
 static uint g_Miss_LowPalmScore;
-static uint g_Miss_HighLEFPPM;
+//static uint g_Miss_HighLEFPPM;
 static uint g_Miss_MissingMotif;
 static uint g_PermutedHits;
 static uint g_RdRpPlus;
@@ -34,14 +34,14 @@ static void IncStat(uint &i)
 		}
 	}
 
-void ShapeSearcher::SetLEFPPM()
-	{
-	double GetExpValue(double Value, double Mean, double StdDev,
-	  double LogDBSize);
-
-	m_LEFPPM = GetExpValue(m_FinalScore, m_MeanFinalScore,
-	  m_StdDevFinalScore, m_Log10DBSize);
-	}
+//void ShapeSearcher::SetLEFPPM()
+//	{
+//	double GetExpValue(double Value, double Mean, double StdDev,
+//	  double LogDBSize);
+//
+//	m_LEFPPM = GetExpValue(m_FinalScore, m_MeanFinalScore,
+//	  m_StdDevFinalScore, m_Log10DBSize);
+//	}
 
 void ShapeSearcher::SetFinalScore()
 	{
@@ -169,7 +169,7 @@ void ShapeSearcher::StatsToFev(FILE *f)
 	X(PermutedHits);
 	X(Miss_LowABCScore);
 	X(Miss_LowPalmScore);
-	X(Miss_HighLEFPPM);
+	//X(Miss_HighLEFPPM);
 	X(Miss_MissingMotif);
 #undef X
 
@@ -190,7 +190,7 @@ void ShapeSearcher::LogStats()
 	X(PermutedHits);
 	X(Miss_LowABCScore);
 	X(Miss_LowPalmScore);
-	X(Miss_HighLEFPPM);
+	//X(Miss_HighLEFPPM);
 	X(Miss_MissingMotif);
 	if (opt_calibrate)
 		{
@@ -237,7 +237,7 @@ void ShapeSearcher::SetParamOpts()
 		S(minselfscorenonpp, 0.55);
 		S(minppscore, 0.6);
 		S(minpalmscore, 0.69);
-		S(maxlefppm, 1);
+		//S(maxlefppm, 1);
 		S(searchmfs, "*");
 		S(requiremfs, "JABCD");
 		}
@@ -247,7 +247,7 @@ void ShapeSearcher::SetParamOpts()
 		S(minselfscorenonpp, 0.4);
 		S(minppscore, 0.2);
 		S(minpalmscore, 0.2);
-		S(maxlefppm, 10);
+		//S(maxlefppm, 10);
 		S(searchmfs, "*");
 		S(requiremfs, "*");
 		}
@@ -263,7 +263,7 @@ void ShapeSearcher::SetParamOpts()
 		S(minselfscorenonpp, 0.50);
 		S(minppscore, 0.55);
 		S(minpalmscore, 0.69);
-		S(maxlefppm, 1000);
+		//S(maxlefppm, 1000);
 		S(searchmfs, "*");
 		S(requiremfs, "ABC");
 		}
@@ -271,7 +271,7 @@ void ShapeSearcher::SetParamOpts()
 
 	m_MinABCScore = opt_minppscore;
 	m_MinDomScore = opt_minpalmscore;
-	m_MaxLEFPPM = opt_maxlefppm;
+	//m_MaxLEFPPM = opt_maxlefppm;
 	m_MinSelfScoreABC = opt_minselfscorepp;
 	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
 
@@ -315,7 +315,7 @@ void ShapeSearcher::LogParams() const
 
 #define Sf(x)	Log("%12.4g  %s\n", m_##x, #x);
 	Sf(MinABCScore);
-	Sf(MaxLEFPPM);
+	//Sf(MaxLEFPPM);
 	Sf(MinSelfScoreNonABC);
 	Sf(MinSelfScoreABC);
 	Sf(Sigmas);
@@ -374,11 +374,11 @@ bool ShapeSearcher::IsHit() const
 		IncStat(g_Miss_LowPalmScore);
 		return false;
 		}
-	if (m_LEFPPM > m_MaxLEFPPM)
-		{
-		IncStat(g_Miss_HighLEFPPM);
-		return false;
-		}
+	//if (m_LEFPPM > m_MaxLEFPPM)
+	//	{
+	//	IncStat(g_Miss_HighLEFPPM);
+	//	return false;
+	//	}
 	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
 		if (m_RequireShapes[i] && m_ShapePosVec[i] == UINT_MAX)
@@ -808,7 +808,7 @@ void ShapeSearcher::ToTsv(FILE *f) const
 		HdrDone = true;
 		fprintf(f, "Label");
 		fprintf(f, "\tClass");
-		fprintf(f, "\tLEFPPM");
+		//fprintf(f, "\tLEFPPM");
 		fprintf(f, "\tPalm_score");
 		fprintf(f, "\tPP_score");
 		fprintf(f, "\tMotifs");
@@ -829,7 +829,7 @@ void ShapeSearcher::ToTsv(FILE *f) const
 	char Gate = GetGate();
 	fprintf(f, "%s", m_Query->m_Label.c_str());
 	fprintf(f, "\t%s", m_Class.c_str());
-	fprintf(f, "\t%.3f", m_LEFPPM);
+	//fprintf(f, "\t%.3f", m_LEFPPM);
 	fprintf(f, "\t%.3g", m_DomScore);
 	fprintf(f, "\t%.3g", m_ABCScore);
 	fprintf(f, "\t%s", FoundMotifsStr.c_str());

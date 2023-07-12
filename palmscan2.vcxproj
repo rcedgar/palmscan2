@@ -358,7 +358,7 @@
     <ClCompile Include="fastqrec.cpp" />
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getss.cpp" />
-    <ClCompile Include="help.cpp" />
+    <ClCompile Include="usage.cpp" />
     <ClCompile Include="invertmx.cpp" />
     <ClCompile Include="linereader.cpp" />
     <ClCompile Include="lockobj.cpp" />

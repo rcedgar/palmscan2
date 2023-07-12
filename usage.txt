@@ -19,25 +19,10 @@ Options:
                       load commands in pml scripts work as-is
     -searchmfs      Motifs to report in tsv/pml (default *)
     -requiremfs     Required motifs to report hits (default ABC)
-    -maxlefppm      Maximum LEFPPM (default 1000)
     -minppscore     Minimum palmprint score 0..1 (default 0.5)
     -minpalmscore   Minimum palm domain score 0..1 (default 0.69)
     -minselfscorepp     Minimum ABC motif self-score (default 0.5)
     -minselfscorenonpp  Minimum non-ABC self-score (default 0.5)
-
-    -sensitive      Prioritize more TPs (higher FPs) (default)
-                    Sets options as follows (may be overridden):
-                      -minselfscorepp 0.5
-                      -minselfscorenonpp 0.5
-                      -maxlefppm 1000 # FP rate 0.1%
-                      -requiremfs ABC # palmprint only
-
-    -lowerrors      Prioritize few FPs (lower TPs)
-                    Sets options as follows (may be overridden):
-                      -minselfscorepp 0.55
-                      -minselfscorenonpp 0.55
-                      -maxlefppm 1 # FP rate 1 per million
-                      -requiremfs JABCD # palmprint + flanking J/D
 
 Motifs
     F1, F2, H, J, A, B, C and D are modeled.
@@ -52,22 +37,3 @@ CAL format:
     Sequence and C-alpha coordinates only.
     More compact than PDB for faster search.
     Use pdb2cal command to convert PDB to CAL.
-
-Log-Expected False Positives Per Million Queries (LEFPPM)
-    Calculated by converting the palm domain score to the
-    expected number of hits (K) that would have >= this score 
-    in 1M random structures, operationally defined by sampling
-    from reversed chains in the RCSB PDB. Reported as log_10(K),
-    so for example if LEFPPM=2 then 10^2=100 FP hits would be
-    expected at this threshold in a search of 1M structures.
-    If a structure has negative LEFPPM, say -4, this is very 
-    good because 10^-4 << 1 and it is therefore highly
-    unlikely you would find any FP hits with this score in
-    1M structures, assuming the theory behind all this works
-    well. As a search threshold, something like -maxlefppm 100
-    would be reasonable if you think 100 FPs per million
-    structures is acceptable. Note this estimate may not be
-    very good, it's not clear how well reversed	PDB chains
-    model a large collection of predicted folds, or whether
-    the statistical model used to estimate LEFPPM is a good
-    representation of the domain score. Proceed with caution.
