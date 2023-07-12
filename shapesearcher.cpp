@@ -10,6 +10,7 @@ static uint g_Queries;
 static uint g_Hits;
 static uint g_Misses;
 static uint g_Miss_LowABCScore;
+static uint g_Miss_LowPalmScore;
 static uint g_Miss_HighLEFPPM;
 static uint g_Miss_MissingMotif;
 static uint g_PermutedHits;
@@ -167,6 +168,7 @@ void ShapeSearcher::StatsToFev(FILE *f)
 	X(RdRpLike);
 	X(PermutedHits);
 	X(Miss_LowABCScore);
+	X(Miss_LowPalmScore);
 	X(Miss_HighLEFPPM);
 	X(Miss_MissingMotif);
 #undef X
@@ -187,6 +189,7 @@ void ShapeSearcher::LogStats()
 	X(Misses);
 	X(PermutedHits);
 	X(Miss_LowABCScore);
+	X(Miss_LowPalmScore);
 	X(Miss_HighLEFPPM);
 	X(Miss_MissingMotif);
 	if (opt_calibrate)
@@ -232,23 +235,25 @@ void ShapeSearcher::SetParamOpts()
 		{
 		S(minselfscorepp, 0.55);
 		S(minselfscorenonpp, 0.55);
-		S(minscorepp, 0.6);
+		S(minppscore, 0.6);
+		S(minpalmscore, 0.69);
 		S(maxlefppm, 1);
 		S(searchmfs, "*");
 		S(requiremfs, "JABCD");
-		//S(requiremfs, "ABC");
 		}
 	else if (optset_calibrate)
 		{
 		S(minselfscorepp, 0.4);
 		S(minselfscorenonpp, 0.4);
-		S(minscorepp, 0.2);
+		S(minppscore, 0.2);
+		S(minpalmscore, 0.2);
 		S(maxlefppm, 10);
 		S(searchmfs, "*");
 		S(requiremfs, "*");
 		}
 	else
 		{
+	// default is -sensitive
 		if (!optset_sensitive)
 			{
 			optset_sensitive = true;
@@ -256,14 +261,16 @@ void ShapeSearcher::SetParamOpts()
 			}
 		S(minselfscorepp, 0.50);
 		S(minselfscorenonpp, 0.50);
-		S(minscorepp, 0.55);
+		S(minppscore, 0.55);
+		S(minpalmscore, 0.69);
 		S(maxlefppm, 1000);
 		S(searchmfs, "*");
 		S(requiremfs, "ABC");
 		}
 #undef S
 
-	m_MinABCScore = opt_minscorepp;
+	m_MinABCScore = opt_minppscore;
+	m_MinDomScore = opt_minpalmscore;
 	m_MaxLEFPPM = opt_maxlefppm;
 	m_MinSelfScoreABC = opt_minselfscorepp;
 	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
@@ -360,6 +367,11 @@ bool ShapeSearcher::IsHit() const
 	if (m_ABCScore < m_MinABCScore)
 		{
 		IncStat(g_Miss_LowABCScore);
+		return false;
+		}
+	if (m_DomScore < m_MinDomScore)
+		{
+		IncStat(g_Miss_LowPalmScore);
 		return false;
 		}
 	if (m_LEFPPM > m_MaxLEFPPM)
@@ -880,6 +892,8 @@ void ShapeSearcher::ToPml(FILE *f, const string &LoadName) const
 
 		const char *Name = GetShapeName(i);
 		GetColor(i, Color);
+		if (opt_pmlrevmotifs)
+			reverse(Seq.begin(), Seq.end());
 
 		fprintf(f, "select Motif_%s, pepseq %s;\n", Name, Seq.c_str());
 		fprintf(f, "color %s, Motif_%s;\n", Color.c_str(), Name);

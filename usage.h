@@ -1,5 +1,5 @@
 
-const char *help_txt[] =
+const char *usage_txt[] =
 	{
 	"3D search:",
 	"    palmscan2 -search3d INPUT -tsv hits.tsv",
@@ -23,7 +23,8 @@ const char *help_txt[] =
 	"    -searchmfs      Motifs to report in tsv/pml (default *)",
 	"    -requiremfs     Required motifs to report hits (default ABC)",
 	"    -maxlefppm      Maximum LEFPPM (default 1000)",
-	"    -minscorepp     Minimum palmprint score 0..1 (default 0.5)",
+	"    -minppscore     Minimum palmprint score 0..1 (default 0.5)",
+	"    -minpalmscore   Minimum palm domain score 0..1 (default 0.69)",
 	"    -minselfscorepp     Minimum ABC motif self-score (default 0.5)",
 	"    -minselfscorenonpp  Minimum non-ABC self-score (default 0.5)",
 	"",

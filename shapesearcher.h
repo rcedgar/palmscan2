@@ -29,6 +29,7 @@ public:
 	double m_MinSelfScoreABC = DBL_MAX;
 	double m_MinSelfScoreNonABC = DBL_MAX;
 	double m_MinABCScore = DBL_MAX;
+	double m_MinDomScore = DBL_MAX;
 	double m_MaxLEFPPM = DBL_MAX;
 
 // For E-value

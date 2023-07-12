@@ -1948,18 +1948,18 @@ void Version(FILE *f)
 	;
 	fprintf(f, "\n");
 
-	fprintf(f, "palmscan2 v%s.%s%s\n", MY_VERSION, GetPlatform(), Flags);
+	fprintf(f, "palmscan2 v%s.%s%s  ", MY_VERSION, GetPlatform(), Flags);
 
-#include "build_date.txt"
-	fprintf(f, "compiled %s\n", build_date);
+#include "build_info.txt"
+	fprintf(f, "%s\n", build_info);
 	}
 
 void PrintHelp()
 	{
-	extern const char *help_txt[];
-	extern int g_n_help_txt;
-	for (int i = 0; i < g_n_help_txt; ++i)
-		puts(help_txt[i]);
+	extern const char *usage_txt[];
+	extern int g_n_usage_txt;
+	for (int i = 0; i < g_n_usage_txt; ++i)
+		puts(usage_txt[i]);
 	puts("");
 	}
 
