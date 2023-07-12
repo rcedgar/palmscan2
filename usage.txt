@@ -13,9 +13,9 @@ Options:
     -tsv hits.tsv   Tab-separated file with hits
     -misses         Include non-matches in tsv (default hits only)
     -threads T      Run T threads (default nr CPU cores)
-    -pml hits.pml   Pymol script to annotate chain(s)
+    -pml hits.pml   Output pymol script to annotate chain(s)
     -pml_save       Include save commands in pml script to generate
-                      one pse for each input chain.
+                      one pse for each input chain
     -loaddir DIR    Directory where pdb files are stored so that
                       load commands in pml scripts work as-is
     -searchmfs      Motifs to search for (default *)
