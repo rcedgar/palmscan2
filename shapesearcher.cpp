@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "shapesearcher.h"
 #include "motifsettings.h"
+#include "quarts.h"
 #include "sort.h"
 
 #define TRACE	0
@@ -8,10 +9,10 @@
 static uint g_Queries;
 static uint g_Hits;
 static uint g_Misses;
-static uint g_LowABCScore;
-static uint g_LowDomScore;
-static uint g_Permuted;
-static uint g_MissingMotif;
+static uint g_Miss_LowABCScore;
+static uint g_Miss_HighLEFPPM;
+static uint g_Miss_MissingMotif;
+static uint g_PermutedHits;
 static uint g_RdRpPlus;
 static uint g_RdRpMinus;
 static uint g_RdRpLike;
@@ -32,15 +33,24 @@ static void IncStat(uint &i)
 		}
 	}
 
-double ShapeSearcher::GetFinalScore() const
+void ShapeSearcher::SetLEFPPM()
 	{
-	return m_DomScore;
+	double GetExpValue(double Value, double Mean, double StdDev,
+	  double LogDBSize);
+
+	m_LEFPPM = GetExpValue(m_FinalScore, m_MeanFinalScore,
+	  m_StdDevFinalScore, m_Log10DBSize);
+	}
+
+void ShapeSearcher::SetFinalScore()
+	{
+	m_FinalScore = m_DomScore;
 	}
 
 void ShapeSearcher::CalibrateAdd(bool Hit) const
 	{
 	const string &Label = m_Query->m_Label;
-	double Score = GetFinalScore();
+	double Score = m_FinalScore;
 	asserta(Score >= 0 && Score <= 1);
 	uint iScore = uint(Score*100);
 	asserta(iScore >= 0 && iScore <= 100);
@@ -82,6 +92,11 @@ void ShapeSearcher::CalibrateWrite()
 		fprintf(f, "%.6g\n", g_CalibrateNegScores[i]);
 	CloseStdioFile(f);
 	}
+
+	QuartsDouble Q;
+	GetQuartsDouble(g_CalibrateNegScores, Q);
+	Log("Neg scores: mean %.6g, stddev %.6g\n", Q.Avg, Q.StdDev);
+	Q.LogMe();
 
 	FILE *f = CreateStdioFile("calibrate.tsv");
 	asserta(SIZE(g_CalibratePosScoreToCount) == 101);
@@ -144,15 +159,16 @@ void ShapeSearcher::StatsToFev(FILE *f)
 	double PctMisses = GetPct(g_Misses, g_Queries);
 
 #define X(x)	fprintf(f, "\t%s=%u", #x, g_##x);
+	X(Queries);
 	X(Hits);
 	X(Misses);
 	X(RdRpPlus);
 	X(RdRpMinus);
 	X(RdRpLike);
-	X(LowABCScore);
-	X(LowDomScore);
-	X(Permuted);
-	X(MissingMotif);
+	X(PermutedHits);
+	X(Miss_LowABCScore);
+	X(Miss_HighLEFPPM);
+	X(Miss_MissingMotif);
 #undef X
 
 #define X(x)	fprintf(f, "\t%s=%.4g", #x, x);
@@ -169,10 +185,10 @@ void ShapeSearcher::LogStats()
 #define X(x)	Log("%10u  %s\n", g_##x, #x);
 	X(Hits);
 	X(Misses);
-	X(LowABCScore);
-	X(LowDomScore);
-	X(Permuted);
-	X(MissingMotif);
+	X(PermutedHits);
+	X(Miss_LowABCScore);
+	X(Miss_HighLEFPPM);
+	X(Miss_MissingMotif);
 	if (opt_calibrate)
 		{
 		X(TPCount);
@@ -207,20 +223,6 @@ void ShapeSearcher::Init(const Shapes &S)
 
 	SetShapeIndexesABC();
 	SetParamOpts();
-
-	IncludesStrToBools("-searchmfs", opt_searchmfs,  m_SearchShapes);
-	IncludesStrToBools("-requiremfs", opt_requiremfs, m_RequireShapes);
-
-	m_MinABCScore = opt_minscorepp;
-	m_MinDomScore = opt_minscoredom;
-	m_MinSelfScoreABC = opt_minselfscorepp;
-	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
-
-	vector<bool> BoolsABC;
-	IncludesStrToBools("BoolsABC", "ABC", BoolsABC);
-	m_SearchABCOnly = false;
-	if (m_SearchShapes == BoolsABC)
-		m_SearchABCOnly = true;
 	}
 
 void ShapeSearcher::SetParamOpts()
@@ -231,47 +233,82 @@ void ShapeSearcher::SetParamOpts()
 		S(minselfscorepp, 0.55);
 		S(minselfscorenonpp, 0.55);
 		S(minscorepp, 0.6);
-		S(minscoredom, 0.6);
+		S(maxlefppm, 1);
 		S(searchmfs, "*");
 		S(requiremfs, "JABCD");
+		//S(requiremfs, "ABC");
 		}
 	else if (optset_calibrate)
 		{
 		S(minselfscorepp, 0.4);
 		S(minselfscorenonpp, 0.4);
 		S(minscorepp, 0.2);
-		S(minscoredom, 0.2);
+		S(maxlefppm, 10);
 		S(searchmfs, "*");
 		S(requiremfs, "*");
 		}
-	else // if (optset_sensitive)
+	else
 		{
+		if (!optset_sensitive)
+			{
+			optset_sensitive = true;
+			opt_sensitive = true;
+			}
 		S(minselfscorepp, 0.50);
 		S(minselfscorenonpp, 0.50);
 		S(minscorepp, 0.55);
-		S(minscoredom, 0.55);
+		S(maxlefppm, 1000);
 		S(searchmfs, "*");
 		S(requiremfs, "ABC");
 		}
 #undef S
+
+	m_MinABCScore = opt_minscorepp;
+	m_MaxLEFPPM = opt_maxlefppm;
+	m_MinSelfScoreABC = opt_minselfscorepp;
+	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
+
+	IncludesStrToBools("-searchmfs", opt_searchmfs,  m_SearchShapes);
+	IncludesStrToBools("-requiremfs", opt_requiremfs, m_RequireShapes);
+	asserta(m_ShapeIndexA < m_ShapeCount);
+	asserta(m_ShapeIndexB < m_ShapeCount);
+	asserta(m_ShapeIndexC < m_ShapeCount);
+	if (!m_SearchShapes[m_ShapeIndexA] ||
+		!m_SearchShapes[m_ShapeIndexB] ||
+		!m_SearchShapes[m_ShapeIndexC])
+		Die("Bad -searchmfs, must include ABC");
+
+	vector<bool> BoolsABC;
+	IncludesStrToBools("BoolsABC", "ABC", BoolsABC);
+	m_SearchABCOnly = false;
+	if (m_SearchShapes == BoolsABC)
+		m_SearchABCOnly = true;
 	}
 
 void ShapeSearcher::LogParams() const
 	{
+	Log("Motifs: ");
 	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
-		string s = "Motif_" + string(GetShapeName(i));
-		Log("%12.12s", s.c_str());
-		Log("  L=%2u", GetShapeLength(i));
-		Log("  search=%c", yon(m_SearchShapes[i]));
-		Log("  require=%c", yon(m_RequireShapes[i]));
-		Log("\n");
+		if (i > 0)
+			Log(", ");
+		Log("%s", GetShapeName(i));
+		Log("/%u", GetShapeLength(i));
 		}
+	Log("\n");
+
+	string SearchStr;
+	string RequireStr;
+	IncludesBoolsToStr(m_SearchShapes, SearchStr);
+	IncludesBoolsToStr(m_RequireShapes, RequireStr);
+
+	Log("%12.12s  Search motifs\n", SearchStr.c_str());
+	Log("%12.12s  Require motifs\n", RequireStr.c_str());
 	Log("%12c  SearchABCOnly\n", yon(m_SearchABCOnly));
 
 #define Sf(x)	Log("%12.4g  %s\n", m_##x, #x);
 	Sf(MinABCScore);
-	Sf(MinDomScore);
+	Sf(MaxLEFPPM);
 	Sf(MinSelfScoreNonABC);
 	Sf(MinSelfScoreABC);
 	Sf(Sigmas);
@@ -322,24 +359,24 @@ bool ShapeSearcher::IsHit() const
 	IncStat(g_Queries);
 	if (m_ABCScore < m_MinABCScore)
 		{
-		IncStat(g_LowABCScore);
+		IncStat(g_Miss_LowABCScore);
 		return false;
 		}
-	if (m_DomScore < m_MinDomScore)
+	if (m_LEFPPM > m_MaxLEFPPM)
 		{
-		IncStat(g_LowDomScore);
+		IncStat(g_Miss_HighLEFPPM);
 		return false;
 		}
 	for (uint i = 0; i < m_ShapeCount; ++i)
 		{
 		if (m_RequireShapes[i] && m_ShapePosVec[i] == UINT_MAX)
 			{
-			IncStat(g_MissingMotif);
+			IncStat(g_Miss_MissingMotif);
 			return false;
 			}
 		}
 	if (m_Permuted)
-		IncStat(g_Permuted);
+		IncStat(g_PermutedHits);
 	IncStat(g_Hits);
 	return true;
 	}
@@ -759,6 +796,7 @@ void ShapeSearcher::ToTsv(FILE *f) const
 		HdrDone = true;
 		fprintf(f, "Label");
 		fprintf(f, "\tClass");
+		fprintf(f, "\tLEFPPM");
 		fprintf(f, "\tPalm_score");
 		fprintf(f, "\tPP_score");
 		fprintf(f, "\tMotifs");
@@ -779,6 +817,7 @@ void ShapeSearcher::ToTsv(FILE *f) const
 	char Gate = GetGate();
 	fprintf(f, "%s", m_Query->m_Label.c_str());
 	fprintf(f, "\t%s", m_Class.c_str());
+	fprintf(f, "\t%.3f", m_LEFPPM);
 	fprintf(f, "\t%.3g", m_DomScore);
 	fprintf(f, "\t%.3g", m_ABCScore);
 	fprintf(f, "\t%s", FoundMotifsStr.c_str());
@@ -903,7 +942,7 @@ void ShapeSearcher::IncludesBoolsToStr(const vector<bool> &Includes,
 		}
 	}
 
-void ShapeSearcher::IncludesStrToBools(const string &What,
+uint ShapeSearcher::IncludesStrToBools(const string &What,
   const string &Str, vector<bool> &Includes) const
 	{
 	Includes.resize(m_ShapeCount);
@@ -911,22 +950,20 @@ void ShapeSearcher::IncludesStrToBools(const string &What,
 		{
 		for (uint i = 0; i < m_ShapeCount; ++i)
 			Includes[i] = true;
-		return;
+		return m_ShapeCount;
 		}
 
-	bool AnyFound = false;
+	uint FoundCount = 0;
 	for (uint ShapeIndex = 0; ShapeIndex < m_ShapeCount; ++ShapeIndex)
 		{
 		const string ShapeName = (string) GetShapeName(ShapeIndex);
 		size_t n = Str.find(ShapeName);
 		bool Found = (n >= 0 && n < SIZE(Str));
 		if (Found)
-			AnyFound = true;
+			++FoundCount;
 		Includes[ShapeIndex] = Found;
 		}
-	if (!AnyFound)
-		Die("No valid motif names found in %s '%s'",
-		  What.c_str(), Str.c_str());
+	return FoundCount;
 	}
 
 void ShapeSearcher::BoolsToIndexVec1(const vector<bool> &Includes,

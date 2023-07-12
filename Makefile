@@ -39,6 +39,7 @@ HDRS = \
   fastq.h \
   fastqrec.h \
   fileseqsource.h \
+  filler.h \
   gobuff.h \
   gspaligner.h \
   gsprof.h \
@@ -145,7 +146,10 @@ OBJS = \
   $(OBJDIR)/dali.o \
   $(OBJDIR)/default_shapes.o \
   $(OBJDIR)/distmx.o \
+  $(OBJDIR)/expvalue.o \
   $(OBJDIR)/fasta_xlat.o \
+  $(OBJDIR)/filler.o \
+  $(OBJDIR)/filler_train.o \
   $(OBJDIR)/findcavity.o \
   $(OBJDIR)/firstchain_pssms.o \
   $(OBJDIR)/getshapestrainingmotifs.o \
@@ -164,6 +168,7 @@ OBJS = \
   $(OBJDIR)/pamerger.o \
   $(OBJDIR)/pamerge.o \
   $(OBJDIR)/palmcator.o \
+  $(OBJDIR)/planec.o \
   $(OBJDIR)/pseudo_cb_angles.o \
   $(OBJDIR)/kabsch.o \
   $(OBJDIR)/palmcore.o \

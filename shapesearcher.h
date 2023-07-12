@@ -29,12 +29,19 @@ public:
 	double m_MinSelfScoreABC = DBL_MAX;
 	double m_MinSelfScoreNonABC = DBL_MAX;
 	double m_MinABCScore = DBL_MAX;
-	double m_MinDomScore = DBL_MAX;
+	double m_MaxLEFPPM = DBL_MAX;
+
+// For E-value
+	double m_MeanFinalScore = 0.500537;
+	double m_StdDevFinalScore = 0.0536741;
+	double m_Log10DBSize = 6;
 
 // Search results
 	double m_ABCScore = 0;
 	double m_DomScore = 0;
 	bool m_Permuted = false;
+	double m_FinalScore = 0;
+	double m_LEFPPM = DBL_MAX;
 
 // Search results
 	double m_Score = 0;
@@ -58,6 +65,8 @@ public:
 		m_ShapeScores.clear();
 		m_Permuted = false;
 		m_Class = "";
+		m_FinalScore = 0;
+		m_LEFPPM = DBL_MAX;
 		}
 
 	void Init(const Shapes &S);
@@ -101,7 +110,7 @@ public:
 
 	uint GetShapeCount() const { return m_ShapeCount; }
 	void GetShapeIndexes(vector<uint> &Indexes) const;
-	void IncludesStrToBools(const string &What, const string &Str,
+	uint IncludesStrToBools(const string &What, const string &Str,
 	  vector<bool> &Includes) const;
 	void IncludesBoolsToStr(const vector<bool> &Includes,
 	  string &Str) const;
@@ -172,7 +181,8 @@ public:
 	  double MinPredScore);
 
 	void CalibrateAdd(bool Hit) const;
-	double GetFinalScore() const;
+	void SetFinalScore();
+	void SetLEFPPM();
 
 public:
 

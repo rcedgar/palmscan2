@@ -587,6 +587,9 @@
     <ClCompile Include="filler_train.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="expvalue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

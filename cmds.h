@@ -92,5 +92,6 @@ C(reverse_chains)
 C(shapes_search_cab)
 C(planec)
 C(filler_train)
+C(test_expvalue)
 
 #undef C
