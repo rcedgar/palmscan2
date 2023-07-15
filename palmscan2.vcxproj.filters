@@ -590,6 +590,9 @@
     <ClCompile Include="expvalue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dssp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -854,6 +857,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="filler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dssp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

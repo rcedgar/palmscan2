@@ -342,6 +342,7 @@ extern string g_ShortCmdLine;
 const char *MemBytesToStr(double Bytes);
 static inline const char *MemBytesToStr(uint64 Bytes) { return MemBytesToStr((double) Bytes); }
 unsigned StrToUint(const string &s);
+int StrToInt(const string &s);
 double StrToMemBytes(const string &s);
 double StrToFloat(const string &s);
 double StrToFloat(const char *s);

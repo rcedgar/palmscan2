@@ -997,6 +997,12 @@ bool IsUintStr(const char *s)
 	return true;
 	}
 
+int StrToInt(const char *s)
+	{
+	int i = atoi(s);
+	return i;
+	}
+
 unsigned StrToUint(const char *s)
 	{
 	if (!IsUintStr(s))
@@ -1014,6 +1020,12 @@ unsigned StrToUint(const char *s)
 unsigned StrToUint(const string &s)
 	{
 	return StrToUint(s.c_str());
+	}
+
+int StrToInt(const string &s)
+	{
+	asserta(s.size() > 0);
+	return StrToInt(s.c_str());
 	}
 
 double StrToFloat(const char *s)

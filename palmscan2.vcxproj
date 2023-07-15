@@ -299,6 +299,7 @@
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
+    <ClCompile Include="dssp.cpp" />
     <ClCompile Include="expvalue.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="filler.cpp" />
@@ -458,6 +459,7 @@
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xprof.cpp" />
+    <ClInclude Include="dssp.h" />
     <ClInclude Include="filler.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
