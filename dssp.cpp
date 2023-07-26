@@ -102,7 +102,7 @@ void DSSP::FromLines(const string &Label, const vector<string> &Lines)
 
 		uint SequentialResNr = GetUint(Line, 0, 4);
 		string OriginalResNr;
-		GetStr(Line, 0, 4, OriginalResNr);
+		GetStr(Line, 5, 9, OriginalResNr);
 		char SS = Line[16];
 		if (SS == ' ')
 			SS = 'L';

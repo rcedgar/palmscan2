@@ -16,7 +16,7 @@ public:
 	string m_Label;
 	vector<uint> m_SequentialResNrs;
 	vector<string> m_OriginalResNrs;
-	char m_ChainId;
+	char m_ChainId = 0;
 	string m_Seq;
 	string m_SS;	// HBEGIPTSL
 	vector<int> m_BetaPartnerResNr1s;
