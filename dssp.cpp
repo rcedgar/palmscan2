@@ -126,6 +126,8 @@ void DSSP::FromLines(const string &Label, const vector<string> &Lines)
 
 void DSSP::PrintSeq(FILE *f) const
 	{
+	if (f == 0)
+		return;
 	if (m_Label != "")
 		fprintf(f, ">%s\n", m_Label.c_str());
 
