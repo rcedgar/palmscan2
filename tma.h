@@ -7,6 +7,8 @@ class TMA
 public:
 	const PDBChain *m_Q = 0;
 	const PDBChain *m_R = 0;
+	string m_QRow;
+	string m_RRow;
 
 public:
 	void NWDP_TM1(double **score, bool **path, double **val,

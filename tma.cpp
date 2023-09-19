@@ -5,6 +5,26 @@
 #pragma warning(disable: 4267)	// size_t -> int
 #pragma warning(disable: 4244)	// double -> int
 
+// Fisher-Yates shuffle:
+// To shuffle an array a of n elements (indices 0 .. n-1):
+//  for i from n - 1 downto 1 do
+//       j := random integer with 0 <= j <= i
+//       exchange a[j] and a[i]
+void Shuffle(vector<unsigned> &v)
+	{
+	const unsigned N = SIZE(v);
+	for (unsigned i = N - 1; i >= 1; --i)
+		{
+		unsigned j = randu32()%(i + 1);
+		
+		unsigned vi = v[i];
+		unsigned vj = v[j];
+
+		v[i] = vj;
+		v[j] = vi;
+		}
+	}
+
 static void SetRCEtu(double t[3], double u[3][3])
 	{
 	t[0] = 0;
@@ -2870,11 +2890,18 @@ double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 	double TM2 = DBL_MAX;
 	double d0A = DBL_MAX;
 	double d0B = DBL_MAX;
-	string seqM, seqxA, seqyA;
+	string seqM;
 	int iResult = TMalign_main(xa, ya, seqx, seqy, TM1, TM2, d0A, d0B,
-	  seqM, seqxA, seqyA, xlen, ylen);
+	  seqM, m_QRow, m_RRow, xlen, ylen);
+#pragma omp critical
+	{
 	if (iResult == 0)
-		WriteAln(g_faln, xlen, ylen, TM1, TM2, d0A, d0B, seqM, seqxA, seqyA);
+		{
+		WriteAln(g_faln, xlen, ylen, TM1, TM2, d0A, d0B, seqM, m_QRow, m_RRow);
+
+		SeqToFasta(g_ffasta2, m_Q->m_Label, m_QRow);
+		SeqToFasta(g_ffasta2, m_R->m_Label, m_RRow);
+		}
 	else
 		{
 		if (g_faln != 0)
@@ -2885,6 +2912,7 @@ double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 			fprintf(g_faln, "no alignment to >%s\n", m_R->m_Label.c_str());
 			}
 		}
+	}
 
 	DeleteArray(&xa, QL);
 	DeleteArray(&ya, RL);
@@ -2932,6 +2960,27 @@ void cmd_tm()
 	}
 #endif
 
+static void AlignPair(TMA &T,
+  const PDBChain &Q, const PDBChain &R)
+	{
+	double TM = T.AlignChains(Q, R);
+	if (g_ftsv != 0)
+		{
+		string QAccStr;
+		string RAccStr;
+		const char *QAcc = Q.GetAcc(QAccStr);
+		const char *RAcc = R.GetAcc(RAccStr);
+
+#pragma omp critical
+		{
+		fprintf(g_ftsv, "%s", QAcc);
+		fprintf(g_ftsv, "\t%s", RAcc);
+		fprintf(g_ftsv, "\t%6.4f", TM);
+		fprintf(g_ftsv, "\n");
+		}
+		}
+	}
+
 void cmd_tm()
 	{
 	const string &QueryFileName = opt_tm;
@@ -2958,30 +3007,119 @@ void cmd_tm_all_vs_all()
 	const string &InputFileName = opt_tm_all_vs_all;
 	vector<PDBChain *> Chains;
 	ReadChains(InputFileName, Chains);
-	const uint N = SIZE(Chains);
+	const uint ChainCount = SIZE(Chains);
 
-	TMA T;
+	uint ThreadCount = GetRequestedThreadCount();
 
-	string Path;
-	string QAccStr;
-	string RAccStr;
-	for (uint i = 0; i < N; ++i)
+	vector<TMA *> Ts;
+	for (uint i = 0; i < ThreadCount; ++i)
 		{
-		const PDBChain &Q = *Chains[i];
-		const char *QAcc = Q.GetAcc(QAccStr);
-		ProgressStep(i, N, "Aligning %s", QAcc);
-		for (uint j = 0; j < N; ++j)
+		TMA *T = new TMA;
+		Ts.push_back(T);
+		}
+
+	int PairCount = (int) (ChainCount*(ChainCount - 1))/2;
+
+	uint i = 1;
+	uint j = 0;
+	uint Counter = 0;
+#pragma omp parallel for num_threads(ThreadCount)
+	for (int PairIndex = 0; PairIndex < PairCount; ++PairIndex)
+		{
+#pragma omp critical
+		{
+		ProgressStep(Counter++, (uint) PairCount, "Aligning");
+		}
+
+		uint Myi = UINT_MAX;
+		uint Myj = UINT_MAX;
+#pragma omp critical
+		{
+		Myi = i;
+		Myj = j;
+		++j;
+		if (j == i)
 			{
-			const PDBChain &R = *Chains[j];
-			const char *RAcc = R.GetAcc(RAccStr);
-			double TM = T.AlignChains(Q, R);
-			if (g_ftsv != 0)
-				{
-				fprintf(g_ftsv, "%s", QAcc);
-				fprintf(g_ftsv, "\t%s", RAcc);
-				fprintf(g_ftsv, "\t%6.4f", TM);
-				fprintf(g_ftsv, "\n");
-				}
+			++i;
+			j = 0;
 			}
 		}
+
+		uint ThreadIndex = GetThreadIndex();
+		TMA &T = *Ts[ThreadIndex];
+		AlignPair(T, *Chains[Myi], *Chains[Myj]);
+		}
+	}
+
+void cmd_tm_subsample()
+	{
+	const string &InputFileName = opt_tm_subsample;
+	vector<PDBChain *> Chains;
+	ReadChains(InputFileName, Chains);
+	const uint ChainCount = SIZE(Chains);
+	if (ChainCount < 1)
+		{
+		Warning("%u chains, no pairs", ChainCount);
+		return;
+		}
+
+	uint PairCount = (ChainCount*(ChainCount - 1))/2;
+
+	uint ThreadCount = GetRequestedThreadCount();
+	uint SampleSize = opt_sample_size;
+	if (SampleSize > PairCount)
+		{
+		Warning("sample_size %u set to nr. pairs %u",
+		  SampleSize, PairCount);
+		SampleSize = PairCount;
+		}
+
+	vector<TMA *> Ts;
+	for (uint i = 0; i < ThreadCount; ++i)
+		{
+		TMA *T = new TMA;
+		Ts.push_back(T);
+		}
+
+	vector<uint> Indexes;
+	for (uint i = 0; i < PairCount; ++i)
+		Indexes.push_back(i);
+	Shuffle(Indexes);
+
+	vector<pair<uint, uint> > Pairs;
+	for (uint i = 0; i < ChainCount; ++i)
+		for (uint j = 0; j < i; ++j)
+			Pairs.push_back(pair<uint, uint>(i, j));
+
+	uint Counter = 0;
+#pragma omp parallel num_threads(ThreadCount)
+		{
+		for (;;)
+			{
+			uint MyIndex = UINT_MAX;
+			uint MyCounter = UINT_MAX;
+#pragma omp critical
+			{
+			MyCounter = Counter;
+			if (Counter < SampleSize)
+				{
+				MyIndex = Indexes[MyCounter];
+				ProgressStep(Counter, SampleSize, "Aligning");
+				++Counter;
+				}
+			} // end critical
+
+			asserta(MyCounter <= SampleSize);
+			if (MyCounter == SampleSize)
+				break;
+
+			uint i = Pairs[MyIndex].first;
+			uint j = Pairs[MyIndex].second;
+
+			uint ThreadIndex = GetThreadIndex();
+			TMA &T = *Ts[ThreadIndex];
+
+			AlignPair(T, *Chains[i], *Chains[j]);
+			}
+		} // end parallel
 	}

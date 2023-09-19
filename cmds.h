@@ -94,5 +94,6 @@ C(planec)
 C(filler_train)
 C(test_expvalue)
 C(dssp)
+C(tm_subsample)
 
 #undef C
