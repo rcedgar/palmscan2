@@ -1881,7 +1881,7 @@ int TMA::TMalign_main(double** xa, double** ya,
 	//do_rotation(xa, xt, xlen, t, u);
 	do_rotation(xa, xt, xlen, t0, u0);
 
-#if 1
+#if 0
 	{
 	Log("\n");
 	Log("Rotation:\n");
@@ -3018,18 +3018,27 @@ void cmd_tm_all_vs_all()
 		Ts.push_back(T);
 		}
 
-	int PairCount = (int) (ChainCount*(ChainCount - 1))/2;
+	uint PairCount = (ChainCount*(ChainCount - 1))/2;
 
 	uint i = 1;
 	uint j = 0;
-	uint Counter = 0;
-#pragma omp parallel for num_threads(ThreadCount)
-	for (int PairIndex = 0; PairIndex < PairCount; ++PairIndex)
+	uint PairIndex = 0;
+#pragma omp parallel num_threads(ThreadCount)
+	for (;;)
 		{
+		uint MyPairIndex = UINT_MAX;
 #pragma omp critical
 		{
-		ProgressStep(Counter++, (uint) PairCount, "Aligning");
+		if (PairIndex < PairCount)
+			{
+			MyPairIndex = PairIndex;
+			ProgressStep(PairIndex, (uint) PairCount, "Aligning");
+			++PairIndex;
+			}
 		}
+		Log("thread %u, pair %u\n", GetThreadIndex(), MyPairIndex);
+		if (MyPairIndex == UINT_MAX)
+			break;
 
 		uint Myi = UINT_MAX;
 		uint Myj = UINT_MAX;
