@@ -189,6 +189,7 @@ FLAG_OPT(calibrate)
 //FLAG_OPT(sensitive)
 //FLAG_OPT(lowerrors)
 FLAG_OPT(pmlrevmotifs)
+FLAG_OPT(noappendchain)
 
 #undef FLAG_OPT
 #undef UNS_OPT

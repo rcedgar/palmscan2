@@ -35,6 +35,7 @@ HDRS = \
   cmsearcher.h \
   conncomp.h \
   diagbox.h \
+  dssp.h \
   fastaseqsource.h \
   fastq.h \
   fastqrec.h \
@@ -146,6 +147,7 @@ OBJS = \
   $(OBJDIR)/dali.o \
   $(OBJDIR)/default_shapes.o \
   $(OBJDIR)/distmx.o \
+  $(OBJDIR)/dssp.o \
   $(OBJDIR)/expvalue.o \
   $(OBJDIR)/fasta_xlat.o \
   $(OBJDIR)/filler.o \

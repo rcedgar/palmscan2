@@ -1094,6 +1094,8 @@ void PDBChain::AppendChainToLabel(string &Label, char Chain)
 	{
 	if (Chain == 0)
 		return;
+	if (opt_noappendchain)
+		return;
 
 	string _X = "_";
 	_X += Chain;
