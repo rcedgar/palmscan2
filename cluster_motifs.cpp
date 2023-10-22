@@ -323,6 +323,31 @@ void MotifProfile::LogMe() const
 	Log("%s\n", Logo.c_str());
 	}
 
+//void MPCluster::GreedyCluster_TopOnly(const vector<MotifProfile *> &Input,
+//  float MinScore)
+//	{
+//	Clear();
+//	m_Input = &Input;
+//	m_MinScore = MinScore;
+//	const uint InputCount = SIZE(Input);
+//	for (uint i = 0; i < InputCount; ++i)
+//		m_PendingIndexes.insert(i);
+//	uint CentroidIndex = GetNextGreedyCentroid();
+//	MotifProfile &CP = GetProfile(CentroidIndex);
+//	vector<uint> MemberIndexes;
+//	MemberIndexes.push_back(CentroidIndex);
+//	for (set<uint>::const_iterator p = m_PendingIndexes.begin();
+//		p != m_PendingIndexes.end(); ++p)
+//		{
+//		uint Index = *p;
+//		MotifProfile &P = GetProfile(Index);
+//		float Score = GetScore(CP, P);
+//		if (Score >= m_MinScore)
+//			MemberIndexes.push_back(Index);
+//		}
+//	ProgressLog("GreedyCluster_TopOnly done.\n");
+//	}
+
 void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
   float MinScore)
 	{
@@ -353,7 +378,7 @@ void MPCluster::GreedyCluster(const vector<MotifProfile *> &Input,
 		  p != m_PendingIndexes.end(); ++p)
 			{
 			++Counter;
-			if (Counter%1000 == 0)
+			//if (Counter%1000 == 0)
 				ProgressStep(DoneCount, InputCount + 1, "Clustering");
 
 			uint Index = *p;
@@ -713,7 +738,13 @@ void MPCluster::WriteCluster(uint OrderIndex) const
 		uint Index = MemberIndexes[i];
 		if (Index == CentroidIndex)
 			continue;
-		const char *Label = m_FLSeqDB.GetLabel(Index).c_str();
+		const char *Label = 0;
+		if (Index < m_FLSeqDB.GetSeqCount())
+			Label = m_FLSeqDB.GetLabel(Index).c_str();
+		else if (Index < m_MotifSeqDB.GetSeqCount())
+			Label = m_MotifSeqDB.GetLabel(Index).c_str();
+		else
+			asserta(false);
 		const MotifProfile &P = GetProfile(Index);
 		float Score = GetScore(CP, P);
 		string ConsSeq;
@@ -1104,15 +1135,15 @@ void cmd_cluster_motifs_nn()
 	ClusterMotifs(InputFileName, "nn");
 	}
 
-// Input is 34aa ABC sequences
+// Input is 34aa ABC sequences in FASTA format
 void cmd_cluster_motifs_greedy3()
 	{
 	const string &InputFileName = opt_cluster_motifs_greedy3;
-	OpenSegFiles();
+	//OpenSegFiles();
 
 	SetBLOSUM62();
 
-	asserta(optset_motif_cluster_minscore);
+	asserta(optset_motif_cluster_minscore); // good default is 2.0
 	const float MinScore = (float) opt_motif_cluster_minscore;
 
 	MPCluster::m_MotifSeqDB.FromFasta(InputFileName);
@@ -1128,8 +1159,8 @@ void cmd_cluster_motifs_greedy3()
 		const string &Motifs = MPCluster::m_MotifSeqDB.GetSeq(SeqIndex);
 		uint L = SIZE(Motifs);
 		if (L != AL+BL+CL)
-			Die("Sequence length %u != 32 >%s",
-			  L, MPCluster::m_MotifSeqDB.GetLabel(SeqIndex).c_str());
+			Die("Sequence length %u != %u >%s",
+			  L, AL+BL+CL, MPCluster::m_MotifSeqDB.GetLabel(SeqIndex).c_str());
 
 		uint PosA = 0;
 		uint PosB = AL;
@@ -1151,5 +1182,5 @@ void cmd_cluster_motifs_greedy3()
 		InputCount, SIZE(MC.m_CentroidIndexes));
 	MC.WriteOutput();
 
-	CloseSegFiles();
+	//CloseSegFiles();
 	}

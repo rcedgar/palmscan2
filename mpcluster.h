@@ -74,6 +74,8 @@ public:
 
 	void GreedyCluster(const vector<MotifProfile *> &Input,
 	  float MinScore);
+	//void GreedyCluster_TopOnly(const vector<MotifProfile *> &Input,
+	//  float MinScore);
 	uint GetNextGreedyCentroid() const;
 	void GetRandomPending(uint n, vector<uint> &v) const;
 	uint GetBestCentroid(const vector<uint> &v) const;
