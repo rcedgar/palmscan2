@@ -16,6 +16,7 @@ class MPCluster
 	{
 public:
 	const vector<MotifProfile *> *m_Input = 0;
+	bool m_InputIsMotif3 = false;
 
 	set<uint> m_PendingIndexes;
 

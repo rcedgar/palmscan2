@@ -469,6 +469,7 @@ void MPCluster::WriteFasta(const MotifProfile &MP) const
 	{
 	if (m_FLSeqDB.GetSeqCount() == 0)
 		return;
+	asserta(!m_InputIsMotif3);
 
 	uint SeqIndex = MP.m_InputSeqIndex;
 	asserta(SeqIndex != UINT_MAX);
@@ -716,9 +717,18 @@ void MPCluster::WriteCluster(uint OrderIndex) const
 	string CentroidSeq;
 	CP.GetConsSeq(CentroidSeq);
 	const char *ABC = (CP.m_PosA > CP.m_PosC ? "CAB" : "ABC");
+	if (m_InputIsMotif3)
+		ABC = "mf3";
+	const char *CentroidLabel = 0;
+	if (CentroidIndex < m_FLSeqDB.GetSeqCount())
+		CentroidLabel = m_FLSeqDB.GetLabel(CentroidIndex).c_str();
+	else if (CentroidIndex < m_MotifSeqDB.GetSeqCount())
+		CentroidLabel = m_MotifSeqDB.GetLabel(CentroidIndex).c_str();
+	else
+		asserta(false);
 		
-	Pf(g_fcluster_tsv, "C\t%u\t%u\t%s\t%s\n", 
-	  OrderIndex, Size, CentroidSeq.c_str(), ABC);
+	Pf(g_fcluster_tsv, "C\t%u\t%u\t%s\t%s\t%s\n", 
+	  OrderIndex, Size, CentroidSeq.c_str(), ABC, CentroidLabel);
 	WriteFasta(CP);
 
 	vector<float> Scores;
@@ -1172,6 +1182,7 @@ void cmd_cluster_motifs_greedy3()
 		}
 
 	MPCluster MC;
+	MC.m_InputIsMotif3 = true;
 	if (optset_topn)
 		MC.m_TopN = opt_topn;
 	else
