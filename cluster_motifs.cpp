@@ -760,6 +760,8 @@ void MPCluster::WriteCluster(uint OrderIndex) const
 		string ConsSeq;
 		P.GetConsSeq(ConsSeq);
 		const char *ABC = (P.m_PosA > P.m_PosC ? "CAB" : "ABC");
+		if (m_InputIsMotif3)
+			ABC = "mf3";
 		Pf(g_fcluster_tsv, "M\t%u\t%.2f\t%s\t%s\t%s\n",
 		  OrderIndex, Score, ConsSeq.c_str(), ABC, Label);
 		WriteFasta(P);

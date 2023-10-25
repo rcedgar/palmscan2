@@ -81,6 +81,7 @@ public:
 	void GetRandomPending(uint n, vector<uint> &v) const;
 	uint GetBestCentroid(const vector<uint> &v) const;
 	void GetMembers(uint CentroidIndex, vector<uint> &Members) const;
+	void GetMemberSeqSet(uint CentroidIndex, set<string> &SeqSet) const;
 	float GetScore(const MotifProfile &MP1,
 	  const MotifProfile &MP2) const;
 	float GetScore_DotProduct(const MotifProfile &MP1,
