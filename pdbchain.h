@@ -92,12 +92,20 @@ public:
 	void ToPML(FILE *f, const string &PDBFileName) const;
 	void ToPML_Seqs(FILE *f, const string &PDBFileName) const;
 	void GetCAAtomLine(uint Pos, string &Line) const;
+	void GetATOMLines(uint Pos, vector<string> &Lines) const;
 	int GetResidueNr(uint Pos, int ValueIfNotFound = INT_MAX) const;
 	void GetResidueRange(uint PosLo, uint ResidueCount, int &ResLo,
 	  int &ResHi) const;
 	void GetSphere(uint Pos, double Radius,
 	  uint MinPos, uint MaxPos,
 	  vector<uint> &PosVec) const;
+	void GetResidueAtomsInfo(uint Pos,
+	  vector<double> &Xs,
+	  vector<double> &Ys,
+	  vector<double> &Zs,
+	  vector<string> &ElementNames,
+	  vector<string> &AtomNames,
+	  vector<string> &Lines) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
@@ -115,6 +123,8 @@ public:
 	static void HackHETAMLine(string &Line);
 	static void GetAtomNameFromATOMLine(const string &Line,
 	  string &AtomName);
+	static void GetElementNameFromATOMLine(const string &InputLine,
+	  string &ElementName);
 	static void SetResidueNrInATOMLine(const string &InputLine,
 	  uint ResidueNr, string &OutputLine);
 	static void SetAtomNrInATOMLine(const string &InputLine,

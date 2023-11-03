@@ -269,6 +269,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="abcxyz.cpp" />
+    <ClCompile Include="aitoms.cpp" />
     <ClCompile Include="alignpalm.cpp" />
     <ClCompile Include="align_msas.cpp" />
     <ClCompile Include="alloc.cpp" />
@@ -296,6 +297,7 @@
     <ClCompile Include="cluster_motifs.cpp" />
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="cluster_ppm.cpp" />
+    <ClCompile Include="cmd_aitoms.cpp" />
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />

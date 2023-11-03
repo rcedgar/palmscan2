@@ -401,4 +401,6 @@ void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
 #define brk(x)		(0)
 #endif
 
+extern string g_Arg1;
+
 #endif	// myutils_h

@@ -305,6 +305,12 @@ void PDBChain::SetXYZInATOMLine(const string &InputLine,
 		}
 	}
 
+void PDBChain::GetATOMLines(uint Pos, vector<string> &Lines) const
+	{
+	asserta(Pos < SIZE(m_ATOMs));
+	Lines = m_ATOMs[Pos];
+	}
+
 void PDBChain::GetCAAtomLine(uint Pos, string &Line) const
 	{
 	asserta(Pos < SIZE(m_ATOMs));
@@ -352,6 +358,15 @@ void PDBChain::GetResidueRange(uint PosLo, uint ResidueCount,
 		if (ResNr > ResHi)
 			ResHi = ResNr;
 		}
+	}
+
+// 77 - 78        LString(2)    element      Element symbol, right-justified.
+void PDBChain::GetElementNameFromATOMLine(const string &Line,
+  string &ElementName)
+	{
+	asserta(SIZE(Line) >= 78);
+	ElementName = Line.substr(76, 2);
+	StripWhiteSpace(ElementName);
 	}
 
 void PDBChain::GetAtomNameFromATOMLine(const string &Line,
@@ -1490,5 +1505,44 @@ void PDBChain::GetSphere(uint Pos, double Radius,
 		double d = GetDist(Pos, Pos2);
 		if (d <= Radius)
 			PosVec.push_back(Pos2);
+		}
+	}
+
+void PDBChain::GetResidueAtomsInfo(uint Pos,
+	vector<double> &Xs,
+	vector<double> &Ys,
+	vector<double> &Zs,
+	vector<string> &ElementNames,
+	vector<string> &AtomNames,
+	vector<string> &Lines) const
+	{
+	Xs.clear();
+	Ys.clear();
+	Zs.clear();
+	ElementNames.clear();
+	AtomNames.clear();
+	Lines.clear();
+
+	GetATOMLines(Pos, Lines);
+	const uint n = SIZE(Lines);
+	for (uint i = 0; i < n; ++i)
+		{
+		const string &Line = Lines[i];
+
+		double X, Y, Z;
+		GetXYZFromATOMLine(Line, X, Y, Z);
+
+		string AtomName;
+		GetAtomNameFromATOMLine(Line, AtomName);
+
+		string ElementName;
+		GetElementNameFromATOMLine(Line, ElementName);
+
+		Xs.push_back(X);
+		Ys.push_back(Y);
+		Zs.push_back(Z);
+		AtomNames.push_back(AtomName);
+		ElementNames.push_back(ElementName);
+		Lines.push_back(Line);
 		}
 	}

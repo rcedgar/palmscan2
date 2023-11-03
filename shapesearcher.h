@@ -6,18 +6,20 @@
 class ShapeSearcher
 	{
 public:
-	const PDBChain *m_Query = 0;
-	uint m_PosA = UINT_MAX;
-	uint m_PosB = UINT_MAX;
-	uint m_PosC = UINT_MAX;
+	const PDBChain *m_Query = 0;	// ClearSearch()
+	uint m_PosA = UINT_MAX;			// ClearSearch()
+	uint m_PosB = UINT_MAX;			// ClearSearch()
+	uint m_PosC = UINT_MAX;			// ClearSearch()
+
 	const Shapes *m_Shapes = 0;
 	uint m_ShapeCount = UINT_MAX;
+
 	uint m_ShapeIndexA = UINT_MAX;
 	uint m_ShapeIndexB = UINT_MAX;
 	uint m_ShapeIndexC = UINT_MAX;
+
 	uint m_MaxTopHitCount = 8;
 	uint m_MaxTopHitCountABC = 8;
-	vector<vector<uint> > m_SelfTopHits;
 	double m_Sigmas = 2.5;
 
 // m_*Shapes[i] is true/false to include i'th shape.
@@ -37,18 +39,17 @@ public:
 	double m_Log10DBSize = 6;
 
 // Search results
-	double m_ABCScore = 0;
-	double m_DomScore = 0;
-	bool m_Permuted = false;
-	double m_FinalScore = 0;
-	//double m_LEFPPM = DBL_MAX;
+	vector<vector<uint> > m_SelfTopHits; // ClearSearch()
+	double m_ABCScore = 0;			// ClearSearch()
+	double m_DomScore = 0;			// ClearSearch()
+	bool m_Permuted = false;		// ClearSearch()
+	double m_FinalScore = 0;		// ClearSearch()
 
 // Search results
-	double m_Score = 0;
-	vector<uint> m_ShapePosVec;
-	vector<double> m_ShapeScores;
-
-	string m_Class;
+	double m_Score = 0;				// ClearSearch()
+	vector<uint> m_ShapePosVec;		// ClearSearch()
+	vector<double> m_ShapeScores;	// ClearSearch()
+	string m_Class;					// ClearSearch()
 
 public:
 	void ClearSearch()
@@ -66,7 +67,6 @@ public:
 		m_Permuted = false;
 		m_Class = "";
 		m_FinalScore = 0;
-		//m_LEFPPM = DBL_MAX;
 		}
 
 	void Init(const Shapes &S);
@@ -83,6 +83,8 @@ public:
 		{
 		return m_Query->GetSeqLength();
 		}
+
+	uint GetShapePos(uint ShapeIndex) const;
 
 	const char *GetShapeName(uint ShapeIndex) const
 		{

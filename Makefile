@@ -144,6 +144,7 @@ OBJS = \
   $(OBJDIR)/cluster_motifs.o \
   $(OBJDIR)/cluster_ppc.o \
   $(OBJDIR)/cluster_ppm.o \
+  $(OBJDIR)/cmd_aitoms.o \
   $(OBJDIR)/dali.o \
   $(OBJDIR)/default_shapes.o \
   $(OBJDIR)/distmx.o \

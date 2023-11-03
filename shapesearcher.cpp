@@ -230,44 +230,12 @@ void ShapeSearcher::Init(const Shapes &S)
 
 void ShapeSearcher::SetParamOpts()
 	{
+	static bool g_OptsetDone = false;
+#pragma omp critical
+	{
+	if (!g_OptsetDone)
+		{
 #define S(x, y)	if (!optset_##x) { optset_##x = true; opt_##x = (y); }
-	//if (optset_lowerrors)
-	//	{
-	//	S(minselfscorepp, 0.55);
-	//	S(minselfscorenonpp, 0.55);
-	//	S(minppscore, 0.6);
-	//	S(minpalmscore, 0.69);
-	//	//S(maxlefppm, 1);
-	//	S(searchmfs, "*");
-	//	S(requiremfs, "JABCD");
-	//	}
-	//else if (optset_calibrate)
-	//	{
-	//	S(minselfscorepp, 0.4);
-	//	S(minselfscorenonpp, 0.4);
-	//	S(minppscore, 0.2);
-	//	S(minpalmscore, 0.2);
-	//	//S(maxlefppm, 10);
-	//	S(searchmfs, "*");
-	//	S(requiremfs, "*");
-	//	}
-	//else
-	//	{
-	//// default is -sensitive
-	//	if (!optset_sensitive)
-	//		{
-	//		optset_sensitive = true;
-	//		opt_sensitive = true;
-	//		}
-	//	S(minselfscorepp, 0.50);
-	//	S(minselfscorenonpp, 0.50);
-	//	S(minppscore, 0.55);
-	//	S(minpalmscore, 0.69);
-	//	//S(maxlefppm, 1000);
-	//	S(searchmfs, "*");
-	//	S(requiremfs, "ABC");
-	//	}
-
 	S(minselfscorepp, 0.50);
 	S(minselfscorenonpp, 0.50);
 	S(minppscore, 0.55);
@@ -275,10 +243,12 @@ void ShapeSearcher::SetParamOpts()
 	S(searchmfs, "*");
 	S(requiremfs, "ABC");
 #undef S
+		g_OptsetDone = true;
+		}
+	}
 
 	m_MinABCScore = opt_minppscore;
 	m_MinPalmScore = opt_minpalmscore;
-	//m_MaxLEFPPM = opt_maxlefppm;
 	m_MinSelfScoreABC = opt_minselfscorepp;
 	m_MinSelfScoreNonABC = opt_minselfscorenonpp;
 
@@ -857,6 +827,12 @@ void ShapeSearcher::ToTsv(FILE *f) const
 		}
 	fprintf(f, "\n");
 	}
+	}
+
+uint ShapeSearcher::GetShapePos(uint ShapeIndex) const
+	{
+	asserta(ShapeIndex < SIZE(m_ShapePosVec));
+	return m_ShapePosVec[ShapeIndex];
 	}
 
 void ShapeSearcher::ToPmlABC(FILE *f) const
