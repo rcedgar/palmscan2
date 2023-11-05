@@ -43,5 +43,6 @@ F(tsv_dot)
 F(cfv)
 F(aln)
 F(shapes_train_tsv)
+F(atomdists)
 
 #undef F

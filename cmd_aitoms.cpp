@@ -11,25 +11,6 @@ static uint g_HitCount;
 
 void AItoms(const PDBChain &Q, uint PosA, uint PosB, uint PosC);
 
-static void LogAtoms(const PDBChain &Q, uint Pos)
-	{
-	vector<double> Xs;
-	vector<double> Ys;
-	vector<double> Zs;
-	vector<string> Els;
-	vector<string> Names;
-	vector<string> Lines;
-	Q.GetResidueAtomsInfo(Pos, Xs, Ys, Zs, Els, Names, Lines);
-	const uint n = SIZE(Xs);
-	asserta(SIZE(Ys) == n);
-	asserta(SIZE(Zs) == n);
-	asserta(SIZE(Els) == n);
-	asserta(SIZE(Names) == n);
-	for (uint i = 0; i < n; ++i)
-		Log("[%4u] X=%7.1f Y=%7.1f Z=%7.1f El=%3.3s  Name=%4.4s\n",
-		  Pos, Xs[i], Ys[i], Zs[i], Els[i].c_str(), Names[i].c_str());
-	}
-
 static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 	{
 	SS.SearchDom(Q);
