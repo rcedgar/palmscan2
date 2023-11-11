@@ -2,10 +2,11 @@
 #include "structprof.h"
 #include "chainreader.h"
 #include "outputfiles.h"
-#include "cmpsearcher.h"
+#include "shapesearcher.h"
+#include "motifsettings.h"
 #include "abcxyz.h"
 
-#define TRACE	1
+#define TRACE	0
 
 void GetTriForm(
   vector<vector<double> > &MotifCoords,
@@ -130,15 +131,11 @@ void cmd_triform()
 	{
 	const string &InputFN = opt_triform;
 
-	if (!optset_model)
-		Die("Must specify -model");
-	const string &ModelFileName = opt_model;
+	Shapes S;
+	S.InitFromCmdLine();
 
-	CMP Prof;
-	Prof.FromFile(ModelFileName);
-
-	CMPSearcher CS;
-	CS.SetProf(Prof);
+	ShapeSearcher SS;
+	SS.Init(S);
 
 	ChainReader CR;
 	CR.Open(InputFN);
@@ -148,20 +145,21 @@ void cmd_triform()
 	bool Done = false;
 	while (CR.GetNext(Chain))
 		{
-		CS.Search(Chain);
+		SS.SetQuery(Chain);
+		SS.SearchABC();
+		if (SS.m_ABCScore < SS.m_MinABCScore)
+			continue;
 
-		uint APos = UINT_MAX;
-		uint BPos = UINT_MAX;
-		uint CPos = UINT_MAX;
-		double PalmScore = CS.GetPosABC(APos, BPos, CPos);
-		if (PalmScore > 0)
-			{
-			Chain.SetMotifPosVec(APos, BPos, CPos);
-			Chain.GetTriFormChain_DGD(XChain);
-			XChain.ToPDB(opt_output);
-			Done = true;
-			break;
-			}
+		uint PosA = UINT_MAX;
+		uint PosB = UINT_MAX;
+		uint PosC = UINT_MAX;
+		SS.GetPosABC(PosA, PosB, PosC);
+
+		Chain.SetMotifPosVec(PosA, PosB, PosC);
+		Chain.GetTriFormChain_DGD(XChain);
+		XChain.ToPDB(opt_pdb);
+		Done = true;
+		break;
 		}
 	if (!Done)
 		Warning("Motifs not found");

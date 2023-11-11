@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "pdbchain.h"
 #include "abcxyz.h"
+#include "motifsettings.h"
 
 void GetThreeFromOne(char aa, string &AAA);
 
@@ -162,22 +163,32 @@ void PDBChain::ToCalSeg(FILE *f, uint Pos, uint n) const
 		}
 	}
 
-void PDBChain::ToPDB(const string &FileName) const
+void PDBChain::ToPDB(const string &FileName, const vector<string> *ptrRemarks) const
 	{
 	if (FileName == "")
 		return;
 
 	FILE *f = CreateStdioFile(FileName);
-	ToPDB(f);
+	ToPDB(f, ptrRemarks);
 	CloseStdioFile(f);
 	}
 
-void PDBChain::ToPDB(FILE *f) const
+void PDBChain::ToPDB(FILE *f, const vector<string> *ptrRemarks) const
 	{
 	if (f == 0)
 		return;
 
 	fprintf(f, "TITLE %s\n", m_Label.c_str());
+	if (ptrRemarks != 0)
+		{
+		const vector<string> &Remarks = *ptrRemarks;
+		const uint n = SIZE(Remarks);
+		for (uint i = 0; i < n; ++i)
+			{
+			const string &Remark = Remarks[i];
+			fprintf(f, "REMARK   %s\n", Remark.c_str());
+			}
+		}
 
 	uint AtomCount = SIZE(m_ATOMs);
 	if (AtomCount > 0)
@@ -650,6 +661,24 @@ bool PDBChain::Get_CB_XYZ(uint Pos, double &x, double &y, double &z) const
 	return false;
 	}
 
+double PDBChain::GetX(uint Pos) const
+	{
+	assert(Pos < SIZE(m_Xs));
+	return m_Xs[Pos];
+	}
+
+double PDBChain::GetY(uint Pos) const
+	{
+	assert(Pos < SIZE(m_Ys));
+	return m_Ys[Pos];
+	}
+
+double PDBChain::GetZ(uint Pos) const
+	{
+	assert(Pos < SIZE(m_Zs));
+	return m_Zs[Pos];
+	}
+
 void PDBChain::GetXYZ(uint Pos, double &x, double &y, double &z) const
 	{
 	assert(Pos < SIZE(m_Xs));
@@ -735,9 +764,9 @@ void PDBChain::GetDGDCoords(vector<vector<double> > &DGDCoords) const
 	uint PosC = m_MotifPosVec[C];
 
 	uint L = GetSeqLength();
-	uint PosA_D = PosA + 3;
-	uint PosB_G = PosB + 1;
-	uint PosC_D = PosC + 3;
+	uint PosA_D = PosA + g_OffAd;
+	uint PosB_G = PosB + g_OffBg;
+	uint PosC_D = PosC + g_OffCd;
 	asserta(PosA_D < PosB_G);
 	asserta(PosB_G < PosC_D);
 	asserta(PosC_D < L);

@@ -164,6 +164,7 @@ public:
 	void GetA(string &Seq) const;
 	void GetB(string &Seq) const;
 	void GetC(string &Seq) const;
+	void GetPosABC(uint &PosA, uint &PosB, uint &PosC) const;
 
 	void GetSubSeq(uint Pos, uint n, string &Seq) const;
 

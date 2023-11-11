@@ -44,8 +44,9 @@ public:
 	void ToCal(FILE *f) const;
 	void ToCalSeg(FILE *f, uint Pos, uint n) const;
 	void ToCal(const string &FileName) const;
-	void ToPDB(const string &FileName) const;
-	void ToPDB(FILE *f) const;
+	void ToPDB(const string &FileName,
+	  const vector<string> *ptrRemarks = 0) const;
+	void ToPDB(FILE *f, const vector<string> *ptrRemarks = 0) const;
 	void GetXFormChain_tR(
 	  const vector<double> &t,
 	  const vector<vector<double> > &R,
@@ -56,6 +57,9 @@ public:
 	void GetMotifSeq(uint MotifIndex, string &s) const;
 	void GetSubSeq(uint Pos, uint n, string &s) const;
 	void GetXYZ(uint Pos, double &x, double &y, double &z) const;
+	double GetX(uint Pos) const;
+	double GetY(uint Pos) const;
+	double GetZ(uint Pos) const;
 	bool Get_CB_XYZ(uint Pos, double &x, double &y, double &z) const;
 	bool Get_CB_Pt(uint Pos, vector<double> &Pt) const;
 	double GetCoord(uint Axis, uint Pos) const;

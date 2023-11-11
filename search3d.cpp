@@ -71,6 +71,7 @@ static void Thread(ChainReader &CR, const Shapes &S)
 void cmd_search3d()
 	{
 	const string &QueryFN = opt_search3d;
+
 	Shapes S;
 	S.InitFromCmdLine();
 

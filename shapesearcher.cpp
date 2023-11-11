@@ -439,6 +439,22 @@ char ShapeSearcher::GetGate() const
 	return Gate;
 	}
 
+void ShapeSearcher::GetPosABC(uint &PosA, uint &PosB, uint &PosC) const
+	{
+	PosA = UINT_MAX;
+	PosB = UINT_MAX;
+	PosC = UINT_MAX;
+	if (m_ShapeIndexA == UINT_MAX)
+		return;
+	if (m_ShapeIndexB == UINT_MAX)
+		return;
+	if (m_ShapeIndexC == UINT_MAX)
+		return;
+	PosA = m_ShapePosVec[m_ShapeIndexA];
+	PosB = m_ShapePosVec[m_ShapeIndexB];
+	PosC = m_ShapePosVec[m_ShapeIndexC];
+	}
+
 void ShapeSearcher::GetSubSeq(uint Pos, uint n, string &Seq) const
 	{
 	m_Query->GetSubSeq(Pos, n, Seq);

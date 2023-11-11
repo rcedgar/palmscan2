@@ -96,5 +96,6 @@ C(test_expvalue)
 C(dssp)
 C(tm_subsample)
 C(aitoms)
+C(cavitypic)
 
 #undef C

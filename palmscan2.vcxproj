@@ -282,6 +282,7 @@
     <ClCompile Include="build_rdrp_model.cpp" />
     <ClCompile Include="cal2fa.cpp" />
     <ClCompile Include="calreader.cpp" />
+    <ClCompile Include="cavitypic.cpp" />
     <ClCompile Include="cddata.cpp" />
     <ClCompile Include="cdinfo.cpp" />
     <ClCompile Include="cdp_search.cpp" />
