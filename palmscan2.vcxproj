@@ -320,6 +320,7 @@
     <ClCompile Include="joinabcx.cpp" />
     <ClCompile Include="make_trunc_bench.cpp" />
     <ClCompile Include="motifsettings.cpp" />
+    <ClCompile Include="msaqc2.cpp" />
     <ClCompile Include="old_search3d.cpp" />
     <ClCompile Include="palmprint_pssms.cpp" />
     <ClCompile Include="pamerger.cpp" />

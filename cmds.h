@@ -97,5 +97,6 @@ C(dssp)
 C(tm_subsample)
 C(aitoms)
 C(cavitypic)
+C(msaqc2)
 
 #undef C

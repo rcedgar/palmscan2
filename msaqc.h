@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "seqdb.h"
@@ -57,3 +58,4 @@ public:
 	  vector<uint> &UnalignedPosToAlignedCol,
 	  vector<uint> &AlignedColToUnalginedPos);
 	};
+#endif // 0

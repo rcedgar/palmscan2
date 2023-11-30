@@ -2,16 +2,18 @@
 
 #include "seqdb.h"
 #include "rdrpmodel.h"
+#include "rdrpsearcher.h"
 
 static const uint LA = 12;
 static const uint LB = 14;
 static const uint LC = 8;
-static const uint NPOS = 6;
+static const uint NPOS = 3;
 
 class MSAQC2
 	{
 public:
 	RdRpModel m_Mod;
+	RdRpSearcher m_RS;
 	const SeqDB *m_MSA = 0;
 	uint m_ColCount = 0;
 	uint m_SeqCount = 0;
@@ -24,7 +26,6 @@ public:
 	vector<vector<uint> > m_SeqIndexToPosVec;
 	vector<vector<uint> > m_SeqIndexToColVec;
 	vector<uint> m_ConsensusColVec;
-	vector<string> m_SeqIndexToGroupName;
 
 	vector<float> m_ColIndexToGapFract;
 
@@ -38,11 +39,13 @@ public:
 	void GetCorrectlyAlignedLetterCount(uint SeqIndex,
 	  uint &CorrectCount, uint &LetterCount) const;
 	uint GetCorrectSeqCount() const;
-	void WritePalmscanReport(FILE *f, uint SeqIndex, const string &s);
 	float GetGapFract(uint ColIndex) const;
 	void WriteAlnA(FILE *f) const;
 	void WriteAlnB(FILE *f) const;
 	void WriteAlnC(FILE *f) const;
+	bool GetColIsMatchState(uint ColIndex) const;
+	uint GetColIsMatchStateVec(vector<bool> &v) const;
+	void WriteFev(FILE *f, const string &Name) const;
 
 public:
 	static void GetColMaps(const string &UnalignedSeq, const string &AlignedSeq,
