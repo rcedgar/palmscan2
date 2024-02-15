@@ -117,6 +117,7 @@ HDRS = \
 
 OBJS = \
   $(OBJDIR)/abcxyz.o \
+  $(OBJDIR)/aitoms.o \
   $(OBJDIR)/alignpalm.o \
   $(OBJDIR)/align_msas.o \
   $(OBJDIR)/alloc.o \
@@ -129,6 +130,7 @@ OBJS = \
   $(OBJDIR)/build_rdrp_model.o \
   $(OBJDIR)/cal2fa.o \
   $(OBJDIR)/calreader.o \
+  $(OBJDIR)/cavitypic.o \
   $(OBJDIR)/cddata.o \
   $(OBJDIR)/cdinfo.o \
   $(OBJDIR)/cdp_search.o \
@@ -166,6 +168,7 @@ OBJS = \
   $(OBJDIR)/joinabcx.o \
   $(OBJDIR)/make_trunc_bench.o \
   $(OBJDIR)/motifsettings.o \
+  $(OBJDIR)/msaqc2.o \
   $(OBJDIR)/old_search3d.o \
   $(OBJDIR)/palmprint_pssms.o \
   $(OBJDIR)/pamerger.o \
@@ -208,6 +211,10 @@ OBJS = \
   $(OBJDIR)/fastqrec.o \
   $(OBJDIR)/fileseqsource.o \
   $(OBJDIR)/getss.o \
+  $(OBJDIR)/tm.o \
+  $(OBJDIR)/tm2.o \
+  $(OBJDIR)/tmallvsall.o \
+  $(OBJDIR)/tmsubsample.o \
   $(OBJDIR)/usage.o \
   $(OBJDIR)/invertmx.o \
   $(OBJDIR)/linereader.o \

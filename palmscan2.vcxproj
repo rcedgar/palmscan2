@@ -363,6 +363,10 @@
     <ClCompile Include="fastqrec.cpp" />
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getss.cpp" />
+    <ClCompile Include="tm.cpp" />
+    <ClCompile Include="tm2.cpp" />
+    <ClCompile Include="tmallvsall.cpp" />
+    <ClCompile Include="tmsubsample.cpp" />
     <ClCompile Include="usage.cpp" />
     <ClCompile Include="invertmx.cpp" />
     <ClCompile Include="linereader.cpp" />

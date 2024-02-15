@@ -125,6 +125,7 @@ UNS_OPT(low,				16,			1,			UINT_MAX)
 UNS_OPT(sample_size,		16,			1,			UINT_MAX)
 UNS_OPT(topn,				16,			1,			UINT_MAX)
 
+FLT_OPT(mintm,				0.6,		0.0,			1.0)
 FLT_OPT(minscore,			10.0,		-9e9,		+9e9)
 FLT_OPT(minppscore,			10.0,		-9e9,		+9e9)
 FLT_OPT(minpalmscore,		10.0,		-9e9,		+9e9)

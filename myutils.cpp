@@ -823,7 +823,11 @@ double GetMemUseBytes()
 		return 0.0;
 
 	Buffer[n] = 0;
-	double Pages = atof(Buffer);
+	const char *p = strchr(Buffer, ' ');
+	if (p == 0)
+		return 0.0;
+
+	double Pages = atof(p);
 
 	double Bytes = Pages*PageSize;
 	if (Bytes > g_PeakMemUseBytes)
@@ -2293,7 +2297,7 @@ unsigned GetRequestedThreadCount()
 	Done = true;
 	if (!MsgDone)
 		{
-		Progress("Running %u threads (%u CPU cores, OMP max %u)\n",
+		Progress("Starting %u threads (%u CPU cores, OMP max %u)\n",
 		  N, CoreCount, MaxN);
 		MsgDone = true;
 		}
