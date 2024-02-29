@@ -5,6 +5,7 @@
 #include "pdbchain.h"
 
 const uint XBINS = 8;
+const uint XFEATS = 6;
 
 class XProf
 	{

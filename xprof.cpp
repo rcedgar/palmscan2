@@ -100,6 +100,7 @@ uint XProf::GetSphereNr(uint Pos, double Radius) const
 void XProf::GetFeature(uint FeatureIndex, uint Pos,
   double &Value, uint &iValue) const
 	{
+	asserta(FeatureIndex < XFEATS);
 	Value = DBL_MAX;
 	iValue = UINT_MAX;
 	switch (FeatureIndex)
@@ -187,8 +188,8 @@ void XProf::Get_Ang_m1_p1(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos == 0 || Pos + 1 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = GetAngle(Pos-1, Pos, Pos, Pos+1);
@@ -201,8 +202,8 @@ void XProf::Get_Ang_m2_p2(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos < 2 || Pos + 2 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = GetAngle(Pos-2, Pos, Pos, Pos+2);
@@ -213,8 +214,8 @@ void XProf::Get_Ang_m3_p3(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos < 3 || Pos + 3 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = GetAngle(Pos-3, Pos, Pos, Pos+3);
@@ -225,8 +226,8 @@ void XProf::Get_Ang01_23(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos + 3 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = GetAngle(Pos, Pos+1, Pos+2, Pos+3);
@@ -239,8 +240,8 @@ void XProf::Get_Ang01_34(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos + 4 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = GetAngle(Pos, Pos+1, Pos+3, Pos+4);
@@ -253,8 +254,8 @@ void XProf::Get_Ang01_45(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos + 5 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = GetAngle(Pos, Pos+1, Pos+4, Pos+5);
@@ -267,8 +268,8 @@ void XProf::Get_ED_p4(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos + 4 >= m_L)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = m_Chain->GetDist(Pos, Pos+4);
@@ -279,8 +280,8 @@ void XProf::Get_ED_m4(uint Pos, double &Value, uint &iValue) const
 	{
 	if (Pos < 4)
 		{
-		Value = DBL_MAX;
-		iValue = UINT_MAX;
+		Value = 0;
+		iValue = 0;
 		return;
 		}
 	Value = m_Chain->GetDist(Pos-4, Pos);

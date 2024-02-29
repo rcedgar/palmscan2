@@ -162,6 +162,19 @@ static bool Init_IUPAC()
 
 static bool g_IUPAC_CharToBitsInitDone = Init_IUPAC();
 
+unsigned StrToWordAmino(const char *Str, unsigned WordLength)
+	{
+	uint Word = 0;
+	for (unsigned i = 0; i < WordLength; ++i)
+		{
+		uint Letter = g_CharToLetterAmino[Str[i]];
+		if (Letter >= 20)
+			return UINT_MAX;
+		Word = Word*20 + Letter;
+		}
+	return Word;
+	}
+
 const char *WordToStrAmino(unsigned Word, unsigned WordLength)
 	{
 	static char Str[32];

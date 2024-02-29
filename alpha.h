@@ -63,6 +63,7 @@ const char *WordToStr(unsigned Word, unsigned WordLength, bool Nucleo);
 const char *WordToStrNucleo(unsigned Word, unsigned WordLength);
 const char *WordToStrAmino(unsigned Word, unsigned WordLength);
 const char *WordToStrAmino2(unsigned Word, unsigned WordLength, char *Str);
+unsigned StrToWordAmino(const char *Str, unsigned WordLength);
 
 static inline bool isgap(unsigned char c)
 	{
