@@ -120,6 +120,18 @@ uint XProf::GetFeatureCount()
 	return 6;
 	}
 
+uint XProf::GetFeatureIndex(const string &FeatureName)
+	{
+	if (FeatureName == "Ang_m2_p2") return 0;
+	if (FeatureName == "Ang_m3_p3") return 1;
+	if (FeatureName == "ED_p4")		return 2;
+	if (FeatureName == "ED_m4")		return 3;
+	if (FeatureName == "NU")		return 4;
+	if (FeatureName == "ND")		return 5;
+	asserta(false);
+	return UINT_MAX;
+	}
+
 const char *XProf::GetFeatureName(uint FeatureIndex)
 	{
 	switch (FeatureIndex)

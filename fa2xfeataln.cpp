@@ -33,7 +33,21 @@ MVLLESEQFLTELTRLFQKCRSSGSVFITLKKY--DEGLEPAENKCLLRATDGKRKISTVV-SSKEVNKFQMAY-SNLLR
 
 Output
 ======
-TODO
+tsv with features of aligned pairs of residue 
+d:/int/dave_grant/scop40/aligned_xfeatvecs_0.6_0.8.tsv
+
+   (_Ang_ features range from 0..179 degrees)
+Q  Q_Ang_m2_p2  Q_Ang_m3_p3  Q_ED_p4  Q_ED_m4  Q_NU  Q_ND  R  R_Ang_m2_p2  R_Ang_m3_p3  R_ED_p4  R_ED_m4  R_NU  R_ND
+E            0            0     11.7        0     0     0  S            0            0     12.9        0     0     0
+R            0            0     9.04        0    14     4  K            0            0       13        0     5     8
+D         17.5            0     8.06        0     2    14  P         23.1            0     13.1        0    12     9
+N         83.1         62.8     9.57     11.7     0    14  L         13.9           22     11.6        0     1    19
+L         72.9         48.9      5.6     8.06    19     4  L         18.5         10.6     5.74     12.9    21     5
+T         34.4         74.9     6.27     9.21     2    16  T         34.9         83.4     6.27       13     3    13
+P          125          107     6.25     9.57     0    15  K          125          109      6.2     13.1     1    13
+R          109           88     6.08     11.6    10    14  R          110         88.8     6.21     11.6    11    14
+E          110         25.6     6.03      5.6    17    12  E          112         31.6     6.55     5.74    19    14
+
 ***/
 
 void GetScopDomFromLabel(const string &Label, string &Dom)
@@ -48,6 +62,18 @@ void cmd_fa2xfeataln()
 	{
 	SeqDB Input;
 	Input.FromFasta(opt_fa2xfeataln, true);
+
+	if (g_ftsv)
+		{
+		fprintf(g_ftsv, "Q");
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			fprintf(g_ftsv, "\tQ_%s", XProf::GetFeatureName(FeatureIndex));
+		fprintf(g_ftsv, "\t");
+		fprintf(g_ftsv, "R");
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			fprintf(g_ftsv, "\tR_%s", XProf::GetFeatureName(FeatureIndex));
+		fprintf(g_ftsv, "\n");
+		}
 
 	vector<PDBChain *> Chains;
 	ReadChains(opt_train_cal, Chains);
@@ -109,8 +135,8 @@ void cmd_fa2xfeataln()
 			{
 			char q = QRow[Col];
 			char r = RRow[Col];
-			vector<uint> qiv;
-			vector<uint> riv;
+			vector<double> qvalues;
+			vector<double> rvalues;
 			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
 				{
 				if (isgap(q))
@@ -121,7 +147,7 @@ void cmd_fa2xfeataln()
 					uint iValue;
 					QX.GetFeature(FeatureIndex, QPos, Value, iValue);
 					QFeatRows[FeatureIndex].push_back('a' + iValue);
-					qiv.push_back(iValue);
+					qvalues.push_back(Value);
 					}
 
 				if (isgap(r))
@@ -132,22 +158,22 @@ void cmd_fa2xfeataln()
 					uint iValue;
 					RX.GetFeature(FeatureIndex, RPos, Value, iValue);
 					RFeatRows[FeatureIndex].push_back('a' + iValue);
-					riv.push_back(iValue);
+					rvalues.push_back(Value);
 					}
 				}
 			if (!isgap(q) && !isgap(r))
 				{
-				asserta(SIZE(qiv) == XFEATS);
-				asserta(SIZE(riv) == XFEATS);
+				asserta(SIZE(qvalues) == XFEATS);
+				asserta(SIZE(rvalues) == XFEATS);
 				if (g_ftsv)
 					{
 					fprintf(g_ftsv, "%c", q);
 					for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-						fprintf(g_ftsv, "%d", qiv[FeatureIndex]);
+						fprintf(g_ftsv, "\t%.3g", qvalues[FeatureIndex]);
 					fprintf(g_ftsv, "\t");
 					fprintf(g_ftsv, "%c", r);
 					for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-						fprintf(g_ftsv, "%d", riv[FeatureIndex]);
+						fprintf(g_ftsv, "\t%.3g", rvalues[FeatureIndex]);
 					fprintf(g_ftsv, "\n");
 					}
 				}

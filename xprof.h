@@ -4,7 +4,7 @@
 #include "myutils.h"
 #include "pdbchain.h"
 
-const uint XBINS = 8;
+const uint XBINS = 10;
 const uint XFEATS = 6;
 
 class XProf
@@ -12,6 +12,10 @@ class XProf
 public:
 	const PDBChain *m_Chain = 0;
 	uint m_L = 0;
+
+public:
+	static vector<vector<double> > g_BinLos;
+	static vector<vector<double> > g_Scores;
 
 public:
 	void Init(const PDBChain &Chain);
@@ -44,6 +48,17 @@ public:
 public:
 	static uint GetFeatureCount();
 	static const char *GetFeatureName(uint FeatureIndex);
+	static uint GetFeatureIndex(const string &FeatureName);
+	static void InitScoreTable();
+	static uint GetFeatureBin(uint FeatureIndex, double Value);
+	static double GetScore(char Amino1, char Amino2, 
+	  const vector<uint> &Bins);
+	static double GetDiff(uint FeatureIndex, double Value1,
+	  double Value2);
+
+private:
+	static void FeatureScoreBin(const string &FeatureName, uint Bin,
+	  double BinLo, double Score);
 	};
 
 #endif // xprof_h

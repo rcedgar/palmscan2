@@ -104,5 +104,7 @@ C(threedix)
 C(fa2substmx)
 C(fa2substmx3di)
 C(fa2xfeataln)
+C(xdiscrete)
+C(xdiscrete_score)
 
 #undef C
