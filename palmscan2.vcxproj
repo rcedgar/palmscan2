@@ -472,8 +472,10 @@
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xbinner_substmx.cpp" />
+    <ClCompile Include="xcluster.cpp" />
     <ClCompile Include="xdiscrete.cpp" />
     <ClCompile Include="xdiscrete_score.cpp" />
+    <ClCompile Include="xfeatures.cpp" />
     <ClCompile Include="xfeaturescore.cpp" />
     <ClCompile Include="xfeatures_3di.cpp" />
     <ClCompile Include="xprof.cpp" />

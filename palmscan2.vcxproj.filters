@@ -647,6 +647,12 @@
     <ClCompile Include="xbinner_substmx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xfeatures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xcluster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

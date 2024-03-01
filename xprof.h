@@ -10,7 +10,8 @@ const uint XFEATS = 6;
 class XBinner
 	{
 public:
-	virtual uint GetLetter(uint AminoLetter, const vector<double> &FeatureValues) const;
+	virtual uint GetLetter(uint AminoLetter,
+	  const vector<double> &FeatureValues) const;
 	};
 
 class XProf

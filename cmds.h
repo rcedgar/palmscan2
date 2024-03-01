@@ -108,5 +108,7 @@ C(xdiscrete)
 C(xdiscrete_score)
 C(xfeatures_3di)
 C(xbinner_substmx)
+C(xfeatures)
+C(xcluster)
 
 #undef C
