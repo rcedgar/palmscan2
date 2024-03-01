@@ -106,5 +106,7 @@ C(fa2substmx3di)
 C(fa2xfeataln)
 C(xdiscrete)
 C(xdiscrete_score)
+C(xfeatures_3di)
+C(xbinner_substmx)
 
 #undef C

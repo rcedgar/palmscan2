@@ -641,6 +641,12 @@
     <ClCompile Include="xdiscrete_score.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xfeatures_3di.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xbinner_substmx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

@@ -144,4 +144,32 @@ void cmd_fa2substmx()
 	CloseStdioFile(f);
 	ProgressLog("TM %.4f - %.4f, entropy %.3g, relative entropy %.3g\n",
 	  MinTM, MaxTM, H, RH);
+
+	Log("static double g_AminoSubstMx[20][20] = {\n");
+	Log("//      ");
+	for (uint i = 0; i < 20; ++i)
+		{
+		char c = g_LetterToCharAmino[i];
+		Log("        %c", c);
+		}
+	Log("\n");
+	for (uint i = 0; i < 20; ++i)
+		{
+		char c = g_LetterToCharAmino[i];
+		Log("/* %c */ {", c);
+		for (uint j = 0; j < 20; ++j)
+			{
+			uint n = CountMx[i][j];
+			double ObsFreq = double(n)/double(LetterPairCount);
+			SumFreq2 += ObsFreq;
+			double ExpFreq = double(Freqs[i]*Freqs[j]);
+			double Ratio = ObsFreq/ExpFreq;
+			double Score = log(Ratio);
+			Log(" %7.4f", Score);
+			if (j != 19)
+				Log(",");
+			}
+		Log("}, // %c\n", c);
+		}
+	Log("};\n");
 	}

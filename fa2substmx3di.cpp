@@ -4,10 +4,21 @@
 #include "outputfiles.h"
 
 /***
+palmscan2 \
+  -fa2substmx3di ../scop40/scop40.fa2 \
+  -input d:/a/res/dave_grant/scop40/scop40.3di \
+  -output ../scop40/substmx3di_0.4_0.6.tsv \
+  -log substmx3di.log -mintm 0.6 -maxtm 0.8 \
+  -aln ../scop40/scop40_3di_0.4_0.6.fa2
+
 Input
 =====
 (*) Pair-wise alignments of scop40 domains, created by
-  palmscan2 -tm_scop d:/int/scop40/out/domains_scop.cal -output scop40.fa2 -tsv scop40.tsv -log tm.log -threads 10
+  palmscan2 \
+    -tm_scop d:/int/scop40/out/domains_scop.cal \
+	-output scop40.fa2 \
+	-tsv scop40.tsv \
+	-log tm.log
 
 (*) 3di sequences for scop40 domains created by hacked foldseek 
   source in /d/int/foldseek_src (see also D:\a\doc\notebooks\2024-02-26_build_foldseek.txt)
