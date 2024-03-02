@@ -23,7 +23,6 @@ public:
 public:
 	void ReadFeatureTsv(const string &FileName);
 	void Cluster(
-		const vector<uint> &InputIdxs,
 		double MinScore,
 		vector<uint> &CentroidIdxs,
 		vector<uint> &IdxToCentroidIdx,

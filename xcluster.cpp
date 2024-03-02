@@ -322,7 +322,6 @@ uint XCluster::GetTopIdx(uint QueryIdx, const vector<uint> &RefIdxs,
 	}
 
 void XCluster::Cluster(
-	const vector<uint> &InputIdxs,
 	double MinScore,
 	vector<uint> &CentroidIdxs,
 	vector<uint> &IdxToCentroidIdx,
@@ -333,12 +332,12 @@ void XCluster::Cluster(
 	CentroidIdxToMemberIdxs.clear();
 	map<uint, uint> CentroidIdxToCentroidIndex;
 
-	const uint N = SIZE(InputIdxs);
+	const uint N = SIZE(m_Aminos);
+	asserta(SIZE(m_FeatureValuesVec) == N);
 	vector<uint> Bins(XFEATS);
-	for (uint i = 0; i < N; ++i)
+	for (uint Idx = 0; Idx < N; ++Idx)
 		{
-		uint Idx = InputIdxs[i];
-		ProgressStep(i, N, "Clustering minscore %.1f, %u centroids",
+		ProgressStep(Idx, N, "Clustering minscore %.1f, %u centroids",
 			MinScore, SIZE(CentroidIdxs));
 		bool Hit = false;
 		vector<uint> Empty;
@@ -516,7 +515,7 @@ void cmd_xcluster()
 	const string &InputFileName = opt_xcluster;
 	XCluster XC;
 	XC.ReadFeatureTsv(InputFileName);
-
+	const uint N = SIZE(XC.m_Aminos);
 	asserta(optset_minscore);
 	double MinScore = opt_minscore;
 
@@ -525,13 +524,8 @@ void cmd_xcluster()
 	vector<uint> CentroidIdxs;
 	vector<uint> IdxToCentroidIdx;
 	vector<vector<uint> > CentroidIdxToMemberIdxs;
-	vector<uint> InputIdxs;
-	const uint N = SIZE(XC.m_Aminos);
-	for (uint Idx = 0; Idx < N; ++Idx)
-		InputIdxs.push_back(Idx);
-
-	XC.Cluster(InputIdxs, MinScore,
-	  CentroidIdxs, IdxToCentroidIdx, CentroidIdxToMemberIdxs);
+	XC.Cluster(MinScore, CentroidIdxs, IdxToCentroidIdx,
+	  CentroidIdxToMemberIdxs);
 	const uint ClusterCount = SIZE(CentroidIdxs);
 	ProgressLog("%u clusters\n", ClusterCount);
 
