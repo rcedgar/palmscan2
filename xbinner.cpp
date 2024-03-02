@@ -30,26 +30,26 @@ void XBinner::DefineCentroid(uint Idx, char aa,
 
 void XBinner::InitCentroids()
 	{
-DefineCentroid(0, 'E', 110, 25.6, 6.03, 5.6, 17, 12);
-DefineCentroid(1, 'N', 83.1, 62.8, 9.57, 11.7, 0, 14);
-DefineCentroid(2, 'L', 72.9, 48.9, 5.6, 8.06, 19, 4);
-DefineCentroid(3, 'L', 13.9, 22, 11.6, 0, 1, 19);
-DefineCentroid(4, 'K', 125, 109, 6.2, 13.1, 1, 13);
-DefineCentroid(5, 'T', 34.4, 74.9, 6.27, 9.21, 2, 16);
-DefineCentroid(6, 'L', 18.5, 10.6, 5.74, 12.9, 21, 5);
-DefineCentroid(7, 'Q', 117, 111, 11.5, 6.58, 3, 20);
-DefineCentroid(8, 'R', 6.25, 26.3, 13, 8.64, 2, 26);
-DefineCentroid(9, 'K', 42.9, 39.7, 28.3, 13.5, 1, 16);
-DefineCentroid(10, 'G', 63.1, 92.2, 14, 5.95, 3, 12);
-DefineCentroid(11, 'G', 78, 111, 6.42, 10.2, 0, 18);
-DefineCentroid(12, 'P', 83.3, 75.5, 8.64, 5.31, 16, 7);
-DefineCentroid(13, 'G', 64.3, 38.2, 12.8, 12.4, 22, 19);
-DefineCentroid(14, 'L', 108, 145, 10.1, 6.15, 13, 11);
-DefineCentroid(15, 'V', 27.3, 59, 10.6, 13.8, 19, 16);
-DefineCentroid(16, 'Y', 6.12, 21.5, 8.8, 13.6, 8, 12);
-DefineCentroid(17, 'S', 99.5, 144, 11.6, 9.04, 1, 15);
-DefineCentroid(18, 'V', 29.5, 70.3, 13.4, 6.58, 9, 8);
-DefineCentroid(19, 'R', 32.2, 0, 0, 5.43, 1, 12);
+DefineCentroid(0, 'W', 115, 33, 6.47, 8.3, 3, 20); // 0.7078
+DefineCentroid(1, 'V', 5.31, 13.6, 13.6, 13.1, 20, 15); // 0.7078
+DefineCentroid(2, 'K', 103, 89.2, 9.3, 5.74, 3, 14); // 0.7078
+DefineCentroid(3, 'T', 68.7, 113, 11.4, 10.3, 12, 17); // 0.7078
+DefineCentroid(4, 'F', 49.7, 37.8, 12.9, 11.7, 7, 19); // 0.7078
+DefineCentroid(5, 'A', 45.9, 80.8, 8, 9.09, 3, 18); // 0.7078
+DefineCentroid(6, 'T', 55.3, 64.9, 13.1, 5.28, 19, 10); // 0.7078
+DefineCentroid(7, 'A', 25.6, 39.4, 6.27, 13.9, 19, 23); // 0.7078
+DefineCentroid(8, 'Y', 127, 98.4, 6.16, 11.4, 15, 13); // 0.7078
+DefineCentroid(9, 'K', 67, 79.8, 5.88, 6.67, 17, 15); // 0.7078
+DefineCentroid(10, 'R', 6.75, 29.3, 10.7, 11.5, 5, 22); // 0.7078
+DefineCentroid(11, 'R', 97.2, 116, 10.4, 14, 0, 8); // 0.7078
+DefineCentroid(12, 'T', 92.2, 141, 12.4, 6.83, 0, 15); // 0.7078
+DefineCentroid(13, 'S', 65.6, 53.8, 10.9, 7.46, 8, 9); // 0.7078
+DefineCentroid(14, 'L', 132, 110, 10.3, 5.92, 30, 19); // 0.7078
+DefineCentroid(15, 'L', 75.3, 79.1, 11.3, 13, 10, 13); // 0.7078
+DefineCentroid(16, 'P', 24.7, 57.7, 13.4, 8.32, 5, 17); // 0.7078
+DefineCentroid(17, 'A', 125, 60.5, 4.84, 6.04, 17, 20); // 0.7078
+DefineCentroid(18, 'N', 129, 142, 10.1, 13.2, 9, 14); // 0.7078
+DefineCentroid(19, 'L', 107, 23.3, 5.99, 5.95, 33, 12); // 0.7078
 	}
 
 uint XBinner::GetLetter(uint AminoLetter, const vector<double> &FeatureValues) const

@@ -53,4 +53,7 @@ public:
 	  const vector<uint> &RefIdxs) const;
 	void TopsToTsv(FILE *f, const vector<uint> &RefIdxs) const;
 	void GetFreqs(const vector<uint> &RefIdxs);
+	uint GetFirstRandomHit(uint Letter, const vector<uint> &RefIdxs) const;
+	void LogDCs(const vector<uint> SelectedCentroidIdxs,
+	  double ExpScore) const;
 	};

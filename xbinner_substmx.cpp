@@ -145,9 +145,11 @@ void GetFreqs(XBinner &XB,
 	for (uint i = 0; i < 20; ++i)
 		CountMx[i].resize(20, 1);
 
-	for (uint PairIndex = 0; PairIndex < PosPairCount; ++PairIndex)
+	uint Counter = 0;
+#pragma omp parallel for
+	for (int iPairIndex = 0; iPairIndex < (int) PosPairCount; ++iPairIndex)
 		{
-		ProgressStep(PairIndex, PosPairCount, "freqs");
+		uint PairIndex = (uint) iPairIndex;
 		char AminoQ = AminoQs[PairIndex];
 		char AminoR = AminoRs[PairIndex];
 
@@ -161,12 +163,15 @@ void GetFreqs(XBinner &XB,
 		uint ir = XB.GetLetter(AminoLetterR, ValuesR);
 		if (iq >= 20 || ir >= 20)
 			continue;
-
+#pragma omp critical
+		{
+		ProgressStep(Counter++, PosPairCount, "freqs");
 		LetterPairCount += 2;
 		CountVec[iq] += 1;
 		CountVec[ir] += 1;
 		CountMx[iq][ir] += 1;
 		CountMx[ir][iq] += 1;
+		}
 		}
 
 	double SumFreq = 0;

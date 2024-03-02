@@ -15,8 +15,13 @@ void GetLogOddsMx(const vector<double> &Freqs,
   vector<vector<double> > &ScoreMx,
   double &H, double &RH);
 
-static double MINFRACT = 0.0;
-static uint TOPN = 20;
+static const double MINFRACT = 0.0;
+static const uint ALPHASIZE = 20;
+static const uint REVISITN = 0;
+static const uint REVISITK = 32;
+static const uint ITERS = 100;
+static const double MINSCOREBASE = 1.0;
+static const double MAXSCOREDELTA = 0.25;
 
 /***
 Input is created by xfeatures
@@ -155,9 +160,11 @@ void XCluster::GetFreqs(const vector<uint> &RefIdxs)
 	for (uint i = 0; i < 20; ++i)
 		m_CountMx[i].resize(20, 1);
 
-	for (uint PairIndex = 0; PairIndex < PosPairCount; ++PairIndex)
+	uint Counter = 0;
+#pragma omp parallel for
+	for (int iPairIndex = 0; iPairIndex < (int) PosPairCount; ++iPairIndex)
 		{
-		ProgressStep(PairIndex, PosPairCount, "freqs");
+		uint PairIndex = uint(iPairIndex);
 		char AminoQ = m_Aminos1[PairIndex];
 		char AminoR = m_Aminos2[PairIndex];
 
@@ -168,12 +175,15 @@ void XCluster::GetFreqs(const vector<uint> &RefIdxs)
 		uint ir = GetMy3DLetter(AminoR, ValuesR, RefIdxs);
 		if (iq >= 20 || ir >= 20)
 			continue;
-
+#pragma omp critical
+		{
+		ProgressStep(Counter++, PosPairCount, "freqs");
 		LetterPairCount += 2;
 		m_CountVec[iq] += 1;
 		m_CountVec[ir] += 1;
 		m_CountMx[iq][ir] += 1;
 		m_CountMx[ir][iq] += 1;
+		}
 		}
 
 	double SumFreq = 0;
@@ -183,9 +193,9 @@ void XCluster::GetFreqs(const vector<uint> &RefIdxs)
 		double Freq = double(m_CountVec[i])/(LetterPairCount);
 		SumFreq += Freq;
 		m_Freqs.push_back(Freq);
-		Log("Freqs[%c] = %8.6f\n", c, Freq);
+		//Log("Freqs[%c] = %8.6f\n", c, Freq);
 		}
-	LogCountsMx(m_CountMx);
+	//LogCountsMx(m_CountMx);
 
 	assert(feq(SumFreq, 1.0));
 
@@ -516,20 +526,52 @@ void XCluster::MxToTsv(FILE *f,
 		}
 	}
 
+uint XCluster::GetFirstRandomHit(uint Letter, const vector<uint> &RefIdxs) const
+	{
+	const uint N = SIZE(m_FeatureValuesVec);
+	for (uint i = 0; i < 1024; ++i)
+		{
+		uint QueryIdx = randu32()%N;
+
+		uint Index;
+		double Score;
+		GetTopIdx(QueryIdx, RefIdxs, &Score, &Index);
+		if (Index == Letter)
+			return QueryIdx;
+		}
+	return randu32()%N;
+	}
+
+void XCluster::LogDCs(const vector<uint> AlphaIdxs,
+	double ExpScore) const
+	{
+	asserta(SIZE(AlphaIdxs) == 20);
+	for (uint i = 0; i < 20; ++i)
+		{
+		uint CentroidIdx = AlphaIdxs[i];
+		char aa = m_Aminos[CentroidIdx];
+		const vector<double> &v = m_FeatureValuesVec[CentroidIdx];
+		Log("DefineCentroid(%u, '%c'", i, aa);
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			Log(", %.8g", v[FeatureIndex]);
+		Log("); // %.4f\n", ExpScore);
+		}
+	}
+
 void cmd_xcluster()
 	{
 	const string &InputFileName = opt_xcluster;
 	XCluster XC;
 	XC.ReadFeatureTsv(InputFileName);
 	const uint N = SIZE(XC.m_Aminos);
-	asserta(optset_minscore);
-	double OptMinScore = opt_minscore;
+	asserta(!optset_minscore);
+	//double OptMinScore = opt_minscore;
 
 	XProf::InitScoreTable();
 
-	const uint ITERS = 100;
-	double MaxScoreDelta = 0.5;
 	double BestExpectedScore = 0;
+	vector<double> ExpScores;
+	vector<vector<uint> > SelectedIdxVec;
 	for (uint Iter = 0; Iter < ITERS; ++Iter)
 		{
 		vector<uint> InputIdxs;
@@ -541,16 +583,19 @@ void cmd_xcluster()
 		map<uint, uint> IdxToCentroidIdx;
 		map<uint, vector<uint> > CentroidIdxToMemberIdxs;
 		double ScoreDeltaFract = (randu32()%100)/100.0;
-		double ScoreDelta = ScoreDeltaFract*MaxScoreDelta;
+		double ScoreDelta = ScoreDeltaFract*MAXSCOREDELTA;
 		if (randu32()%2 == 0)
 			ScoreDelta = -ScoreDelta;
-		double MinScore = OptMinScore + ScoreDelta;
+		double MinScore = MINSCOREBASE + ScoreDelta;
 		XC.Cluster(InputIdxs, MinScore, CentroidIdxs, IdxToCentroidIdx,
 		  CentroidIdxToMemberIdxs);
 		const uint ClusterCount = SIZE(CentroidIdxs);
 		ProgressLog("%u clusters, minscore %.4f\n", ClusterCount, MinScore);
-
-		//XC.ClustersToTsv(CentroidIdxs, CentroidIdxToMemberIdxs);
+		if (ClusterCount < 20)
+			{
+			Warning("%u clusters < 20", ClusterCount);
+			continue;
+			}
 
 		vector<uint> Order;
 		vector<uint> Sizes;
@@ -559,7 +604,7 @@ void cmd_xcluster()
 
 		vector<uint> SelectedCentroidIdxs;
 		double SumFract = 0;
-		for (uint k = 0; k < min(ClusterCount, TOPN); ++k)
+		for (uint k = 0; k < ALPHASIZE; ++k)
 			{
 			uint ClusterIndex = Order[k];
 			uint CentroidIdx = CentroidIdxs[ClusterIndex];
@@ -568,61 +613,88 @@ void cmd_xcluster()
 			SumFract += Fract;
 			if (Fract < MINFRACT)
 				continue;
-			Log("[%3u]  %5u  %7.5f\n", k, Size, Fract);
 			SelectedCentroidIdxs.push_back(CentroidIdx);
 			}
-		Log("Total fract %.5f\n", SumFract);
-
-		const uint SelectedClusterCount = SIZE(SelectedCentroidIdxs);
-		ProgressLog("%u / %u clusters selected\n",
-			SelectedClusterCount, ClusterCount);
-
-		//vector<vector<double> > ScoreMx;
-		//XC.GetScoreMx(SelectedCentroidIdxs, ScoreMx);
-
-		//vector<vector<double> > DistMx;
-		//XC.ScoreMxToDistMx(ScoreMx, DistMx);
-		//asserta(SIZE(DistMx) == SelectedClusterCount);
-		//asserta(optset_output);
-		//FILE *f = CreateStdioFile(opt_output);
-		//fprintf(f, "%u\n", SelectedClusterCount);
-		//for (uint i = 0; i < SelectedClusterCount; ++i)
-		//	{
-		//	uint CentroidIdx = SelectedCentroidIdxs[i];
-		//	uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
-		//	asserta(Size >= 1);
-		//	double Fract = double(Size)/N;
-		//	fprintf(f, "%u\t%u\t%.5f", i, Size, Fract);
-		//	XC.VecToTsv(f, CentroidIdx);
-		//	fprintf(f, "\n");
-		//	}
-		//XC.MxToTsv(f, DistMx);
-		//CloseStdioFile(f);
-
-		for (uint i = 0; i < SelectedClusterCount; ++i)
-			{
-			uint CentroidIdx = SelectedCentroidIdxs[i];
-			uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
-			char aa = XC.m_Aminos[CentroidIdx];
-			const vector<double> &v = XC.m_FeatureValuesVec[CentroidIdx];
-			Log("DefineCentroid(%u, '%c'", i, aa);
-			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-				Log(", %.3g", v[FeatureIndex]);
-			Log(");\n");
-			}
-
-		//FILE *f2 = CreateStdioFile(opt_output2);
-		//XC.TopsToTsv(f2, SelectedCentroidIdxs);
-		//CloseStdioFile(f2);
 
 		XC.GetFreqs(SelectedCentroidIdxs);
 		double H, RH;
 		vector<vector<double> > ScoreMx;
 		GetLogOddsMx(XC.m_Freqs, XC.m_FreqMx, ScoreMx, H, RH);
-		BestExpectedScore = max(RH, BestExpectedScore);
+		if (RH > BestExpectedScore)
+			{
+			XC.LogDCs(SelectedCentroidIdxs, RH);
+			BestExpectedScore = RH;
+			}
 
-		LogScoreMx(ScoreMx);
-		ProgressLog("Iter %u/%u entropy %.3g, expected score %.3g (max %.3g)\n",
-		  Iter, ITERS, H, RH, BestExpectedScore);
+		//LogScoreMx(ScoreMx);
+		ProgressLog("Iter %u/%u cltscore %.3g, expected score %.3f (max %.3f)\n",
+		  Iter, ITERS, MinScore, RH, BestExpectedScore);
+
+		ExpScores.push_back(RH);
+		asserta(SIZE(SelectedCentroidIdxs) == 20);
+		SelectedIdxVec.push_back(SelectedCentroidIdxs);
 		}
+
+	vector<uint> Order(ITERS);
+	QuickSortOrderDesc(ExpScores.data(), ITERS, Order.data());
+
+	for (uint RevisitIndex = 0; RevisitIndex < min(REVISITN, ITERS); ++RevisitIndex)
+		{
+		uint kkk = Order[RevisitIndex];
+		asserta(kkk < SIZE(ExpScores));
+		asserta(kkk < SIZE(SelectedIdxVec));
+		double OrigExpectedScore = ExpScores[kkk];
+		const vector<uint> SelectedCentroidIdxs = SelectedIdxVec[kkk];
+		asserta(SIZE(SelectedCentroidIdxs) == 20);
+		Progress("Revisit %u exp score %.4f\n", RevisitIndex, OrigExpectedScore);
+
+		for (uint k = 0; k < REVISITK; ++k)
+			{
+			asserta(SIZE(SelectedCentroidIdxs) == 20);
+			vector<uint> VariantIdxs;
+			for (uint i = 0; i < 20; ++i)
+				{
+				uint VariantIdx = XC.GetFirstRandomHit(i, SelectedCentroidIdxs);
+				VariantIdxs.push_back(VariantIdx);
+				}
+
+			XC.GetFreqs(VariantIdxs);
+			double H, RH;
+			vector<vector<double> > ScoreMx;
+			GetLogOddsMx(XC.m_Freqs, XC.m_FreqMx, ScoreMx, H, RH);
+			BestExpectedScore = max(RH, BestExpectedScore);
+
+			//LogScoreMx(ScoreMx);
+			ProgressLog("Variant %u/%u, expected score %.3f (orig %.3f, max %.3f)\n",
+			  RevisitIndex, k, RH, OrigExpectedScore, BestExpectedScore);
+
+			ExpScores.push_back(RH);
+			SelectedIdxVec.push_back(VariantIdxs);
+			asserta(SIZE(SelectedCentroidIdxs) == 20);
+			}
+		}
+
+	uint top = 0;
+	double topscore = 0;
+	for (uint i = 0; i < SIZE(ExpScores); ++i)
+		{
+		if (ExpScores[i] > topscore)
+			{
+			topscore = ExpScores[i];
+			top = i;
+			}
+		}
+
+	const vector<uint> SelectedCentroidIdxs = SelectedIdxVec[top];
+
+	XC.GetFreqs(SelectedCentroidIdxs);
+	double H, RH;
+	vector<vector<double> > ScoreMx;
+	GetLogOddsMx(XC.m_Freqs, XC.m_FreqMx, ScoreMx, H, RH);
+	BestExpectedScore = max(RH, BestExpectedScore);
+	XC.LogDCs(SelectedCentroidIdxs, topscore);
+
+	LogScoreMx(ScoreMx);
+	ProgressLog("Final expected score %.3g (max %.3g)\n",
+		RH, BestExpectedScore);
 	}
