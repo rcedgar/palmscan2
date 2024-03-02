@@ -101,7 +101,7 @@ double XProf::GetScore2(char Amino1, char Amino2,
 	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
 		{
 		double Value1 = Features1[FeatureIndex];
-		double Value2 = Features1[FeatureIndex];
+		double Value2 = Features2[FeatureIndex];
 		double Diff = XProf::GetDiff(FeatureIndex, Value1, Value2);
 		uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
 		Bins.push_back(Bin);

@@ -149,18 +149,9 @@ double XCluster::GetScore(uint Idx1, uint Idx2) const
 	{
 	char aa1 = m_Aminos[Idx1];
 	char aa2 = m_Aminos[Idx2];
-	const vector<double> Values1 = m_FeatureValuesVec[Idx1];
-	const vector<double> Values2 = m_FeatureValuesVec[Idx2];
-	vector<uint> Bins;
-	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-		{
-		double Value1 = Values1[FeatureIndex];
-		double Value2 = Values2[FeatureIndex];
-		double Diff = XProf::GetDiff(FeatureIndex, Value1, Value2);
-		uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
-		Bins.push_back(Bin);
-		}
-	double Score = XProf::GetScore(aa1, aa2, Bins);
+	const vector<double> &Values1 = m_FeatureValuesVec[Idx1];
+	const vector<double> &Values2 = m_FeatureValuesVec[Idx2];
+	double Score = XProf::GetScore2(aa1, aa2, Values1, Values2);
 	return Score;
 	}
 
