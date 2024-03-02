@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 class XCluster
 	{
 public:
@@ -22,19 +24,19 @@ public:
 
 public:
 	void ReadFeatureTsv(const string &FileName);
-	void Cluster(
+	void Cluster(const vector<uint> &InputIdxs,
 		double MinScore,
 		vector<uint> &CentroidIdxs,
-		vector<uint> &IdxToCentroidIdx,
-		vector<vector<uint> > &CentroidIdxToMemberIdxs);
+		map<uint, uint> &IdxToCentroidIdx,
+		map<uint, vector<uint> > &CentroidIdxToMemberIdxs);
 	void HitToTsv(double Score, uint Idx, uint CentroidIdx) const;
 	void CentroidToTsv(uint CentroidIdx) const;
 	void VecToTsv(FILE *f, uint Idx) const;
 	void ClustersToTsv(
 	  const vector<uint> &CentroidIdxs,
-	  const vector<vector<uint> > &CentroidIdxToMemberIdxs) const;
+	  const map<uint, vector<uint> > &CentroidIdxToMemberIdxs) const;
 	void GetClusterSizes(
-		const vector<vector<uint> > &CentroidIdxToMemberIdxs,
+		const map<uint, vector<uint> > &CentroidIdxToMemberIdxs,
 		const vector<uint> &CentroidIdxs,
 		vector<uint> &Order,
 		vector<uint> &Sizes) const;

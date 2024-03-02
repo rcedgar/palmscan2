@@ -322,10 +322,11 @@ uint XCluster::GetTopIdx(uint QueryIdx, const vector<uint> &RefIdxs,
 	}
 
 void XCluster::Cluster(
+	const vector<uint> &InputIdxs,
 	double MinScore,
 	vector<uint> &CentroidIdxs,
-	vector<uint> &IdxToCentroidIdx,
-	vector<vector<uint> > &CentroidIdxToMemberIdxs)
+	map<uint, uint> &IdxToCentroidIdx,
+	map<uint, vector<uint> > &CentroidIdxToMemberIdxs)
 	{
 	CentroidIdxs.clear();
 	IdxToCentroidIdx.clear();
@@ -335,13 +336,14 @@ void XCluster::Cluster(
 	const uint N = SIZE(m_Aminos);
 	asserta(SIZE(m_FeatureValuesVec) == N);
 	vector<uint> Bins(XFEATS);
-	for (uint Idx = 0; Idx < N; ++Idx)
+	for (uint kkk = 0; kkk < N; ++kkk)
 		{
-		ProgressStep(Idx, N, "Clustering minscore %.1f, %u centroids",
+		uint Idx = InputIdxs[kkk];
+		ProgressStep(kkk, N, "Clustering minscore %.4f, %u centroids",
 			MinScore, SIZE(CentroidIdxs));
 		bool Hit = false;
 		vector<uint> Empty;
-		CentroidIdxToMemberIdxs.push_back(Empty);
+		CentroidIdxToMemberIdxs[Idx] = Empty;
 		double BestScore = -999;
 		uint BestCentroidIdx = UINT_MAX;
 		for (uint j = 0; j < SIZE(CentroidIdxs); ++j)
@@ -363,18 +365,18 @@ void XCluster::Cluster(
 
 		if (Hit)
 			{
-			IdxToCentroidIdx.push_back(BestCentroidIdx);
+			IdxToCentroidIdx[Idx] = BestCentroidIdx;
 			CentroidIdxToMemberIdxs[BestCentroidIdx].push_back(Idx);
-			HitToTsv(BestScore, Idx, BestCentroidIdx);
+			//HitToTsv(BestScore, Idx, BestCentroidIdx);
 			}
 		else
 			{
 			uint CentroidIndex = SIZE(CentroidIdxs);
 			CentroidIdxToCentroidIndex[Idx] = CentroidIndex;
 			CentroidIdxs.push_back(Idx);
-			IdxToCentroidIdx.push_back(Idx);
+			IdxToCentroidIdx[Idx] = Idx;
 			CentroidIdxToMemberIdxs[Idx].push_back(Idx);
-			CentroidToTsv(Idx);
+			//CentroidToTsv(Idx);
 			}
 		}
 	asserta(SIZE(IdxToCentroidIdx) == N);
@@ -454,7 +456,7 @@ void XCluster::GetScoreMx(const vector<uint> &Idxs,
 	}
 
 void XCluster::GetClusterSizes(
-	const vector<vector<uint> > &CentroidIdxToMemberIdxs,
+	const map<uint, vector<uint> > &CentroidIdxToMemberIdxs,
 	const vector<uint> &CentroidIdxs,
 	vector<uint> &Order,
 	vector<uint> &Sizes) const
@@ -465,7 +467,11 @@ void XCluster::GetClusterSizes(
 		{
 		uint CentroidIdx = CentroidIdxs[ClusterIndex];
 		asserta(CentroidIdx < SIZE(CentroidIdxToMemberIdxs));
-		const vector<uint> &MemberIdxs = CentroidIdxToMemberIdxs[CentroidIdx];
+		map<uint, vector<uint> >::const_iterator iter =
+		  CentroidIdxToMemberIdxs.find(CentroidIdx);
+		asserta(iter != CentroidIdxToMemberIdxs.end());
+		//const vector<uint> &MemberIdxs = CentroidIdxToMemberIdxs[CentroidIdx];
+		const vector<uint> &MemberIdxs = iter->second;
 		Sizes.push_back(SIZE(MemberIdxs));
 		}
 	Order.resize(ClusterCount);
@@ -474,7 +480,7 @@ void XCluster::GetClusterSizes(
 
 void XCluster::ClustersToTsv(
 	const vector<uint> &CentroidIdxs,
-	const vector<vector<uint> > &CentroidIdxToMemberIdxs) const
+	const map<uint, vector<uint> > &CentroidIdxToMemberIdxs) const
 	{
 	const uint ClusterCount = SIZE(CentroidIdxs);
 
@@ -517,87 +523,106 @@ void cmd_xcluster()
 	XC.ReadFeatureTsv(InputFileName);
 	const uint N = SIZE(XC.m_Aminos);
 	asserta(optset_minscore);
-	double MinScore = opt_minscore;
+	double OptMinScore = opt_minscore;
 
 	XProf::InitScoreTable();
 
-	vector<uint> CentroidIdxs;
-	vector<uint> IdxToCentroidIdx;
-	vector<vector<uint> > CentroidIdxToMemberIdxs;
-	XC.Cluster(MinScore, CentroidIdxs, IdxToCentroidIdx,
-	  CentroidIdxToMemberIdxs);
-	const uint ClusterCount = SIZE(CentroidIdxs);
-	ProgressLog("%u clusters\n", ClusterCount);
-
-	XC.ClustersToTsv(CentroidIdxs, CentroidIdxToMemberIdxs);
-
-	vector<uint> Order;
-	vector<uint> Sizes;
-	XC.GetClusterSizes(CentroidIdxToMemberIdxs, CentroidIdxs,
-	  Order, Sizes);
-
-	vector<uint> SelectedCentroidIdxs;
-	double SumFract = 0;
-	for (uint k = 0; k < min(ClusterCount, TOPN); ++k)
+	const uint ITERS = 100;
+	double MaxScoreDelta = 0.5;
+	double BestExpectedScore = 0;
+	for (uint Iter = 0; Iter < ITERS; ++Iter)
 		{
-		uint ClusterIndex = Order[k];
-		uint CentroidIdx = CentroidIdxs[ClusterIndex];
-		uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
-		double Fract = double(Size)/N;
-		SumFract += Fract;
-		if (Fract < MINFRACT)
-			continue;
-		Log("[%3u]  %5u  %7.5f\n", k, Size, Fract);
-		SelectedCentroidIdxs.push_back(CentroidIdx);
+		vector<uint> InputIdxs;
+		for (uint i = 0; i < N; ++i)
+			InputIdxs.push_back(i);
+		random_shuffle(InputIdxs.begin(), InputIdxs.end());
+
+		vector<uint> CentroidIdxs;
+		map<uint, uint> IdxToCentroidIdx;
+		map<uint, vector<uint> > CentroidIdxToMemberIdxs;
+		double ScoreDeltaFract = (randu32()%100)/100.0;
+		double ScoreDelta = ScoreDeltaFract*MaxScoreDelta;
+		if (randu32()%2 == 0)
+			ScoreDelta = -ScoreDelta;
+		double MinScore = OptMinScore + ScoreDelta;
+		XC.Cluster(InputIdxs, MinScore, CentroidIdxs, IdxToCentroidIdx,
+		  CentroidIdxToMemberIdxs);
+		const uint ClusterCount = SIZE(CentroidIdxs);
+		ProgressLog("%u clusters, minscore %.4f\n", ClusterCount, MinScore);
+
+		//XC.ClustersToTsv(CentroidIdxs, CentroidIdxToMemberIdxs);
+
+		vector<uint> Order;
+		vector<uint> Sizes;
+		XC.GetClusterSizes(CentroidIdxToMemberIdxs, CentroidIdxs,
+		  Order, Sizes);
+
+		vector<uint> SelectedCentroidIdxs;
+		double SumFract = 0;
+		for (uint k = 0; k < min(ClusterCount, TOPN); ++k)
+			{
+			uint ClusterIndex = Order[k];
+			uint CentroidIdx = CentroidIdxs[ClusterIndex];
+			uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
+			double Fract = double(Size)/N;
+			SumFract += Fract;
+			if (Fract < MINFRACT)
+				continue;
+			Log("[%3u]  %5u  %7.5f\n", k, Size, Fract);
+			SelectedCentroidIdxs.push_back(CentroidIdx);
+			}
+		Log("Total fract %.5f\n", SumFract);
+
+		const uint SelectedClusterCount = SIZE(SelectedCentroidIdxs);
+		ProgressLog("%u / %u clusters selected\n",
+			SelectedClusterCount, ClusterCount);
+
+		//vector<vector<double> > ScoreMx;
+		//XC.GetScoreMx(SelectedCentroidIdxs, ScoreMx);
+
+		//vector<vector<double> > DistMx;
+		//XC.ScoreMxToDistMx(ScoreMx, DistMx);
+		//asserta(SIZE(DistMx) == SelectedClusterCount);
+		//asserta(optset_output);
+		//FILE *f = CreateStdioFile(opt_output);
+		//fprintf(f, "%u\n", SelectedClusterCount);
+		//for (uint i = 0; i < SelectedClusterCount; ++i)
+		//	{
+		//	uint CentroidIdx = SelectedCentroidIdxs[i];
+		//	uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
+		//	asserta(Size >= 1);
+		//	double Fract = double(Size)/N;
+		//	fprintf(f, "%u\t%u\t%.5f", i, Size, Fract);
+		//	XC.VecToTsv(f, CentroidIdx);
+		//	fprintf(f, "\n");
+		//	}
+		//XC.MxToTsv(f, DistMx);
+		//CloseStdioFile(f);
+
+		for (uint i = 0; i < SelectedClusterCount; ++i)
+			{
+			uint CentroidIdx = SelectedCentroidIdxs[i];
+			uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
+			char aa = XC.m_Aminos[CentroidIdx];
+			const vector<double> &v = XC.m_FeatureValuesVec[CentroidIdx];
+			Log("DefineCentroid(%u, '%c'", i, aa);
+			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+				Log(", %.3g", v[FeatureIndex]);
+			Log(");\n");
+			}
+
+		//FILE *f2 = CreateStdioFile(opt_output2);
+		//XC.TopsToTsv(f2, SelectedCentroidIdxs);
+		//CloseStdioFile(f2);
+
+		XC.GetFreqs(SelectedCentroidIdxs);
+		double H, RH;
+		vector<vector<double> > ScoreMx;
+		GetLogOddsMx(XC.m_Freqs, XC.m_FreqMx, ScoreMx, H, RH);
+		BestExpectedScore = max(RH, BestExpectedScore);
+
+		LogScoreMx(ScoreMx);
+		ProgressLog("Iter %u/%u entropy %.3g, expected score %.3g (max %.3g)\n",
+		  Iter, ITERS, H, RH, BestExpectedScore);
 		}
-	Log("Total fract %.5f\n", SumFract);
-
-	const uint SelectedClusterCount = SIZE(SelectedCentroidIdxs);
-	ProgressLog("%u / %u clusters selected\n",
-		SelectedClusterCount, ClusterCount);
-
-	vector<vector<double> > ScoreMx;
-	XC.GetScoreMx(SelectedCentroidIdxs, ScoreMx);
-
-	vector<vector<double> > DistMx;
-	XC.ScoreMxToDistMx(ScoreMx, DistMx);
-	asserta(SIZE(DistMx) == SelectedClusterCount);
-	asserta(optset_output);
-	FILE *f = CreateStdioFile(opt_output);
-	fprintf(f, "%u\n", SelectedClusterCount);
-	for (uint i = 0; i < SelectedClusterCount; ++i)
-		{
-		uint CentroidIdx = SelectedCentroidIdxs[i];
-		uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
-		asserta(Size >= 1);
-		double Fract = double(Size)/N;
-		fprintf(f, "%u\t%u\t%.5f", i, Size, Fract);
-		XC.VecToTsv(f, CentroidIdx);
-		fprintf(f, "\n");
-		}
-	XC.MxToTsv(f, DistMx);
-	CloseStdioFile(f);
-
-	for (uint i = 0; i < SelectedClusterCount; ++i)
-		{
-		uint CentroidIdx = SelectedCentroidIdxs[i];
-		uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
-		char aa = XC.m_Aminos[CentroidIdx];
-		const vector<double> &v = XC.m_FeatureValuesVec[CentroidIdx];
-		Log("DefineCentroid(%u, '%c'", i, aa);
-		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-			Log(", %.3g", v[FeatureIndex]);
-		Log(");\n");
-		}
-
-	FILE *f2 = CreateStdioFile(opt_output2);
-	XC.TopsToTsv(f2, SelectedCentroidIdxs);
-	CloseStdioFile(f2);
-
-	XC.GetFreqs(SelectedCentroidIdxs);
-	double H, RH;
-	GetLogOddsMx(XC.m_Freqs, XC.m_FreqMx, ScoreMx, H, RH);
-
-	LogScoreMx(ScoreMx);
-	ProgressLog("Entropy %.3g, expected score %.3g\n", H, RH);
 	}
