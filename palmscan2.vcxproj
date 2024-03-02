@@ -471,6 +471,7 @@
     <ClCompile Include="xalign2.cpp" />
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
+    <ClCompile Include="xbinner.cpp" />
     <ClCompile Include="xbinner_substmx.cpp" />
     <ClCompile Include="xcluster.cpp" />
     <ClCompile Include="xdiscrete.cpp" />
@@ -486,6 +487,8 @@
     <ClInclude Include="shapes.h" />
     <ClInclude Include="shapesearcher.h" />
     <ClInclude Include="stock.h" />
+    <ClInclude Include="xbinner.h" />
+    <ClInclude Include="xcluster.h" />
     <ClInclude Include="xprof.h" />
     <ClCompile Include="xprofdata.cpp" />
     <ClCompile Include="xprof_train.cpp" />

@@ -192,6 +192,7 @@ FLAG_OPT(calibrate)
 //FLAG_OPT(lowerrors)
 FLAG_OPT(pmlrevmotifs)
 FLAG_OPT(noappendchain)
+FLAG_OPT(besthit)
 
 #undef FLAG_OPT
 #undef UNS_OPT

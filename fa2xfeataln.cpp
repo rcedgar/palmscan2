@@ -72,7 +72,7 @@ void cmd_fa2xfeataln()
 		fprintf(g_ftsv, "R");
 		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
 			fprintf(g_ftsv, "\tR_%s", XProf::GetFeatureName(FeatureIndex));
-		fprintf(g_ftsv, "\n");
+		fprintf(g_ftsv, "QDom\tQPos\tRDom\tRPos\n");
 		}
 
 	vector<PDBChain *> Chains;
@@ -120,6 +120,8 @@ void cmd_fa2xfeataln()
 		uint RChainIndex = DomToChainIndex[RDom];
 		const PDBChain &QChain = *Chains[QChainIndex];
 		const PDBChain &RChain = *Chains[RChainIndex];
+		uint QL = QChain.GetSeqLength();
+		uint RL = RChain.GetSeqLength();
 		QX.Init(QChain);
 		RX.Init(RChain);
 		const string &QRow = Input.GetSeq(2*PairIndex);
@@ -163,18 +165,23 @@ void cmd_fa2xfeataln()
 				}
 			if (!isgap(q) && !isgap(r))
 				{
-				asserta(SIZE(qvalues) == XFEATS);
-				asserta(SIZE(rvalues) == XFEATS);
-				if (g_ftsv)
+				if (QPos >= 3 && RPos >= 3 && QPos + 3 <= QL && RPos + 3 <= RL)
 					{
-					fprintf(g_ftsv, "%c", q);
-					for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-						fprintf(g_ftsv, "\t%.3g", qvalues[FeatureIndex]);
-					fprintf(g_ftsv, "\t");
-					fprintf(g_ftsv, "%c", r);
-					for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-						fprintf(g_ftsv, "\t%.3g", rvalues[FeatureIndex]);
-					fprintf(g_ftsv, "\n");
+					asserta(SIZE(qvalues) == XFEATS);
+					asserta(SIZE(rvalues) == XFEATS);
+					if (g_ftsv)
+						{
+						fprintf(g_ftsv, "%c", q);
+						for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+							fprintf(g_ftsv, "\t%.3g", qvalues[FeatureIndex]);
+						fprintf(g_ftsv, "\t");
+						fprintf(g_ftsv, "%c", r);
+						for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+							fprintf(g_ftsv, "\t%.3g", rvalues[FeatureIndex]);
+						fprintf(g_ftsv, "\t%s\t%u", QDom.c_str(), QPos);
+						fprintf(g_ftsv, "\t%s\t%u", RDom.c_str(), RPos);
+						fprintf(g_ftsv, "\n");
+						}
 					}
 				}
 

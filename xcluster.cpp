@@ -3,11 +3,13 @@
 #include "pdbchain.h"
 #include "outputfiles.h"
 #include "sort.h"
+#include "xcluster.h"
+#include "alpha.h"
+#include <map>
 #include <set>
 
-static const uint SUBSET1 = 1024;
-static const uint SUBSET2 = 128;
-static double MINSCORE1 = 2.5;
+static double MINFRACT = 0.0;
+static uint TOPN = 20;
 
 /***
 Input is created by xfeatures
@@ -16,211 +18,474 @@ palmscan2 \
   -xcluster d:/int/scop40/out/xfeatures.tsv
   -log xcluster.log
 
-# head d:/int/scop40/out/xfeatures.tsv | columns.py
-aa  Ang_m2_p2  Ang_m3_p3  ED_p4  ED_m4  NU  ND
- A          0          0   6.07      0   0   0
- Y          0          0   5.92      0   7   7
- I        113          0   6.38      0   0  11
- A        115       34.1   6.33      0   2  12
- K        109         28   6.23   6.07  15   9
+# head -n5 /d/int/dave_grant/scop40/aligned_xfeatvecs_0.6_0.8.tsv | columns.py
+Q  Q_Ang_m2_p2  Q_Ang_m3_p3  Q_ED_p4  Q_ED_m4  Q_NU  Q_ND  R  R_Ang_m2_p2  R_Ang_m3_p3  R_ED_p4  R_ED_m4  R_NU  R_ND    QDom  QPos    RDom  RPos
+N         83.1         62.8     9.57     11.7     0    14  L         13.9           22     11.6        0     1    19  d1a04a1    4  d1fsea_    3
+L         72.9         48.9      5.6     8.06    19     4  L         18.5         10.6     5.74     12.9    21     5  d1a04a1    6  d1fsea_    4
+T         34.4         74.9     6.27     9.21     2    16  T         34.9         83.4     6.27       13     3    13  d1a04a1    7  d1fsea_    5
+P          125          107     6.25     9.57     0    15  K          125          109      6.2     13.1     1    13  d1a04a1    8  d1fsea_    6
 
 ***/
 
-void ReadXFeaturesTsv(const string &FileName,
-  vector<char> &Aminos, vector<vector<double> > &FeatureValuesVec)
+void XCluster::ReadFeatureTsv(const string &FileName)
 	{
-	Aminos.clear();
-	FeatureValuesVec.clear();
+	m_Aminos.clear();
+	m_FeatureValuesVec.clear();
+
 	FILE *f = OpenStdioFile(FileName);
 	string HdrLine;
 	bool Ok = ReadLineStdioFile(f, HdrLine);
 	vector<string> HdrFields;
 	Split(HdrLine, HdrFields, '\t');
-	asserta(SIZE(HdrFields) == XFEATS + 1);
-	asserta(HdrFields[0] == "aa");
+	asserta(SIZE(HdrFields) == 2*XFEATS + 6);
+	asserta(HdrFields[0] == "Q");
+	asserta(HdrFields[XFEATS+1] == "R");
 	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		{
 		asserta(HdrFields[FeatureIndex+1] == 
-		  (string) XProf::GetFeatureName(FeatureIndex));
+		  "Q_" +  (string) XProf::GetFeatureName(FeatureIndex));
+		asserta(HdrFields[XFEATS+2+FeatureIndex] == 
+		  "R_" + (string) XProf::GetFeatureName(FeatureIndex));
+		}
+
+	set<pair<string, uint> > DoneSet;
 
 	string Line;
 	vector<string> Fields;
 	while (ReadLineStdioFile(f, Line))
 		{
 		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) == XFEATS+1);
+		asserta(SIZE(Fields) == 2*XFEATS + 6);
+
+		{
 		asserta(SIZE(Fields[0]) == 1);
 		char Amino = Fields[0][0];
 		vector<double> Values;
-		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		string Dom = Fields[2*XFEATS+2];
+		uint Coord = StrToUint(Fields[2*XFEATS+3]);
+		pair<string, uint> Pair(Dom, Coord);
+		if (DoneSet.find(Pair) == DoneSet.end())
 			{
-			double Value = StrToFloat(Fields[FeatureIndex+1]);
-			Values.push_back(Value);
+			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+				{
+				double Value = StrToFloat(Fields[FeatureIndex+1]);
+				Values.push_back(Value);
+				}
+			m_Aminos.push_back(Amino);
+			m_FeatureValuesVec.push_back(Values);
+			m_Doms.push_back(Dom);
+			m_Coords.push_back(Coord);
+			DoneSet.insert(Pair);
 			}
-		Aminos.push_back(Amino);
-		FeatureValuesVec.push_back(Values);
+		}
+
+		{
+		asserta(SIZE(Fields[XFEATS+1]) == 1);
+		char Amino = Fields[XFEATS+1][0];
+		vector<double> Values;
+		string Dom = Fields[2*XFEATS+4];
+		uint Coord = StrToUint(Fields[2*XFEATS+5]);
+		pair<string, uint> Pair(Dom, Coord);
+		if (DoneSet.find(Pair) == DoneSet.end())
+			{
+			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+				{
+				double Value = StrToFloat(Fields[XFEATS+2+FeatureIndex]);
+				Values.push_back(Value);
+				}
+			m_Aminos.push_back(Amino);
+			m_FeatureValuesVec.push_back(Values);
+			m_Doms.push_back(Dom);
+			m_Coords.push_back(Coord);
+			DoneSet.insert(Pair);
+			}
+		}
+		}
+	const uint N = SIZE(m_FeatureValuesVec);
+	asserta(SIZE(m_Aminos) == N);
+	asserta(SIZE(m_Doms) == N);
+	asserta(SIZE(m_Coords) == N);
+	ProgressLog("%s feature vecs\n", IntToStr(N));
+	CloseStdioFile(f);
+	}
+
+void XCluster::VecToTsv(FILE *f, uint Idx) const
+	{
+	if (f == 0)
+		return;
+	asserta(Idx < SIZE(m_Aminos));
+	char aa = m_Aminos[Idx];
+	asserta(Idx < SIZE(m_FeatureValuesVec));
+	const vector<double> &v = m_FeatureValuesVec[Idx];
+	const string &Dom = m_Doms[Idx];
+	uint Coord = m_Coords[Idx];
+	asserta(SIZE(v) == XFEATS);
+	fprintf(f, "\t%u\t%c", Idx, aa);
+	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		fprintf(f, "\t%.3g", v[FeatureIndex]);
+	fprintf(f, "\t%s\t%u", Dom.c_str(), Coord);
+	}
+
+void XCluster::HitToTsv(double Score, uint Idx, uint CentroidIdx) const
+	{
+	if (g_ftsv == 0)
+		return;
+	fprintf(g_ftsv, "H\t%.1f", Score);
+	VecToTsv(g_ftsv, Idx);
+	VecToTsv(g_ftsv, CentroidIdx);
+	fprintf(g_ftsv, "\n");
+	}
+
+void XCluster::CentroidToTsv(uint CentroidIdx) const
+	{
+	if (g_ftsv == 0)
+		return;
+	fprintf(g_ftsv, "S\t*");
+	VecToTsv(g_ftsv, CentroidIdx);
+	fprintf(g_ftsv, "\n");
+	}
+
+double XCluster::GetScore(uint Idx1, uint Idx2) const
+	{
+	char aa1 = m_Aminos[Idx1];
+	char aa2 = m_Aminos[Idx2];
+	const vector<double> Values1 = m_FeatureValuesVec[Idx1];
+	const vector<double> Values2 = m_FeatureValuesVec[Idx2];
+	vector<uint> Bins;
+	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		{
+		double Value1 = Values1[FeatureIndex];
+		double Value2 = Values2[FeatureIndex];
+		double Diff = XProf::GetDiff(FeatureIndex, Value1, Value2);
+		uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
+		Bins.push_back(Bin);
+		}
+	double Score = XProf::GetScore(aa1, aa2, Bins);
+	return Score;
+	}
+
+void XCluster::TopsToTsv(FILE *f, const vector<uint> &RefIdxs) const
+	{
+	if (f == 0)
+		return;
+	asserta(SIZE(RefIdxs) == 20);
+	const uint N = SIZE(m_FeatureValuesVec);
+	for (uint Idx = 0; Idx < N; ++Idx)
+		{
+		ProgressStep(Idx, N, "TopsToTsv");
+		double Score;
+		uint Letter;
+		uint TopIdx = GetTopIdx(Idx, RefIdxs, &Score, &Letter);
+		asserta(Letter < 20);
+		fprintf(f, "%c\t%.3g", g_LetterToCharAmino[Letter], Score);
+		VecToTsv(f, Idx);
+		fprintf(f, "\n");
 		}
 	}
 
-uint SelectFinal(const set<uint> &Final20,
-  vector<uint> &SubsetIdxs2,
-  const vector<vector<double> > &ScoreMx2)
+uint XCluster::GetTopIdx(uint QueryIdx, const vector<uint> &RefIdxs,
+  double *ptrScore, uint *ptrIndex) const
 	{
-	asserta(SIZE(SubsetIdxs2) == SUBSET2);
-	asserta(SIZE(ScoreMx2) == SUBSET2);
-	random_shuffle(SubsetIdxs2.begin(), SubsetIdxs2.end());
-	if (Final20.empty())
-		return SubsetIdxs2[0];
-
-	uint BestIdx = UINT_MAX;
-	double LowestSumScore = DBL_MAX;
-	for (uint i = 0; i < SUBSET2; ++i)
+	double BestScore = -999;
+	uint BestRefIdx = UINT_MAX;
+	uint BestRefIndex = UINT_MAX;
+	const uint N = SIZE(RefIdxs);
+	asserta(N > 0);
+	for (uint i = 0; i < N; ++i)
 		{
-		uint Idxi = SubsetIdxs2[i];
-		if (Final20.find(Idxi) != Final20.end())
-			continue;
-		double SumScore = 0;
-		for (uint j = 0; j < SUBSET2; ++j)
+		uint RefIdx = RefIdxs[i];
+		double Score = GetScore(QueryIdx, RefIdx);
+		if (Score >= BestScore)
 			{
-			uint Idxj = SubsetIdxs2[j];
-			if (Final20.find(Idxj) == Final20.end())
-				continue;
-			double Score = ScoreMx2[i][j];
-			SumScore += Score;
-			}
-		if (SumScore < LowestSumScore)
-			{
-			LowestSumScore = SumScore;
-			BestIdx = Idxi;
+			BestScore = Score;
+			BestRefIdx = RefIdx;
+			BestRefIndex = i;
 			}
 		}
-	asserta(BestIdx != UINT_MAX);
-	return BestIdx;
+	if (ptrScore != 0)
+		*ptrScore = BestScore;
+	if (ptrIndex != 0)
+		*ptrIndex = BestRefIndex;
+	asserta(BestRefIdx != UINT_MAX);
+	return BestRefIdx;
+	}
+
+void XCluster::Cluster(
+	const vector<uint> &InputIdxs,
+	double MinScore,
+	vector<uint> &CentroidIdxs,
+	vector<uint> &IdxToCentroidIdx,
+	vector<vector<uint> > &CentroidIdxToMemberIdxs)
+	{
+	CentroidIdxs.clear();
+	IdxToCentroidIdx.clear();
+	CentroidIdxToMemberIdxs.clear();
+	map<uint, uint> CentroidIdxToCentroidIndex;
+
+	const uint N = SIZE(InputIdxs);
+	vector<uint> Bins(XFEATS);
+	for (uint i = 0; i < N; ++i)
+		{
+		uint Idx = InputIdxs[i];
+		ProgressStep(i, N, "Clustering minscore %.1f, %u centroids",
+			MinScore, SIZE(CentroidIdxs));
+		bool Hit = false;
+		vector<uint> Empty;
+		CentroidIdxToMemberIdxs.push_back(Empty);
+		double BestScore = -999;
+		uint BestCentroidIdx = UINT_MAX;
+		for (uint j = 0; j < SIZE(CentroidIdxs); ++j)
+			{
+			uint CentroidIdx = CentroidIdxs[j];
+			double Score = GetScore(Idx, CentroidIdx);
+			if (Score >= MinScore)
+				{
+				Hit = true;
+				if (Score >= BestScore)
+					{
+					BestScore = Score;
+					BestCentroidIdx = CentroidIdx;
+					}
+				if (!opt_besthit)
+					break;
+				}
+			}
+
+		if (Hit)
+			{
+			IdxToCentroidIdx.push_back(BestCentroidIdx);
+			CentroidIdxToMemberIdxs[BestCentroidIdx].push_back(Idx);
+			HitToTsv(BestScore, Idx, BestCentroidIdx);
+			}
+		else
+			{
+			uint CentroidIndex = SIZE(CentroidIdxs);
+			CentroidIdxToCentroidIndex[Idx] = CentroidIndex;
+			CentroidIdxs.push_back(Idx);
+			IdxToCentroidIdx.push_back(Idx);
+			CentroidIdxToMemberIdxs[Idx].push_back(Idx);
+			CentroidToTsv(Idx);
+			}
+		}
+	asserta(SIZE(IdxToCentroidIdx) == N);
+	asserta(SIZE(CentroidIdxToMemberIdxs) == N);
+	}
+
+void XCluster::ScoreMxToDistMx(
+	const vector<vector<double> > &ScoreMx,
+	vector<vector<double> > &DistMx)
+	{
+	DistMx.clear();
+	const uint N = SIZE(ScoreMx);
+	vector<double> Scores;
+	for (uint i = 0; i < N; ++i)
+		{
+		asserta(SIZE(ScoreMx[i]) == N);
+		for (uint j = 0; j < i; ++j)
+			Scores.push_back(ScoreMx[i][j]);
+		}
+
+	const uint M = SIZE(Scores);
+	sort(Scores.begin(), Scores.end());
+	double MinScore = Scores[0];
+	double LoScore = Scores[M/8];
+	double MedScore = Scores[M/2];
+	double HiScore = Scores[7*M/8];
+	double MaxScore = Scores[M-1];
+	ProgressLog("Scores min %.3g, lo %.3g, med %.3g, hi %.3g, max %.3g\n",
+	  MinScore, LoScore, MedScore, HiScore, MaxScore);
+
+	DistMx.resize(N);
+	for (uint i = 0; i < N; ++i)
+		DistMx[i].resize(N);
+
+	for (uint i = 0; i < N; ++i)
+		{
+		DistMx[i][i] = 0;
+		for (uint j = 0; j < i; ++j)
+			{
+			double Score = ScoreMx[i][j];
+			asserta(feq(ScoreMx[j][i], Score));
+			if (Score < LoScore)
+				Score = LoScore;
+			if (Score > HiScore)
+				Score = HiScore;
+			double Dist = (HiScore - Score)/(HiScore - LoScore);
+			asserta(Dist >= 0 && Dist <= 1);
+			DistMx[i][j] = Dist;
+			DistMx[j][i] = Dist;
+			}
+		}
+	}
+
+void XCluster::GetScoreMx(const vector<uint> &Idxs,
+  vector<vector<double> > &DistMx) const
+	{
+	const uint N = SIZE(Idxs);
+	DistMx.clear();
+	if (N == 0)
+		return;
+	DistMx.resize(N);
+	for (uint i = 0; i < N; ++i)
+		DistMx[i].resize(N, DBL_MAX);
+
+	for (uint i = 0; i < N; ++i)
+		{
+		uint Idxi = Idxs[i];
+		for (uint j = 0; j <= i; ++j)
+			{
+			uint Idxj = Idxs[j];
+			double Score = GetScore(Idxi, Idxj);
+			Log("%5d  %5d  %.3g\n", i, j, Score);
+			DistMx[i][j] = Score;
+			DistMx[j][i] = Score;
+			}
+		}
+	}
+
+void XCluster::GetClusterSizes(
+	const vector<vector<uint> > &CentroidIdxToMemberIdxs,
+	const vector<uint> &CentroidIdxs,
+	vector<uint> &Order,
+	vector<uint> &Sizes) const
+	{
+	Sizes.clear();
+	const uint ClusterCount = SIZE(CentroidIdxs);
+	for (uint ClusterIndex = 0; ClusterIndex < ClusterCount; ++ClusterIndex)
+		{
+		uint CentroidIdx = CentroidIdxs[ClusterIndex];
+		asserta(CentroidIdx < SIZE(CentroidIdxToMemberIdxs));
+		const vector<uint> &MemberIdxs = CentroidIdxToMemberIdxs[CentroidIdx];
+		Sizes.push_back(SIZE(MemberIdxs));
+		}
+	Order.resize(ClusterCount);
+	QuickSortOrderDesc(Sizes.data(), ClusterCount, Order.data());
+	}
+
+void XCluster::ClustersToTsv(
+	const vector<uint> &CentroidIdxs,
+	const vector<vector<uint> > &CentroidIdxToMemberIdxs) const
+	{
+	const uint ClusterCount = SIZE(CentroidIdxs);
+
+	vector<uint> Order;
+	vector<uint> Sizes;
+	GetClusterSizes(CentroidIdxToMemberIdxs, CentroidIdxs,
+	  Order, Sizes);
+	for (uint k = 0; k < ClusterCount; ++k)
+		{
+		uint ClusterIndex = Order[k];
+		uint CentroidIdx = CentroidIdxs[ClusterIndex];
+		uint Size = Sizes[ClusterIndex];
+		if (g_ftsv != 0)
+			{
+			fprintf(g_ftsv, "C\t%u", Size);
+			VecToTsv(g_ftsv, CentroidIdx);
+			fprintf(g_ftsv, "\n");
+			}
+		}
+	}
+
+void XCluster::MxToTsv(FILE *f, 
+  const vector<vector<double> > &Mx) const
+	{
+	if (f == 0)
+		return;
+	const uint N = SIZE(Mx);
+	for (uint i = 0; i < N; ++i)
+		{
+		asserta(SIZE(Mx[i]) == N);
+		for (uint j = 0; j < N; ++j)
+			fprintf(f, "%u\t%u\t%.3g\n", i, j, Mx[i][j]);
+		}
 	}
 
 void cmd_xcluster()
 	{
 	const string &InputFileName = opt_xcluster;
-	vector<char> Aminos;
-	vector<vector<double> > FeatureValuesVec;
-	ReadXFeaturesTsv(InputFileName, Aminos, FeatureValuesVec);
-	const uint N = SIZE(FeatureValuesVec);
-	asserta(SIZE(Aminos) == N);
-	ProgressLog("%s feature vecs\n", IntToStr(N));
+	XCluster XC;
+	XC.ReadFeatureTsv(InputFileName);
+
+	asserta(optset_minscore);
+	double MinScore = opt_minscore;
 
 	XProf::InitScoreTable();
 
-	vector<uint> SubsetIdxs1;
-	SubsetIdxs1.reserve(N);
-	for (uint i = 0; i < N; ++i)
-		SubsetIdxs1.push_back(i);
-	random_shuffle(SubsetIdxs1.begin(), SubsetIdxs1.end());
-	SubsetIdxs1.resize(SUBSET1);
+	vector<uint> CentroidIdxs;
+	vector<uint> IdxToCentroidIdx;
+	vector<vector<uint> > CentroidIdxToMemberIdxs;
+	vector<uint> InputIdxs;
+	const uint N = SIZE(XC.m_Aminos);
+	for (uint Idx = 0; Idx < N; ++Idx)
+		InputIdxs.push_back(Idx);
 
-	vector<uint> Counts(SUBSET1);
-	vector<uint> Bins(XFEATS);
-	for (uint i = 0; i < N; ++i)
+	XC.Cluster(InputIdxs, MinScore,
+	  CentroidIdxs, IdxToCentroidIdx, CentroidIdxToMemberIdxs);
+	const uint ClusterCount = SIZE(CentroidIdxs);
+	ProgressLog("%u clusters\n", ClusterCount);
+
+	XC.ClustersToTsv(CentroidIdxs, CentroidIdxToMemberIdxs);
+
+	vector<uint> Order;
+	vector<uint> Sizes;
+	XC.GetClusterSizes(CentroidIdxToMemberIdxs, CentroidIdxs,
+	  Order, Sizes);
+
+	vector<uint> SelectedCentroidIdxs;
+	double SumFract = 0;
+	for (uint k = 0; k < min(ClusterCount, TOPN); ++k)
 		{
-		ProgressStep(i, N, "Pass 1");
-		char aai = Aminos[i];
-		const vector<double> Valuesi = FeatureValuesVec[i];
-		for (uint j = 0; j < SUBSET1; ++j)
-			{
-			uint SubsetIdx = SubsetIdxs1[j];
-			char aaj = Aminos[SubsetIdx];
-			const vector<double> Valuesj = FeatureValuesVec[SubsetIdx];
-			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-				{
-				double Valuei = Valuesi[FeatureIndex];
-				double Valuej = Valuesj[FeatureIndex];
-				double Diff = XProf::GetDiff(FeatureIndex, Valuei, Valuej);
-				uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
-				Bins[FeatureIndex] = Bin;
-				}
-			double Score = XProf::GetScore(aai, aaj, Bins);
-			if (Score >= MINSCORE1)
-				Counts[j] += 1;
-			}
+		uint ClusterIndex = Order[k];
+		uint CentroidIdx = CentroidIdxs[ClusterIndex];
+		uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
+		double Fract = double(Size)/N;
+		SumFract += Fract;
+		if (Fract < MINFRACT)
+			continue;
+		Log("[%3u]  %5u  %7.5f\n", k, Size, Fract);
+		SelectedCentroidIdxs.push_back(CentroidIdx);
+		}
+	Log("Total fract %.5f\n", SumFract);
+
+	const uint SelectedClusterCount = SIZE(SelectedCentroidIdxs);
+	ProgressLog("%u / %u clusters selected\n",
+		SelectedClusterCount, ClusterCount);
+
+	vector<vector<double> > ScoreMx;
+	XC.GetScoreMx(SelectedCentroidIdxs, ScoreMx);
+
+	vector<vector<double> > DistMx;
+	XC.ScoreMxToDistMx(ScoreMx, DistMx);
+	asserta(SIZE(DistMx) == SelectedClusterCount);
+	asserta(optset_output);
+	FILE *f = CreateStdioFile(opt_output);
+	fprintf(f, "%u\n", SelectedClusterCount);
+	for (uint i = 0; i < SelectedClusterCount; ++i)
+		{
+		uint CentroidIdx = SelectedCentroidIdxs[i];
+		uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
+		asserta(Size >= 1);
+		double Fract = double(Size)/N;
+		fprintf(f, "%u\t%u\t%.5f", i, Size, Fract);
+		XC.VecToTsv(f, CentroidIdx);
+		fprintf(f, "\n");
+		}
+	XC.MxToTsv(f, DistMx);
+	CloseStdioFile(f);
+
+	for (uint i = 0; i < SelectedClusterCount; ++i)
+		{
+		uint CentroidIdx = SelectedCentroidIdxs[i];
+		uint Size = SIZE(CentroidIdxToMemberIdxs[CentroidIdx]);
+		char aa = XC.m_Aminos[CentroidIdx];
+		const vector<double> &v = XC.m_FeatureValuesVec[CentroidIdx];
+		Log("DefineCentroid(%u, '%c'", i, aa);
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			Log(", %.3g", v[FeatureIndex]);
+		Log(");\n");
 		}
 
-	vector<uint> Order(SUBSET1);
-	QuickSortOrderDesc(Counts.data(), SUBSET1, Order.data());
-
-	vector<uint> SubsetIdxs2;
-	vector<uint> SubsetSizes2;
-	for (uint i = 0; i < SUBSET2; ++i)
-		{
-		uint k = Order[i];
-		uint SubsetIdx = SubsetIdxs1[k];
-		uint Count = Counts[k];
-		SubsetIdxs2.push_back(SubsetIdx);
-		SubsetSizes2.push_back(Count);
-		Log("[%5u]  %7u  %7.1f%%\n", i, Count, GetPct(Count, N));
-		}
-
-	vector<vector<double> > ScoreMx2(SUBSET2);
-	for (uint i = 0; i < SUBSET2; ++i)
-		ScoreMx2[i].resize(SUBSET2, DBL_MAX);
-
-	for (uint i = 0; i < SUBSET2; ++i)
-		{
-		uint Idxi = SubsetIdxs2[i];
-		char aai = Aminos[Idxi];
-		const vector<double> Valuesi = FeatureValuesVec[Idxi];
-		for (uint j = 0; j < i; ++j)
-			{
-			uint Idxj = SubsetIdxs2[j];
-			char aaj = Aminos[Idxj];
-			const vector<double> Valuesj = FeatureValuesVec[Idxj];
-			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-				{
-				double Valuei = Valuesi[FeatureIndex];
-				double Valuej = Valuesj[FeatureIndex];
-				double Diff = XProf::GetDiff(FeatureIndex, Valuei, Valuej);
-				uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
-				Bins[FeatureIndex] = Bin;
-				}
-			double Score = XProf::GetScore(aai, aaj, Bins);
-			ScoreMx2[i][j] = Score;
-			ScoreMx2[j][i] = Score;
-			}
-		}
-
-	set<uint> Final20;
-	for (uint i = 0; i < 20; ++i)
-		{
-		uint Idx = SelectFinal(Final20, SubsetIdxs2, ScoreMx2);
-		Final20.insert(Idx);
-		}
-
-	vector<uint> Final20Vec;
-	for (set<uint>::const_iterator iter = Final20.begin();
-	  iter != Final20.end(); ++iter)
-		Final20Vec.push_back(*iter);
-
-	for (uint i = 0; i < 20; ++i)
-		{
-		uint Idxi = Final20Vec[i];
-		char aai = Aminos[Idxi];
-		const vector<double> Valuesi = FeatureValuesVec[Idxi];
-		double SumScore = 0;
-		Log("[%2u]", i);
-		for (uint j = 0; j < 20; ++j)
-			{
-			uint Idxj = Final20Vec[j];
-			char aaj = Aminos[Idxj];
-			const vector<double> Valuesj = FeatureValuesVec[Idxj];
-			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-				{
-				double Valuei = Valuesi[FeatureIndex];
-				double Valuej = Valuesj[FeatureIndex];
-				double Diff = XProf::GetDiff(FeatureIndex, Valuei, Valuej);
-				uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
-				Bins[FeatureIndex] = Bin;
-				}
-			double Score = XProf::GetScore(aai, aaj, Bins);
-			Log("  %7.1f", Score);
-			SumScore += Score;
-			}
-		Log("  : %7.1f\n", SumScore/20);
-		}
+	FILE *f2 = CreateStdioFile(opt_output2);
+	XC.TopsToTsv(f2, SelectedCentroidIdxs);
+	CloseStdioFile(f2);
 	}

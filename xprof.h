@@ -7,13 +7,6 @@
 const uint XBINS = 10;
 const uint XFEATS = 6;
 
-class XBinner
-	{
-public:
-	virtual uint GetLetter(uint AminoLetter,
-	  const vector<double> &FeatureValues) const;
-	};
-
 class XProf
 	{
 public:
@@ -60,6 +53,9 @@ public:
 	static uint GetFeatureBin(uint FeatureIndex, double Diff);
 	static double GetScore(char Amino1, char Amino2, 
 	  const vector<uint> &Bins);
+	static double GetScore2(char Amino1, char Amino2,
+	  const vector<double> &Features1,
+	  const vector<double> &Features2);
 	static double GetDiff(uint FeatureIndex, double Value1,
 	  double Value2);
 	static uint Get3di(const vector<double> &FeatureValues);

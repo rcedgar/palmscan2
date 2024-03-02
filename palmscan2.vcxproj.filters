@@ -653,6 +653,9 @@
     <ClCompile Include="xcluster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xbinner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -920,6 +923,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dssp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xcluster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xbinner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

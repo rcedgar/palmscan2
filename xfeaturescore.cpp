@@ -93,6 +93,23 @@ double XProf::GetDiff(uint FeatureIndex, double Value1, double Value2)
 	return fabs(Value1 - Value2);
 	}
 
+double XProf::GetScore2(char Amino1, char Amino2,
+	const vector<double> &Features1,
+	const vector<double> &Features2)
+	{
+	vector<uint> Bins;
+	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		{
+		double Value1 = Features1[FeatureIndex];
+		double Value2 = Features1[FeatureIndex];
+		double Diff = XProf::GetDiff(FeatureIndex, Value1, Value2);
+		uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
+		Bins.push_back(Bin);
+		}
+	double Score = XProf::GetScore(Amino1, Amino2, Bins);
+	return Score;
+	}
+
 double XProf::GetScore(char Amino1, char Amino2, const vector<uint> &Bins)
 	{
 	asserta(SIZE(Bins) == XFEATS);

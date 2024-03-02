@@ -1,6 +1,7 @@
 #include "myutils.h"
 #include "xprof.h"
 #include "alpha.h"
+#include "xbinner.h"
 #undef zero
 #include <chrono>
 
@@ -25,11 +26,6 @@ static double g_AminoSubstMx[20][20] = {
 };
 Entropy 5.63, expected score 0.147
 ***/
-
-uint XBinner::GetLetter(uint AminoLetter, const vector<double> &FeatureValues) const
-	{
-	return AminoLetter;
-	}
 
 void ReadAlignedValueVecs(const string &FileName,
   vector<char> &AminosQ,
@@ -73,72 +69,32 @@ void ReadAlignedValueVecs(const string &FileName,
 		}
 	}
 
-void GetFreqs(XBinner &XB, 
-  const vector<char> &AminoQs,
-  const vector<char> &AminoRs,
-  const vector<vector<double> > &ValuesQVec,
-  const vector<vector<double> > &ValuesRVec,
-  vector<double> &Freqs,
-  vector<vector<double> > &FreqMx)
+static void LogCountsMx(const vector<vector<uint> > &CountMx)
 	{
-	Freqs.clear();
-	FreqMx.clear();
-
-	const uint PosPairCount = SIZE(ValuesQVec);
-	assert(SIZE(ValuesRVec) == PosPairCount);
-
-	uint LetterPairCount = 0;
-	vector<uint> CountVec(20);
-	vector<vector<uint> > CountMx(20);
-	for (uint i = 0; i < 20; ++i)
-		CountMx[i].resize(20);
-
-	for (uint PairIndex = 0; PairIndex < PosPairCount; ++PairIndex)
-		{
-		char AminoQ = AminoQs[PairIndex];
-		char AminoR = AminoRs[PairIndex];
-
-		uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
-		uint AminoLetterR = g_CharToLetterAmino[AminoR];
-
-		const vector<double> &ValuesQ = ValuesQVec[PairIndex];
-		const vector<double> &ValuesR = ValuesRVec[PairIndex];
-
-		uint iq = XB.GetLetter(AminoLetterQ, ValuesQ);
-		uint ir = XB.GetLetter(AminoLetterR, ValuesR);
-		if (iq >= 20 || ir >= 20)
-			continue;
-
-		LetterPairCount += 2;
-		CountVec[iq] += 1;
-		CountVec[ir] += 1;
-		CountMx[iq][ir] += 1;
-		CountMx[ir][iq] += 1;
-		}
-
-	double SumFreq = 0;
+	assert(SIZE(CountMx) == 20);
+	Log("static double Counts[20][20] = {\n");
+	Log("//      ");
 	for (uint i = 0; i < 20; ++i)
 		{
 		char c = g_LetterToCharAmino[i];
-		double Freq = double(CountVec[i])/(LetterPairCount);
-		SumFreq += Freq;
-		Freqs.push_back(Freq);
+		Log("        %c", c);
 		}
-	assert(feq(SumFreq, 1.0));
-
-	double SumFreq2 = 0;
-	FreqMx.resize(20);
+	Log("\n");
 	for (uint i = 0; i < 20; ++i)
 		{
+		char c = g_LetterToCharAmino[i];
+		Log("/* %c */ {", c);
+		assert(SIZE(CountMx[i]) == 20);
 		for (uint j = 0; j < 20; ++j)
 			{
-			uint n = CountMx[i][j];
-			double Freq2 = double(n)/double(LetterPairCount);
-			FreqMx[i].push_back(Freq2);
-			SumFreq2 += Freq2;
+			uint Count = CountMx[i][j];
+			Log(" %7u", Count);
+			if (j != 19)
+				Log(",");
 			}
+		Log("}, // %c\n", c);
 		}
-	assert(feq(SumFreq2, 1.0));
+	Log("};\n");
 	}
 
 void LogScoreMx(const vector<vector<double> > &ScoreMx)
@@ -167,6 +123,78 @@ void LogScoreMx(const vector<vector<double> > &ScoreMx)
 		Log("}, // %c\n", c);
 		}
 	Log("};\n");
+	}
+
+void GetFreqs(XBinner &XB, 
+  const vector<char> &AminoQs,
+  const vector<char> &AminoRs,
+  const vector<vector<double> > &ValuesQVec,
+  const vector<vector<double> > &ValuesRVec,
+  vector<double> &Freqs,
+  vector<vector<double> > &FreqMx)
+	{
+	Freqs.clear();
+	FreqMx.clear();
+
+	const uint PosPairCount = SIZE(ValuesQVec);
+	assert(SIZE(ValuesRVec) == PosPairCount);
+
+	uint LetterPairCount = 0;
+	vector<uint> CountVec(20, 1);
+	vector<vector<uint> > CountMx(20);
+	for (uint i = 0; i < 20; ++i)
+		CountMx[i].resize(20, 1);
+
+	for (uint PairIndex = 0; PairIndex < PosPairCount; ++PairIndex)
+		{
+		ProgressStep(PairIndex, PosPairCount, "freqs");
+		char AminoQ = AminoQs[PairIndex];
+		char AminoR = AminoRs[PairIndex];
+
+		uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
+		uint AminoLetterR = g_CharToLetterAmino[AminoR];
+
+		const vector<double> &ValuesQ = ValuesQVec[PairIndex];
+		const vector<double> &ValuesR = ValuesRVec[PairIndex];
+
+		uint iq = XB.GetLetter(AminoLetterQ, ValuesQ);
+		uint ir = XB.GetLetter(AminoLetterR, ValuesR);
+		if (iq >= 20 || ir >= 20)
+			continue;
+
+		LetterPairCount += 2;
+		CountVec[iq] += 1;
+		CountVec[ir] += 1;
+		CountMx[iq][ir] += 1;
+		CountMx[ir][iq] += 1;
+		}
+
+	double SumFreq = 0;
+	for (uint i = 0; i < 20; ++i)
+		{
+		char c = g_LetterToCharAmino[i];
+		double Freq = double(CountVec[i])/(LetterPairCount);
+		SumFreq += Freq;
+		Freqs.push_back(Freq);
+		Log("Freqs[%c] = %8.6f\n", c, Freq);
+		}
+	LogCountsMx(CountMx);
+
+	assert(feq(SumFreq, 1.0));
+
+	double SumFreq2 = 0;
+	FreqMx.resize(20);
+	for (uint i = 0; i < 20; ++i)
+		{
+		for (uint j = 0; j < 20; ++j)
+			{
+			uint n = CountMx[i][j];
+			double Freq2 = double(n)/double(LetterPairCount);
+			FreqMx[i].push_back(Freq2);
+			SumFreq2 += Freq2;
+			}
+		}
+	assert(feq(SumFreq2, 1.0));
 	}
 
 void GetLogOddsMx(const vector<double> &Freqs,
@@ -202,6 +230,7 @@ void GetLogOddsMx(const vector<double> &Freqs,
 void cmd_xbinner_substmx()
 	{
 	XBinner XB;
+	XBinner::InitCentroids();
 
 	XProf::InitScoreTable();
 
@@ -209,8 +238,10 @@ void cmd_xbinner_substmx()
 	vector<vector<double> > ValuesRVec;
 	vector<char> AminoQs;
 	vector<char> AminoRs;
+	Progress("Reading pairs...");
 	ReadAlignedValueVecs(opt_xbinner_substmx, AminoQs, AminoRs,
 	  ValuesQVec, ValuesRVec);
+	Progress(" done.\n");
 
 	auto start_time = std::chrono::steady_clock::now();
 	vector<double> Freqs;
