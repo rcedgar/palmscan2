@@ -8,6 +8,13 @@
 #include <map>
 #include <set>
 
+void LogCountsMx(const vector<vector<uint> > &CountMx);
+void LogScoreMx(const vector<vector<double> > &ScoreMx);
+void GetLogOddsMx(const vector<double> &Freqs,
+  const vector<vector<double> > &FreqMx,
+  vector<vector<double> > &ScoreMx,
+  double &H, double &RH);
+
 static double MINFRACT = 0.0;
 static uint TOPN = 20;
 
@@ -30,7 +37,11 @@ P          125          107     6.25     9.57     0    15  K          125       
 void XCluster::ReadFeatureTsv(const string &FileName)
 	{
 	m_Aminos.clear();
+	m_Aminos1.clear();
+	m_Aminos2.clear();
 	m_FeatureValuesVec.clear();
+	m_FeatureValuesVec1.clear();
+	m_FeatureValuesVec2.clear();
 
 	FILE *f = OpenStdioFile(FileName);
 	string HdrLine;
@@ -61,16 +72,20 @@ void XCluster::ReadFeatureTsv(const string &FileName)
 		asserta(SIZE(Fields[0]) == 1);
 		char Amino = Fields[0][0];
 		vector<double> Values;
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			{
+			double Value = StrToFloat(Fields[FeatureIndex+1]);
+			Values.push_back(Value);
+			}
+
+		m_Aminos1.push_back(Amino);
+		m_FeatureValuesVec1.push_back(Values);
+
 		string Dom = Fields[2*XFEATS+2];
 		uint Coord = StrToUint(Fields[2*XFEATS+3]);
 		pair<string, uint> Pair(Dom, Coord);
 		if (DoneSet.find(Pair) == DoneSet.end())
 			{
-			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-				{
-				double Value = StrToFloat(Fields[FeatureIndex+1]);
-				Values.push_back(Value);
-				}
 			m_Aminos.push_back(Amino);
 			m_FeatureValuesVec.push_back(Values);
 			m_Doms.push_back(Dom);
@@ -83,16 +98,20 @@ void XCluster::ReadFeatureTsv(const string &FileName)
 		asserta(SIZE(Fields[XFEATS+1]) == 1);
 		char Amino = Fields[XFEATS+1][0];
 		vector<double> Values;
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			{
+			double Value = StrToFloat(Fields[XFEATS+2+FeatureIndex]);
+			Values.push_back(Value);
+			}
+
+		m_Aminos2.push_back(Amino);
+		m_FeatureValuesVec2.push_back(Values);
+
 		string Dom = Fields[2*XFEATS+4];
 		uint Coord = StrToUint(Fields[2*XFEATS+5]);
 		pair<string, uint> Pair(Dom, Coord);
 		if (DoneSet.find(Pair) == DoneSet.end())
 			{
-			for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-				{
-				double Value = StrToFloat(Fields[XFEATS+2+FeatureIndex]);
-				Values.push_back(Value);
-				}
 			m_Aminos.push_back(Amino);
 			m_FeatureValuesVec.push_back(Values);
 			m_Doms.push_back(Dom);
@@ -102,11 +121,87 @@ void XCluster::ReadFeatureTsv(const string &FileName)
 		}
 		}
 	const uint N = SIZE(m_FeatureValuesVec);
+	const uint M = SIZE(m_FeatureValuesVec1);
 	asserta(SIZE(m_Aminos) == N);
 	asserta(SIZE(m_Doms) == N);
 	asserta(SIZE(m_Coords) == N);
-	ProgressLog("%s feature vecs\n", IntToStr(N));
+
+	asserta(SIZE(m_Aminos1) == M);
+	asserta(SIZE(m_Aminos2) == M);
+	asserta(SIZE(m_FeatureValuesVec2) == M);
+
+	ProgressLog("%s unique feature vecs\n", IntToStr(N));
+	ProgressLog("%s total feature vecs\n", IntToStr(M));
 	CloseStdioFile(f);
+	}
+
+void XCluster::GetFreqs(const vector<uint> &RefIdxs)
+	{
+	asserta(SIZE(RefIdxs) == 20);
+
+	m_CountVec.clear();
+	m_CountMx.clear();
+	m_Freqs.clear();
+	m_FreqMx.clear();
+
+	const uint PosPairCount = SIZE(m_Aminos1);
+	assert(SIZE(m_Aminos2) == PosPairCount);
+	assert(SIZE(m_FeatureValuesVec1) == PosPairCount);
+	assert(SIZE(m_FeatureValuesVec2) == PosPairCount);
+
+	uint LetterPairCount = 0;
+	m_CountVec.resize(20, 0);
+	m_CountMx.resize(20);
+	for (uint i = 0; i < 20; ++i)
+		m_CountMx[i].resize(20, 1);
+
+	for (uint PairIndex = 0; PairIndex < PosPairCount; ++PairIndex)
+		{
+		ProgressStep(PairIndex, PosPairCount, "freqs");
+		char AminoQ = m_Aminos1[PairIndex];
+		char AminoR = m_Aminos2[PairIndex];
+
+		const vector<double> &ValuesQ = m_FeatureValuesVec1[PairIndex];
+		const vector<double> &ValuesR = m_FeatureValuesVec2[PairIndex];
+
+		uint iq = GetMy3DLetter(AminoQ, ValuesQ, RefIdxs);
+		uint ir = GetMy3DLetter(AminoR, ValuesR, RefIdxs);
+		if (iq >= 20 || ir >= 20)
+			continue;
+
+		LetterPairCount += 2;
+		m_CountVec[iq] += 1;
+		m_CountVec[ir] += 1;
+		m_CountMx[iq][ir] += 1;
+		m_CountMx[ir][iq] += 1;
+		}
+
+	double SumFreq = 0;
+	for (uint i = 0; i < 20; ++i)
+		{
+		char c = g_LetterToCharAmino[i];
+		double Freq = double(m_CountVec[i])/(LetterPairCount);
+		SumFreq += Freq;
+		m_Freqs.push_back(Freq);
+		Log("Freqs[%c] = %8.6f\n", c, Freq);
+		}
+	LogCountsMx(m_CountMx);
+
+	assert(feq(SumFreq, 1.0));
+
+	double SumFreq2 = 0;
+	m_FreqMx.resize(20);
+	for (uint i = 0; i < 20; ++i)
+		{
+		for (uint j = 0; j < 20; ++j)
+			{
+			uint n = m_CountMx[i][j];
+			double Freq2 = double(n)/double(LetterPairCount);
+			m_FreqMx[i].push_back(Freq2);
+			SumFreq2 += Freq2;
+			}
+		}
+	assert(feq(SumFreq2, 1.0));
 	}
 
 void XCluster::VecToTsv(FILE *f, uint Idx) const
@@ -172,6 +267,31 @@ void XCluster::TopsToTsv(FILE *f, const vector<uint> &RefIdxs) const
 		VecToTsv(f, Idx);
 		fprintf(f, "\n");
 		}
+	}
+
+uint XCluster::GetMy3DLetter(char Amino, const vector<double> &Values,
+  const vector<uint> &RefIdxs) const
+	{
+	asserta(SIZE(RefIdxs) == 20);
+	double BestScore = -999;
+	uint BestIndex = UINT_MAX;
+	const uint N = SIZE(RefIdxs);
+	asserta(N > 0);
+	for (uint i = 0; i < N; ++i)
+		{
+		uint RefIdx = RefIdxs[i];
+		char RefAmino = m_Aminos[RefIdx];
+		const vector<double> &RefValues = m_FeatureValuesVec[RefIdx];
+		double Score =
+		  XProf::GetScore2(Amino, RefAmino, Values, RefValues);
+		if (Score >= BestScore)
+			{
+			BestScore = Score;
+			BestIndex = i;
+			}
+		}
+	asserta(BestIndex != UINT_MAX);
+	return BestIndex;
 	}
 
 uint XCluster::GetTopIdx(uint QueryIdx, const vector<uint> &RefIdxs,
@@ -479,4 +599,11 @@ void cmd_xcluster()
 	FILE *f2 = CreateStdioFile(opt_output2);
 	XC.TopsToTsv(f2, SelectedCentroidIdxs);
 	CloseStdioFile(f2);
+
+	XC.GetFreqs(SelectedCentroidIdxs);
+	double H, RH;
+	GetLogOddsMx(XC.m_Freqs, XC.m_FreqMx, ScoreMx, H, RH);
+
+	LogScoreMx(ScoreMx);
+	ProgressLog("Entropy %.3g, expected score %.3g\n", H, RH);
 	}

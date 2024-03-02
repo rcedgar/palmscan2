@@ -69,7 +69,7 @@ void ReadAlignedValueVecs(const string &FileName,
 		}
 	}
 
-static void LogCountsMx(const vector<vector<uint> > &CountMx)
+void LogCountsMx(const vector<vector<uint> > &CountMx)
 	{
 	assert(SIZE(CountMx) == 20);
 	Log("static double Counts[20][20] = {\n");
