@@ -1,5 +1,6 @@
 #include "myutils.h"
 #include "xprof.h"
+#include "alpha.h"
 
 /***
 Tests XProf::GetScore() on pairs of aligned structure profile positions from SCOP40.
@@ -37,6 +38,8 @@ void cmd_xdiscrete_score()
 		asserta(SIZE(Fields[XFEATS+1]) == 1);
 		char AminoQ = Fields[0][0];
 		char AminoR = Fields[XFEATS+1][0];
+		uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
+		uint AminoLetterR = g_CharToLetterAmino[AminoR];
 		vector<uint> Bins;
 		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
 			{
@@ -46,7 +49,7 @@ void cmd_xdiscrete_score()
 			uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
 			Bins.push_back(Bin);
 			}
-		double Score = XProf::GetScore(AminoQ, AminoR, Bins);
+		double Score = XProf::GetScore_Letters(AminoLetterQ, AminoLetterR, Bins);
 		AminoQs.push_back(AminoQ);
 		AminoRs.push_back(AminoR);
 		BinsVec.push_back(Bins);
@@ -63,6 +66,8 @@ void cmd_xdiscrete_score()
 		uint idxr = randu32()%N;
 		char AminoQ = AminoQs[idxq];
 		char AminoR = AminoRs[idxr];
+		uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
+		uint AminoLetterR = g_CharToLetterAmino[AminoR];
 		const vector<uint> &BinsQ = BinsVec[idxq];
 		const vector<uint> &BinsR = BinsVec[idxr];
 		vector<uint> Bins;
@@ -74,7 +79,7 @@ void cmd_xdiscrete_score()
 			uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
 			Bins.push_back(Bin);
 			}
-		double Score = XProf::GetScore(AminoQ, AminoR, Bins);
+		double Score = XProf::GetScore_Letters(AminoLetterQ, AminoLetterR, Bins);
 		SumRandScore += Score;
 		}
 	ProgressLog("Mean true score %.3g, rand %.3g\n",

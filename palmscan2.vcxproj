@@ -467,6 +467,7 @@
     <ClCompile Include="validate.cpp" />
     <ClCompile Include="viterbifastmem.cpp" />
     <ClCompile Include="writepml.cpp" />
+    <ClCompile Include="x2data.cpp" />
     <ClCompile Include="xalign.cpp" />
     <ClCompile Include="xalign2.cpp" />
     <ClCompile Include="xalign_calibrate.cpp" />
@@ -487,6 +488,7 @@
     <ClInclude Include="shapes.h" />
     <ClInclude Include="shapesearcher.h" />
     <ClInclude Include="stock.h" />
+    <ClInclude Include="x2data.h" />
     <ClInclude Include="xbinner.h" />
     <ClInclude Include="xcluster.h" />
     <ClInclude Include="xprof.h" />

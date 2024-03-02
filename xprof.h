@@ -51,9 +51,9 @@ public:
 	static uint GetFeatureIndex(const string &FeatureName);
 	static void InitScoreTable();
 	static uint GetFeatureBin(uint FeatureIndex, double Diff);
-	static double GetScore(char Amino1, char Amino2, 
+	static double GetScore_Letters(uint AminoLetter1, uint AminoLetter2,
 	  const vector<uint> &Bins);
-	static double GetScore2(char Amino1, char Amino2,
+	static double GetScore_Letters2(uint AminoLetter1, uint AminoLetter2,
 	  const vector<double> &Features1,
 	  const vector<double> &Features2);
 	static double GetDiff(uint FeatureIndex, double Value1,

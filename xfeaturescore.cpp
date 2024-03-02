@@ -69,7 +69,7 @@ uint XProf::Get3di(const vector<double> &FeatureValues)
 			uint Bin = GetFeatureBin(FeatureIndex, Diff);
 			Bins[FeatureIndex] = Bin;
 			}
-		double Score = GetScore('X', 'X', Bins);
+		double Score = GetScore_Letters(UINT_MAX, UINT_MAX, Bins);
 		if (Score > BestScore)
 			{
 			BestScore = Score;
@@ -93,7 +93,8 @@ double XProf::GetDiff(uint FeatureIndex, double Value1, double Value2)
 	return fabs(Value1 - Value2);
 	}
 
-double XProf::GetScore2(char Amino1, char Amino2,
+double XProf::GetScore_Letters2(
+	uint AminoLetter1, uint AminoLetter2,
 	const vector<double> &Features1,
 	const vector<double> &Features2)
 	{
@@ -106,19 +107,18 @@ double XProf::GetScore2(char Amino1, char Amino2,
 		uint Bin = XProf::GetFeatureBin(FeatureIndex, Diff);
 		Bins.push_back(Bin);
 		}
-	double Score = XProf::GetScore(Amino1, Amino2, Bins);
+	double Score = XProf::GetScore_Letters(AminoLetter1, AminoLetter2, Bins);
 	return Score;
 	}
 
-double XProf::GetScore(char Amino1, char Amino2, const vector<uint> &Bins)
+double XProf::GetScore_Letters(uint AminoLetter1, uint AminoLetter2,
+  const vector<uint> &Bins)
 	{
 	asserta(SIZE(Bins) == XFEATS);
 	double Score = 0;
 
-	uint Letter1 = g_CharToLetterAmino[(byte) Amino1];
-	uint Letter2 = g_CharToLetterAmino[(byte) Amino2];
-	if (Letter1 < 20 && Letter2 < 20)
-		Score += g_AminoSubstMx[Letter1][Letter2];
+	if (AminoLetter1 < 20 && AminoLetter2 < 20)
+		Score += g_AminoSubstMx[AminoLetter1][AminoLetter2];
 
 	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
 		{
