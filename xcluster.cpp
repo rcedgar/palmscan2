@@ -14,7 +14,7 @@ void LogScoreMx(const vector<vector<double> > &ScoreMx);
 
 static const double MINFRACT = 0.0;
 static const uint ALPHASIZE = 20;
-static const uint ITERS = 2000;
+static const uint ITERS = 10000;
 static const double MINSCOREBASE = 1.0;
 static const double MAXSCOREDELTA = 0.25;
 
