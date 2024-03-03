@@ -112,5 +112,6 @@ C(xbinner_explore)
 C(xfeatures)
 C(xcluster)
 C(xpermute)
+C(calfa2x)
 
 #undef C

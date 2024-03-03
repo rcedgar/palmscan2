@@ -97,6 +97,24 @@ uint XProf::GetSphereNr(uint Pos, double Radius) const
 	return n;
 	}
 
+void XProf::GetFeatures(uint Pos, vector<double> &Values) const
+	{
+	Values.clear();
+	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		{
+		double Value = GetFeatureValue(FeatureIndex, Pos);
+		Values.push_back(Value);
+		}
+	}
+
+double XProf::GetFeatureValue(uint FeatureIndex, uint Pos) const
+	{
+	uint notused_iValue;
+	double Value;
+	GetFeature(FeatureIndex, Pos, Value, notused_iValue);
+	return Value;
+	}
+
 void XProf::GetFeature(uint FeatureIndex, uint Pos,
   double &Value, uint &iValue) const
 	{

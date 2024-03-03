@@ -306,6 +306,7 @@
     <ClCompile Include="expvalue.cpp" />
     <ClCompile Include="fa2substmx.cpp" />
     <ClCompile Include="fa2substmx3di.cpp" />
+    <ClCompile Include="calfa2x.cpp" />
     <ClCompile Include="fa2xfeataln.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="filler.cpp" />

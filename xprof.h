@@ -24,8 +24,10 @@ public:
 
 	uint GetSeqLength() const { return m_Chain->GetSeqLength(); }
 
+	double GetFeatureValue(uint FeatureIndex, uint Pos) const;
 	void GetFeature(uint FeatureIndex, uint Pos,
 	  double &Value, uint &iValue) const;
+	void GetFeatures(uint Pos, vector<double> &Values) const;
 
 	void Get_NU(uint Pos, double &Value, uint &iValue) const;
 	void Get_ND(uint Pos, double &Value, uint &iValue) const;
