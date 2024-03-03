@@ -481,6 +481,7 @@
     <ClCompile Include="xfeatures.cpp" />
     <ClCompile Include="xfeaturescore.cpp" />
     <ClCompile Include="xfeatures_3di.cpp" />
+    <ClCompile Include="xpermute.cpp" />
     <ClCompile Include="xprof.cpp" />
     <ClInclude Include="dssp.h" />
     <ClInclude Include="filler.h" />

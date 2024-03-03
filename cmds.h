@@ -111,5 +111,6 @@ C(xbinner_substmx)
 C(xbinner_explore)
 C(xfeatures)
 C(xcluster)
+C(xpermute)
 
 #undef C

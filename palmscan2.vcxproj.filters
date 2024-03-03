@@ -662,6 +662,9 @@
     <ClCompile Include="xbinner_explore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="xpermute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

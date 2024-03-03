@@ -156,11 +156,10 @@ void XCluster::LogDCs(const vector<uint> AlphaIdxs,
 	for (uint i = 0; i < 20; ++i)
 		{
 		uint CentroidIdx = AlphaIdxs[i];
-		char aa = m_X2.m_Aminos[CentroidIdx];
 		const vector<double> &v = m_X2.m_FeatureValuesVec[CentroidIdx];
 		Log("DefineCentroid(%u", i);
 		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-			Log(", %.8g", v[FeatureIndex]);
+			Log(", %8.2f", v[FeatureIndex]);
 		Log("); // %.4f\n", ExpScore);
 		}
 	}

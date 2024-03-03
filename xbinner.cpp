@@ -69,26 +69,46 @@ void XBinner::LogCentroids()
 
 void XBinner::InitCentroids()
 	{
-DefineCentroid(0, 109, 28.2, 6.17, 6.27, 10, 19); // 0.7553
-DefineCentroid(1, 109, 86.7, 6.36, 11.3, 18, 26); // 0.7553
-DefineCentroid(2, 23.1, 46.2, 13.3, 6.55, 16, 14); // 0.7553
-DefineCentroid(3, 7.14, 8.73, 13.3, 11.7, 17, 19); // 0.7553
-DefineCentroid(4, 71.6, 55.2, 8.16, 6.24, 8, 12); // 0.7553
-DefineCentroid(5, 133, 103, 9.29, 5.84, 4, 19); // 0.7553
-DefineCentroid(6, 52.8, 29.7, 8.8, 13.8, 12, 18); // 0.7553
-DefineCentroid(7, 49.8, 51.3, 13.8, 12.6, 6, 24); // 0.7553
-DefineCentroid(8, 101, 132, 11.8, 8.64, 0, 12); // 0.7553
-DefineCentroid(9, 112, 125, 13.3, 11.3, 4, 21); // 0.7553
-DefineCentroid(10, 68.8, 87.4, 9.49, 12.3, 9, 31); // 0.7553
-DefineCentroid(11, 33.8, 33, 7.74, 8.71, 4, 19); // 0.7553
-DefineCentroid(12, 53.8, 66, 11.6, 5.8, 21, 8); // 0.7553
-DefineCentroid(13, 16.6, 71.6, 8.68, 12.1, 3, 25); // 0.7553
-DefineCentroid(14, 9.11, 30.3, 11.6, 13.1, 13, 26); // 0.7553
-DefineCentroid(15, 80.1, 85.6, 13.8, 9.79, 8, 24); // 0.7553
-DefineCentroid(16, 66.5, 51.3, 5.86, 9.02, 10, 9); // 0.7553
-DefineCentroid(17, 47.2, 85.2, 7.36, 13.7, 4, 12); // 0.7553
-DefineCentroid(18, 132, 135, 10, 11.9, 0, 13); // 0.7553
-DefineCentroid(19, 104, 56.2, 8.85, 8.92, 12, 19); // 0.7553
+//DefineCentroid(0, 115, 30.2, 6.21, 5.84, 23, 21); // 0.7614
+//DefineCentroid(1, 7.98, 7.17, 13.9, 13, 19, 19); // 0.7614
+//DefineCentroid(2, 42.1, 52, 8.41, 12.8, 11, 12); // 0.7614
+//DefineCentroid(3, 89.5, 103, 12.3, 13, 7, 15); // 0.7614
+//DefineCentroid(4, 30, 43, 11, 10.8, 0, 19); // 0.7614
+//DefineCentroid(5, 116, 123, 6.3, 11.9, 15, 13); // 0.7614
+//DefineCentroid(6, 74.5, 81.2, 10.4, 5.81, 13, 13); // 0.7614
+//DefineCentroid(7, 110, 89.9, 8.54, 9.96, 13, 9); // 0.7614
+//DefineCentroid(8, 138, 111, 11, 6.47, 1, 15); // 0.7614
+//DefineCentroid(9, 59.7, 59.9, 12.9, 11.5, 20, 21); // 0.7614
+//DefineCentroid(10, 53.2, 59.1, 9.1, 9.05, 4, 25); // 0.7614
+//DefineCentroid(11, 80.1, 43.7, 8.22, 7.58, 25, 14); // 0.7614
+//DefineCentroid(12, 46.5, 87.2, 6.22, 13.9, 18, 24); // 0.7614
+//DefineCentroid(13, 27.1, 76.4, 6.58, 10.3, 5, 15); // 0.7614
+//DefineCentroid(14, 16.2, 17.8, 12.9, 10.3, 21, 13); // 0.7614
+//DefineCentroid(15, 102, 126, 10.5, 9.3, 1, 11); // 0.7614
+//DefineCentroid(16, 29.8, 57.6, 13.5, 6.69, 14, 14); // 0.7614
+//DefineCentroid(17, 76, 132, 12.9, 5.68, 3, 10); // 0.7614
+//DefineCentroid(18, 9.98, 31.4, 10.4, 13.7, 23, 31); // 0.7614
+//DefineCentroid(19, 127, 147, 9.12, 12.7, 0, 8); // 0.7614
+DefineCentroid( 0,    46.50,    87.20,     6.22,    13.90,    18.00,    24.00); // xpermute[12]
+DefineCentroid( 1,   116.00,   123.00,     6.30,    11.90,    15.00,    13.00); // xpermute[5]
+DefineCentroid( 2,    59.70,    59.90,    12.90,    11.50,    20.00,    21.00); // xpermute[9]
+DefineCentroid( 3,     9.98,    31.40,    10.40,    13.70,    23.00,    31.00); // xpermute[18]
+DefineCentroid( 4,    53.20,    59.10,     9.10,     9.05,     4.00,    25.00); // xpermute[10]
+DefineCentroid( 5,    42.10,    52.00,     8.41,    12.80,    11.00,    12.00); // xpermute[2]
+DefineCentroid( 6,    29.80,    57.60,    13.50,     6.69,    14.00,    14.00); // xpermute[16]
+DefineCentroid( 7,    89.50,   103.00,    12.30,    13.00,     7.00,    15.00); // xpermute[3]
+DefineCentroid( 8,    27.10,    76.40,     6.58,    10.30,     5.00,    15.00); // xpermute[13]
+DefineCentroid( 9,   110.00,    89.90,     8.54,     9.96,    13.00,     9.00); // xpermute[7]
+DefineCentroid(10,    16.20,    17.80,    12.90,    10.30,    21.00,    13.00); // xpermute[14]
+DefineCentroid(11,     7.98,     7.17,    13.90,    13.00,    19.00,    19.00); // xpermute[1]
+DefineCentroid(12,   102.00,   126.00,    10.50,     9.30,     1.00,    11.00); // xpermute[15]
+DefineCentroid(13,   127.00,   147.00,     9.12,    12.70,     0.00,     8.00); // xpermute[19]
+DefineCentroid(14,    76.00,   132.00,    12.90,     5.68,     3.00,    10.00); // xpermute[17]
+DefineCentroid(15,    74.50,    81.20,    10.40,     5.81,    13.00,    13.00); // xpermute[6]
+DefineCentroid(16,    30.00,    43.00,    11.00,    10.80,     0.00,    19.00); // xpermute[4]
+DefineCentroid(17,    80.10,    43.70,     8.22,     7.58,    25.00,    14.00); // xpermute[11]
+DefineCentroid(18,   138.00,   111.00,    11.00,     6.47,     1.00,    15.00); // xpermute[8]
+DefineCentroid(19,   115.00,    30.20,     6.21,     5.84,    23.00,    21.00); // xpermute[0]
 	}
 
 uint XBinner::GetLetter(const vector<double> &FeatureValues) const
