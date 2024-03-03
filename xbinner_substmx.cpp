@@ -146,5 +146,5 @@ void cmd_xbinner_substmx()
 	double ExpScore = XB.GetLogOddsMx(Freqs, FreqMx, ScoreMx);
 
 	LogScoreMx(ScoreMx);
-	ProgressLog("Expected score %.3g\n", ExpScore);
+	ProgressLog("Expected score %.3f\n", ExpScore);
 	}

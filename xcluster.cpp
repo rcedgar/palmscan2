@@ -240,19 +240,10 @@ void cmd_xcluster()
 			{
 			BestExpScore = ExpScore;
 			XC.LogDCs(SelectedCentroidIdxs, ExpScore);
-
-			XC.DefineBinnerLetters(SelectedCentroidIdxs);
-
-			vector<double> Freqs2;
-			vector<vector<double> > FreqMx2;
-			XB.GetFreqs(X2, Freqs2, FreqMx2);
-			double ExpScore2 = XBC.GetLogOddsMx(Freqs2, FreqMx2, ScoreMx);
-			ProgressLog("ExpScore %.3g, %.3g\n", ExpScore, ExpScore2);
 			}
 
 		ProgressLog("Iter %u/%u radius %.3g, expected score %.3f (max %.3f)\n",
 		  Iter, ITERS, MinScore, ExpScore, BestExpScore);
-		return;////////////////////////////////////////
 
 		ExpScores.push_back(ExpScore);
 		asserta(SIZE(SelectedCentroidIdxs) == 20);
