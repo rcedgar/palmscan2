@@ -5,8 +5,7 @@
 class XBinner
 	{
 public:
-	virtual uint GetLetter(char AminoChar,
-	  const vector<double> &FeatureValues) const;
+	virtual uint GetLetter(const vector<double> &FeatureValues) const;
 
 	void GetFreqs(
 		const X2Data &X2,
@@ -17,12 +16,11 @@ public:
 	static void InitCentroids();
 	static void LogCentroids();
 
-	static void DefineCentroid(uint Idx, char aa,
+	static void DefineCentroid(uint Idx,
 	  double v0, double v1, double v2,
 	  double v3, double v4, double v5);
 
-	static void SetCentroid(uint Idx, char aa,
-	  const vector<double> &Values);
+	static void SetCentroid(uint Idx, const vector<double> &Values);
 
 	static double GetLogOddsMx(const vector<double> &Freqs,
 	  const vector<vector<double> > &FreqMx,
@@ -37,6 +35,5 @@ public:
 	void LogMyCentroids() const;
 
 public:
-	virtual uint GetLetter(char AminoChar,
-	  const vector<double> &FeatureValues) const;
+	virtual uint GetLetter(const vector<double> &FeatureValues) const;
 	};

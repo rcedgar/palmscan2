@@ -126,14 +126,14 @@ void XCluster::GetClusterSizes(
 
 double XCluster::GetScore(uint Idx1, uint Idx2) const
 	{
-	char AminoChar1 = m_X2.m_Aminos[Idx1];
-	char AminoChar2 = m_X2.m_Aminos[Idx2];
-	uint AminoLetter1 = g_CharToLetterAmino[AminoChar1];
-	uint AminoLetter2 = g_CharToLetterAmino[AminoChar2];
+	//char AminoChar1 = m_X2.m_Aminos[Idx1];
+	//char AminoChar2 = m_X2.m_Aminos[Idx2];
+	//uint AminoLetter1 = g_CharToLetterAmino[AminoChar1];
+	//uint AminoLetter2 = g_CharToLetterAmino[AminoChar2];
 	const vector<double> &Values1 = m_X2.m_FeatureValuesVec[Idx1];
 	const vector<double> &Values2 = m_X2.m_FeatureValuesVec[Idx2];
 	double Score = 
-	  XProf::GetScore_Letters2(AminoLetter1, AminoLetter2, Values1, Values2);
+	  XProf::GetScore(Values1, Values2);
 	return Score;
 	}
 
@@ -145,7 +145,7 @@ void XCluster::DefineBinnerLetters(const vector<uint> AlphaIdxs) const
 		uint CentroidIdx = AlphaIdxs[i];
 		char aa = m_X2.m_Aminos[CentroidIdx];
 		const vector<double> &Values = m_X2.m_FeatureValuesVec[CentroidIdx];
-		XBinner::SetCentroid(i, aa, Values);
+		XBinner::SetCentroid(i, Values);
 		}
 	}
 
@@ -158,7 +158,7 @@ void XCluster::LogDCs(const vector<uint> AlphaIdxs,
 		uint CentroidIdx = AlphaIdxs[i];
 		char aa = m_X2.m_Aminos[CentroidIdx];
 		const vector<double> &v = m_X2.m_FeatureValuesVec[CentroidIdx];
-		Log("DefineCentroid(%u, '%c'", i, aa);
+		Log("DefineCentroid(%u", i);
 		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
 			Log(", %.8g", v[FeatureIndex]);
 		Log("); // %.4f\n", ExpScore);
