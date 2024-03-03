@@ -236,14 +236,15 @@ void cmd_xcluster()
 		vector<vector<double> > ScoreMx;
 		double ExpScore =
 		  XBinner::GetLogOddsMx(Freqs, FreqMx, ScoreMx);
-		if (ExpScore > BestExpScore)
+		bool Better = (ExpScore > BestExpScore);
+		if (Better)
 			{
 			BestExpScore = ExpScore;
 			XC.LogDCs(SelectedCentroidIdxs, ExpScore);
 			}
 
-		ProgressLog("Iter %u/%u radius %.3g, expected score %.3f (max %.3f)\n",
-		  Iter, ITERS, MinScore, ExpScore, BestExpScore);
+		ProgressLog("Iter %u/%u radius %.3g, expected score %s%.3f (max %.3f)\n",
+		  Iter, ITERS, MinScore, (Better ? "++" : ""), ExpScore, BestExpScore);
 
 		ExpScores.push_back(ExpScore);
 		asserta(SIZE(SelectedCentroidIdxs) == 20);
