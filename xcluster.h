@@ -21,6 +21,6 @@ public:
 		vector<uint> &Order,
 		vector<uint> &Sizes) const;
 	double GetScore(uint Idx1, uint Idx2) const;
-	void LogDCs(const vector<uint> SelectedCentroidIdxs,
-	  double ExpScore) const;
+	void LogDCs(const vector<uint> AlphaIdxs, double ExpScore) const;
+	void DefineBinnerLetters(const vector<uint> AlphaIdxs) const;
 	};

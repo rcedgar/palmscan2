@@ -137,6 +137,18 @@ double XCluster::GetScore(uint Idx1, uint Idx2) const
 	return Score;
 	}
 
+void XCluster::DefineBinnerLetters(const vector<uint> AlphaIdxs) const
+	{
+	asserta(SIZE(AlphaIdxs) == 20);
+	for (uint i = 0; i < 20; ++i)
+		{
+		uint CentroidIdx = AlphaIdxs[i];
+		char aa = m_X2.m_Aminos[CentroidIdx];
+		const vector<double> &Values = m_X2.m_FeatureValuesVec[CentroidIdx];
+		XBinner::SetCentroid(i, aa, Values);
+		}
+	}
+
 void XCluster::LogDCs(const vector<uint> AlphaIdxs,
 	double ExpScore) const
 	{
@@ -175,7 +187,7 @@ void cmd_xcluster()
 		vector<uint> InputIdxs;
 		for (uint i = 0; i < N; ++i)
 			InputIdxs.push_back(i);
-		random_shuffle(InputIdxs.begin(), InputIdxs.end());
+		Shuffle(InputIdxs);
 
 		vector<uint> CentroidIdxs;
 		map<uint, uint> IdxToCentroidIdx;
@@ -219,6 +231,8 @@ void cmd_xcluster()
 		vector<vector<double> > FreqMx;
 		XBC.GetFreqs(X2, Freqs, FreqMx);
 
+		XBinner XB;
+
 		vector<vector<double> > ScoreMx;
 		double ExpScore =
 		  XBinner::GetLogOddsMx(Freqs, FreqMx, ScoreMx);
@@ -226,10 +240,19 @@ void cmd_xcluster()
 			{
 			BestExpScore = ExpScore;
 			XC.LogDCs(SelectedCentroidIdxs, ExpScore);
+
+			XC.DefineBinnerLetters(SelectedCentroidIdxs);
+
+			vector<double> Freqs2;
+			vector<vector<double> > FreqMx2;
+			XB.GetFreqs(X2, Freqs2, FreqMx2);
+			double ExpScore2 = XBC.GetLogOddsMx(Freqs2, FreqMx2, ScoreMx);
+			ProgressLog("ExpScore %.3g, %.3g\n", ExpScore, ExpScore2);
 			}
 
 		ProgressLog("Iter %u/%u radius %.3g, expected score %.3f (max %.3f)\n",
 		  Iter, ITERS, MinScore, ExpScore, BestExpScore);
+		return;////////////////////////////////////////
 
 		ExpScores.push_back(ExpScore);
 		asserta(SIZE(SelectedCentroidIdxs) == 20);

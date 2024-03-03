@@ -6,6 +6,20 @@
 static char g_Aminos[20];
 static vector<vector<double> > g_FeatureValuesVec;
 
+void XBinner::SetCentroid(uint Idx, char aa, const vector<double> &Values)
+	{
+	asserta(Idx < 20);
+	if (g_FeatureValuesVec.empty())
+		{
+		g_FeatureValuesVec.resize(20);
+		for (uint i = 0; i < 20; ++i)
+			g_FeatureValuesVec[i].resize(XFEATS);
+		}
+	g_Aminos[Idx] = aa;
+	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+		g_FeatureValuesVec[Idx][FeatureIndex] = Values[FeatureIndex];
+	}
+
 void XBinner::DefineCentroid(uint Idx, char aa,
 	double v0, double v1, double v2,
 	double v3, double v4, double v5)
@@ -28,33 +42,46 @@ void XBinner::DefineCentroid(uint Idx, char aa,
 	g_FeatureValuesVec[Idx][5] = v5;
 	}
 
+void XBinner::LogCentroids()
+	{
+	Log("XBinner::LogCentroids\n");
+	for (uint i = 0; i < 20; ++i)
+		{
+		Log("%c", g_Aminos[i]);
+		for (uint j = 0; j < XFEATS; ++j)
+			Log(" %10.3g", g_FeatureValuesVec[i][j]);
+		Log("\n");
+		}
+	}
+
 void XBinner::InitCentroids()
 	{
-DefineCentroid(0, 'T', 112, 35.3, 6.37, 5.19, 16, 11); // 0.7196
-DefineCentroid(1, 'H', 2.83, 26, 13.5, 11, 10, 13); // 0.7196
-DefineCentroid(2, 'M', 30.6, 29.1, 11.5, 13, 21, 14); // 0.7196
-DefineCentroid(3, 'N', 110, 85.1, 6.29, 9.18, 0, 19); // 0.7196
-DefineCentroid(4, 'S', 58.9, 114, 11.6, 5.75, 0, 16); // 0.7196
-DefineCentroid(5, 'E', 67.9, 65, 13.3, 8.6, 7, 19); // 0.7196
-DefineCentroid(6, 'V', 29.8, 57.6, 12.2, 7.94, 17, 7); // 0.7196
-DefineCentroid(7, 'P', 78.1, 78.5, 7.73, 5.51, 10, 11); // 0.7196
-DefineCentroid(8, 'N', 66.4, 90.4, 6.12, 11.6, 5, 9); // 0.7196
-DefineCentroid(9, 'P', 92.1, 63.1, 11.4, 11.8, 2, 11); // 0.7196
-DefineCentroid(10, 'R', 98.8, 34.2, 9.49, 7.85, 9, 20); // 0.7196
-DefineCentroid(11, 'F', 134, 139, 10.6, 7.56, 13, 10); // 0.7196
-DefineCentroid(12, 'G', 116, 134, 8.94, 12.5, 20, 21); // 0.7196
-DefineCentroid(13, 'P', 45.6, 25.8, 6.24, 12.3, 12, 18); // 0.7196
-DefineCentroid(14, 'D', 52.6, 56.3, 9.34, 13.2, 4, 22); // 0.7196
-DefineCentroid(15, 'D', 41, 59.3, 5.5, 9.04, 14, 9); // 0.7196
-DefineCentroid(16, 'V', 83.4, 136, 12.6, 10.6, 15, 9); // 0.7196
-DefineCentroid(17, 'V', 70, 60.5, 7.54, 9.78, 24, 15); // 0.7196
-DefineCentroid(18, 'D', 114, 149, 12.5, 8.91, 7, 11); // 0.7196
-DefineCentroid(19, 'Q', 112, 52.4, 0, 6.21, 12, 21); // 0.7196
+DefineCentroid(0, 'Y', 105, 21.8, 6.02, 6.29, 18, 28); // 0.7065
+DefineCentroid(1, 'L', 2.56, 21.6, 13.6, 12.3, 13, 24); // 0.7065
+DefineCentroid(2, 'H', 114, 80.2, 6.42, 13.4, 13, 14); // 0.7065
+DefineCentroid(3, 'K', 87.1, 96, 12.7, 11.9, 9, 11); // 0.7065
+DefineCentroid(4, 'G', 32.7, 54.4, 11.4, 7.66, 0, 17); // 0.7065
+DefineCentroid(5, 'A', 23.1, 73.2, 6.56, 10.8, 6, 18); // 0.7065
+DefineCentroid(6, 'T', 34.7, 60, 8.99, 13, 19, 18); // 0.7065
+DefineCentroid(7, 'V', 69.1, 29, 9.35, 8.26, 22, 18); // 0.7065
+DefineCentroid(8, 'G', 116, 145, 12.2, 9.55, 20, 13); // 0.7065
+DefineCentroid(9, 'L', 115, 40.7, 8.33, 6.88, 2, 18); // 0.7065
+DefineCentroid(10, 'E', 90.5, 119, 5.99, 8.92, 1, 15); // 0.7065
+DefineCentroid(11, 'H', 72.5, 58.4, 13.1, 10.5, 3, 21); // 0.7065
+DefineCentroid(12, 'K', 133, 112, 10.6, 6.58, 2, 12); // 0.7065
+DefineCentroid(13, 'Y', 32.9, 66, 9.69, 5.03, 13, 12); // 0.7065
+DefineCentroid(14, 'V', 98, 67, 13.2, 6.59, 21, 23); // 0.7065
+DefineCentroid(15, 'Y', 20.2, 29.2, 13.1, 8.98, 25, 16); // 0.7065
+DefineCentroid(16, 'G', 119, 107, 8.25, 11.2, 0, 19); // 0.7065
+DefineCentroid(17, 'M', 60.1, 20.6, 10.9, 11.5, 18, 8); // 0.7065
+DefineCentroid(18, 'G', 84.8, 129, 10.7, 6.22, 8, 16); // 0.7065
+DefineCentroid(19, 'F', 15.8, 13, 6.25, 13.1, 23, 11); // 0.7065
 	}
 
 uint XBinner::GetLetter(char AminoChar,
   const vector<double> &FeatureValues) const
 	{
+	extern bool g_Trace;
 	uint AminoLetter = g_CharToLetterAmino[AminoChar];
 	if (AminoLetter >= 20)
 		return 0;
@@ -68,6 +95,19 @@ uint XBinner::GetLetter(char AminoChar,
 		uint AminoLetter2 = g_CharToLetterAmino[AminoChar];
 		double Score =
 		  XProf::GetScore_Letters2(AminoLetter, AminoLetter2, FeatureValues, v);
+		if (g_Trace && Letter == 0)
+			{
+			Log("XBinner::GetLetter(%c)", AminoChar);
+			Log(" [%2u]=%.3g\n", Letter, Score);
+			Log("  Ref=");
+			for (uint k = 0; k < XFEATS; ++k)
+				Log(" %.3g", v[k]);
+			Log("\n");
+			Log("  Q=");
+			for (uint k = 0; k < XFEATS; ++k)
+				Log(" %.3g", FeatureValues[k]);
+			Log("\n");
+			}
 		if (Score > BestScore)
 			{
 			BestScore = Score;
@@ -75,8 +115,17 @@ uint XBinner::GetLetter(char AminoChar,
 			}
 		}
 	asserta(BestLetter != UINT_MAX);
+	if (g_Trace)
+		{
+		Log(">>>  XBinner::GetLetter(%c", AminoChar);
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			Log(" %.3g", FeatureValues[FeatureIndex]);
+		Log(") = %u\n", BestLetter);
+		}
 	return BestLetter;
 	}
+
+bool g_Trace;
 
 void XBinner::GetFreqs(
   const X2Data &X2,
@@ -101,15 +150,16 @@ void XBinner::GetFreqs(
 		CountMx[i].resize(20, 1);
 
 	uint Counter = 0;
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int iPairIndex = 0; iPairIndex < (int) PosPairCount; ++iPairIndex)
 		{
+		g_Trace = (Counter < 10);
 		uint PairIndex = (uint) iPairIndex;
 		char AminoQ = AminoQs[PairIndex];
 		char AminoR = AminoRs[PairIndex];
 
-		uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
-		uint AminoLetterR = g_CharToLetterAmino[AminoR];
+		//uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
+		//uint AminoLetterR = g_CharToLetterAmino[AminoR];
 
 		const vector<double> &ValuesQ = ValuesQVec[PairIndex];
 		const vector<double> &ValuesR = ValuesRVec[PairIndex];
@@ -120,6 +170,8 @@ void XBinner::GetFreqs(
 			continue;
 #pragma omp critical
 		{
+		if (Counter < 100)
+			Log("TRACE %u %c %c %u %u\n", Counter, AminoQ, AminoR, iq, ir);
 		ProgressStep(Counter++, PosPairCount, "freqs");
 		LetterPairCount += 2;
 		CountVec[iq] += 1;
@@ -194,15 +246,30 @@ uint XBinnerC::GetLetter(char AminoChar,
 	if (AminoLetter >= 20)
 		return 0;
 
+	extern bool g_Trace;
 	double BestScore = -999;
 	uint BestLetter = UINT_MAX;
 	for (uint Letter = 0; Letter < 20; ++Letter)
 		{
 		uint Idx = m_Idxs[Letter];
 		const vector<double> &v = m_ptrX2->m_FeatureValuesVec[Idx];
-		uint AminoLetter2 = g_CharToLetterAmino[g_Aminos[Letter]];
+		char AminoChar2 = m_ptrX2->m_Aminos[Idx];
+		uint AminoLetter2 = g_CharToLetterAmino[AminoChar2];
 		double Score =
 		  XProf::GetScore_Letters2(AminoLetter, AminoLetter2, FeatureValues, v);
+		if (g_Trace && Letter == 0)
+			{
+			Log("XBinnerC::GetLetter(%c)", AminoChar);
+			Log(" [%2u]=%.3g\n", Letter, Score);
+			Log("  Ref=");
+			for (uint k = 0; k < XFEATS; ++k)
+				Log(" %.3g", v[k]);
+			Log("\n");
+			Log("  Q=");
+			for (uint k = 0; k < XFEATS; ++k)
+				Log(" %.3g", FeatureValues[k]);
+			Log("\n");
+			}
 		if (Score > BestScore)
 			{
 			BestScore = Score;
@@ -210,5 +277,27 @@ uint XBinnerC::GetLetter(char AminoChar,
 			}
 		}
 	asserta(BestLetter != UINT_MAX);
+	if (g_Trace)
+		{
+		Log(">>>  XBinnerC::GetLetter(%c", AminoChar);
+		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
+			Log(" %.3g", FeatureValues[FeatureIndex]);
+		Log(") = %u\n", BestLetter);
+		}
 	return BestLetter;
 	}
+
+void XBinnerC::LogMyCentroids() const
+	{
+	Log("XBinnerC::LogMyCentroids\n");
+	for (uint i = 0; i < 20; ++i)
+		{
+		uint Idx = m_Idxs[i];
+		const vector<double> &v = m_ptrX2->m_FeatureValuesVec[Idx];
+		Log("%c", g_Aminos[i]);
+		for (uint j = 0; j < XFEATS; ++j)
+			Log(" %10.3g", g_FeatureValuesVec[i][j]);
+		Log("\n");
+		}
+	}
+

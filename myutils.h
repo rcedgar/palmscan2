@@ -394,6 +394,7 @@ void StripGaps(string &Seq);
 void StripWhiteSpace(string &Str);
 char GetOneFromThree(const string &AAA);
 void ReadLinesFromFile(const string &FileName, vector<string> &Lines);
+void Shuffle(vector<unsigned> &v);
 
 #ifdef _MSC_VER
 #define brk(x)       if (x) __debugbreak()
