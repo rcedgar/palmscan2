@@ -473,6 +473,7 @@
     <ClCompile Include="xalign_calibrate.cpp" />
     <ClCompile Include="xbasis.cpp" />
     <ClCompile Include="xbinner.cpp" />
+    <ClCompile Include="xbinner_explore.cpp" />
     <ClCompile Include="xbinner_substmx.cpp" />
     <ClCompile Include="xcluster.cpp" />
     <ClCompile Include="xdiscrete.cpp" />

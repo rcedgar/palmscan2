@@ -3,43 +3,57 @@
 #include "xprof.h"
 #include "xbinner.h"
 
-//static char g_Aminos[20];
-static vector<vector<double> > g_FeatureValuesVec;
+vector<vector<double> > XBinner::m_ValuesVec;
+
+double XBinner::GetValue(uint Letter, uint FeatureIndex)
+	{
+	asserta(Letter < 20);
+	asserta(FeatureIndex < XFEATS);
+	return m_ValuesVec[Letter][FeatureIndex];
+	}
+
+void XBinner::DeltaValue(uint Letter, uint FeatureIndex, double Fract)
+	{
+	asserta(Letter < 20);
+	asserta(FeatureIndex < XFEATS);
+	double Value = m_ValuesVec[Letter][FeatureIndex];
+	if (fabs(Value) < 0.01)
+		m_ValuesVec[Letter][FeatureIndex] += Fract;
+	else
+		m_ValuesVec[Letter][FeatureIndex] *= (1 + Fract);
+	}
 
 void XBinner::SetCentroid(uint Idx, const vector<double> &Values)
 	{
 	asserta(Idx < 20);
-	if (g_FeatureValuesVec.empty())
+	if (m_ValuesVec.empty())
 		{
-		g_FeatureValuesVec.resize(20);
+		m_ValuesVec.resize(20);
 		for (uint i = 0; i < 20; ++i)
-			g_FeatureValuesVec[i].resize(XFEATS);
+			m_ValuesVec[i].resize(XFEATS);
 		}
-	//g_Aminos[Idx] = aa;
 	for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-		g_FeatureValuesVec[Idx][FeatureIndex] = Values[FeatureIndex];
+		m_ValuesVec[Idx][FeatureIndex] = Values[FeatureIndex];
 	}
 
 void XBinner::DefineCentroid(uint Idx,
 	double v0, double v1, double v2,
 	double v3, double v4, double v5)
 	{
-	if (g_FeatureValuesVec.empty())
+	if (m_ValuesVec.empty())
 		{
-		g_FeatureValuesVec.resize(20);
+		m_ValuesVec.resize(20);
 		for (uint i = 0; i < 20; ++i)
-			g_FeatureValuesVec[i].resize(XFEATS);
+			m_ValuesVec[i].resize(XFEATS);
 		}
 	asserta(Idx < 20);
-	//asserta(g_Aminos[Idx] == 0);
 
-	//g_Aminos[Idx] = aa;
-	g_FeatureValuesVec[Idx][0] = v0;
-	g_FeatureValuesVec[Idx][1] = v1;
-	g_FeatureValuesVec[Idx][2] = v2;
-	g_FeatureValuesVec[Idx][3] = v3;
-	g_FeatureValuesVec[Idx][4] = v4;
-	g_FeatureValuesVec[Idx][5] = v5;
+	m_ValuesVec[Idx][0] = v0;
+	m_ValuesVec[Idx][1] = v1;
+	m_ValuesVec[Idx][2] = v2;
+	m_ValuesVec[Idx][3] = v3;
+	m_ValuesVec[Idx][4] = v4;
+	m_ValuesVec[Idx][5] = v5;
 	}
 
 void XBinner::LogCentroids()
@@ -48,7 +62,7 @@ void XBinner::LogCentroids()
 	for (uint i = 0; i < 20; ++i)
 		{
 		for (uint j = 0; j < XFEATS; ++j)
-			Log(" %10.3g", g_FeatureValuesVec[i][j]);
+			Log(" %10.3g", m_ValuesVec[i][j]);
 		Log("\n");
 		}
 	}
@@ -83,11 +97,8 @@ uint XBinner::GetLetter(const vector<double> &FeatureValues) const
 	uint BestLetter = UINT_MAX;
 	for (uint Letter = 0; Letter < 20; ++Letter)
 		{
-		const vector<double> &v = g_FeatureValuesVec[Letter];
-		//char AminoChar = g_Aminos[Letter];
-		//uint AminoLetter2 = g_CharToLetterAmino[AminoChar];
-		double Score =
-		  XProf::GetScore(FeatureValues, v);
+		const vector<double> &v = m_ValuesVec[Letter];
+		double Score = XProf::GetScore(FeatureValues, v);
 		if (Score > BestScore)
 			{
 			BestScore = Score;
@@ -106,8 +117,6 @@ void XBinner::GetFreqs(
 	Freqs.clear();
 	FreqMx.clear();
 
-	const vector<char> &AminoQs = X2.m_Aminos1;
-	const vector<char> &AminoRs = X2.m_Aminos2;
 	const vector<vector<double> > &ValuesQVec = X2.m_FeatureValuesVec1;
 	const vector<vector<double> > &ValuesRVec = X2.m_FeatureValuesVec2;
 
@@ -125,11 +134,6 @@ void XBinner::GetFreqs(
 	for (int iPairIndex = 0; iPairIndex < (int) PosPairCount; ++iPairIndex)
 		{
 		uint PairIndex = (uint) iPairIndex;
-		char AminoQ = AminoQs[PairIndex];
-		char AminoR = AminoRs[PairIndex];
-
-		//uint AminoLetterQ = g_CharToLetterAmino[AminoQ];
-		//uint AminoLetterR = g_CharToLetterAmino[AminoR];
 
 		const vector<double> &ValuesQ = ValuesQVec[PairIndex];
 		const vector<double> &ValuesR = ValuesRVec[PairIndex];
@@ -152,13 +156,10 @@ void XBinner::GetFreqs(
 	double SumFreq = 0;
 	for (uint i = 0; i < 20; ++i)
 		{
-		char c = g_LetterToCharAmino[i];
 		double Freq = double(CountVec[i])/(LetterPairCount);
 		SumFreq += Freq;
 		Freqs.push_back(Freq);
-		//Log("Freqs[%c] = %8.6f\n", c, Freq);
 		}
-	//LogCountsMx(CountMx);
 
 	assert(feq(SumFreq, 1.0));
 
@@ -235,7 +236,7 @@ void XBinnerC::LogMyCentroids() const
 		uint Idx = m_Idxs[i];
 		const vector<double> &v = m_ptrX2->m_FeatureValuesVec[Idx];
 		for (uint j = 0; j < XFEATS; ++j)
-			Log(" %10.3g", g_FeatureValuesVec[i][j]);
+			Log(" %10.3g", m_ValuesVec[i][j]);
 		Log("\n");
 		}
 	}

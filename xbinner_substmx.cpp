@@ -26,48 +26,6 @@ static double g_AminoSubstMx[20][20] = {
 Entropy 5.63, expected score 0.147
 ***/
 
-void ReadAlignedValueVecs(const string &FileName,
-  vector<char> &AminosQ,
-  vector<char> &AminosR,
-  vector<vector<double> > &ValuesQVec,
-  vector<vector<double> > &ValuesRVec)
-	{
-	AminosQ.clear();
-	AminosR.clear();
-	ValuesQVec.clear();
-	ValuesRVec.clear();
-
-	FILE *f = OpenStdioFile(FileName);
-	string HdrLine;
-	vector<string> HdrFields;
-	bool Ok = ReadLineStdioFile(f, HdrLine);
-	asserta(Ok);
-	Split(HdrLine, HdrFields, '\t');
-	string Line;
-	vector<string> Fields;
-	while (ReadLineStdioFile(f, Line))
-		{
-		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields[0]) == 1);
-		asserta(SIZE(Fields[XFEATS+1]) == 1);
-		char AminoQ = Fields[0][0];
-		char AminoR = Fields[XFEATS+1][0];
-		vector<double> ValuesQ;
-		vector<double> ValuesR;
-		for (uint FeatureIndex = 0; FeatureIndex < XFEATS; ++FeatureIndex)
-			{
-			double ValueQ = StrToFloat(Fields[FeatureIndex+1]);
-			double ValueR = StrToFloat(Fields[XFEATS+FeatureIndex+2]);
-			ValuesQ.push_back(ValueQ);
-			ValuesR.push_back(ValueR);
-			}
-		AminosQ.push_back(AminoQ);
-		AminosR.push_back(AminoR);
-		ValuesQVec.push_back(ValuesQ);
-		ValuesRVec.push_back(ValuesR);
-		}
-	}
-
 void LogCountsMx(const vector<vector<uint> > &CountMx)
 	{
 	assert(SIZE(CountMx) == 20);
@@ -133,10 +91,6 @@ void cmd_xbinner_substmx()
 
 	X2Data X2;
 	X2.FromTsv(opt_xbinner_substmx);
-	const vector<vector<double> > ValuesQVec = X2.m_FeatureValuesVec1;
-	const vector<vector<double> > ValuesRVec = X2.m_FeatureValuesVec2;
-	const vector<char> AminoQs = X2.m_Aminos1;
-	const vector<char> AminoRs = X2.m_Aminos2;
 
 	vector<double> Freqs;
 	vector<vector<double> > FreqMx;

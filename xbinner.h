@@ -5,14 +5,27 @@
 class XBinner
 	{
 public:
+	static vector<vector<double> > m_ValuesVec;
+
+public:
 	virtual uint GetLetter(const vector<double> &FeatureValues) const;
 
+// Cannot be static coz calls virtual GetLetter()
 	void GetFreqs(
 		const X2Data &X2,
 		vector<double> &Freqs,
 		vector<vector<double> > &FreqMx) const;
 
 public:
+	static const vector<vector<double> > &GetValuesVec()
+		{
+		return m_ValuesVec;
+		}
+
+	static double GetValue(uint Letter, uint FeatureIndex);
+	static void DeltaValue(uint Letter, 
+	  uint FeatureIndex, double Fract);
+
 	static void InitCentroids();
 	static void LogCentroids();
 
