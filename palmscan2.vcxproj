@@ -269,6 +269,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="abcxyz.cpp" />
+    <ClCompile Include="afax2afa.cpp" />
+    <ClCompile Include="afax2colscore.cpp" />
     <ClCompile Include="aitoms.cpp" />
     <ClCompile Include="alignpalm.cpp" />
     <ClCompile Include="align_msas.cpp" />
@@ -281,6 +283,7 @@
     <ClCompile Include="buildpsm.cpp" />
     <ClCompile Include="build_rdrp_model.cpp" />
     <ClCompile Include="cal2fa.cpp" />
+    <ClCompile Include="cal2fax.cpp" />
     <ClCompile Include="calreader.cpp" />
     <ClCompile Include="cavitypic.cpp" />
     <ClCompile Include="cddata.cpp" />
@@ -325,6 +328,7 @@
     <ClCompile Include="make_trunc_bench.cpp" />
     <ClCompile Include="motifsettings.cpp" />
     <ClCompile Include="msaqc2.cpp" />
+    <ClCompile Include="msax2aln.cpp" />
     <ClCompile Include="old_search3d.cpp" />
     <ClCompile Include="palmprint_pssms.cpp" />
     <ClCompile Include="pamerger.cpp" />

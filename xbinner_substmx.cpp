@@ -82,6 +82,43 @@ void LogScoreMx(const vector<vector<double> > &ScoreMx)
 	Log("};\n");
 	}
 
+static void GetHMMStrings(const vector<vector<double> > &FreqMx,
+  vector<string> &Lines)
+	{
+	Lines.clear();
+#define ADD_STR(s)	Lines.push_back(s);
+
+ADD_STR("HMM	aa")
+ADD_STR("T.START_M	0.6")
+ADD_STR("T.START_IS	0.02")
+ADD_STR("T.START_IL	0.18")
+ADD_STR("T.M_M	0.96")
+ADD_STR("T.M_IS	0.012")
+ADD_STR("T.M_IL	0.008")
+ADD_STR("T.IS_IS	0.35")
+ADD_STR("T.IS_M	0.65")
+ADD_STR("T.IL_IL	0.90")
+ADD_STR("T.IL_M	0.10")
+#undef ADD_STR
+
+//ADD_STR("E.AA	0.023731")
+//ADD_STR("E.CA	0.0014551")
+//ADD_STR("E.CC	0.010135")
+	for (uint Letter1 = 0; Letter1 < 20; ++Letter1)
+		{
+		char Char1 = g_LetterToCharAmino[Letter1];
+		for (uint Letter2 = 0; Letter2 <= Letter1; ++Letter2)
+			{
+			char Char2 = g_LetterToCharAmino[Letter2];
+			double P = FreqMx[Letter1][Letter2];
+
+			string s;
+			Ps(s, "E.%c%c	%.4g", Char1, Char2, P);
+			Lines.push_back(s);
+			}
+		}
+	}
+
 void cmd_xbinner_substmx()
 	{
 	XBinner XB;
@@ -101,4 +138,9 @@ void cmd_xbinner_substmx()
 
 	LogScoreMx(ScoreMx);
 	ProgressLog("Expected score %.3f\n", ExpScore);
+
+	vector<string> Lines;
+	GetHMMStrings(FreqMx, Lines);
+	for (uint i = 0; i < SIZE(Lines); ++i)
+		Log("%s\n", Lines[i].c_str());
 	}

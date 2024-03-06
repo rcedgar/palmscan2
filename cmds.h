@@ -113,5 +113,10 @@ C(xfeatures)
 C(xcluster)
 C(xpermute)
 C(calfa2x)
+C(cal2fax)
+C(msax2aln)
+C(afax2afa)
+C(afax2colscore)
+C(blosum62scoremx)
 
 #undef C

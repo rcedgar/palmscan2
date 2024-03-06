@@ -668,6 +668,18 @@
     <ClCompile Include="calfa2x.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cal2fax.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msax2aln.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="afax2afa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="afax2colscore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
