@@ -70,32 +70,37 @@ static double GetScore(const double Mx[20][20], const string &Col)
 	return Score;
 	}
 
-//static double GetScore(const double Mx[20][20], const vector<double> &Freqs)
-//	{
-//	asserta(SIZE(Freqs) == 20);
-//	double SumScore = 0;
-//	for (uint i = 0; i < 20; ++i)
-//		{
-//		double fi = Freqs[i];
-//		SumScore += Mx[i][i]*fi*fi;
-//		for (uint j = 0; j < i; ++j)
-//			{
-//			double fj = Freqs[j];
-//			SumScore += 2*Mx[i][j]*fi*fj;
-//			}
-//		}
-//	return SumScore;
-//	}
-//
-//static double GetXScore(const vector<double> &Freqs)
-//	{
-//	return GetScore(g_XScoreMx, Freqs);
-//	}
-//
-//static double GetAAScore(const vector<double> &Freqs)
-//	{
-//	return GetScore(g_Blosum62, Freqs);
-//	}
+static void GetGaplessBlocks(const vector<double> &GapFracts, 
+  double MaxFract, uint MinLength,
+  vector<uint> &Los, vector<uint> &Lengths)
+	{
+	Los.clear();
+	Lengths.clear();
+	const uint ColCount = SIZE(GapFracts);
+	uint Lo = UINT_MAX;
+	for (uint Col = 0; Col <= ColCount; ++Col)
+		{
+		double GapFract = (Col == ColCount ? 0 : GapFracts[Col]);
+		if (GapFract <= MaxFract)
+			{
+			if (Lo == UINT_MAX)
+				Lo = Col;
+			}
+		else
+			{
+			if (Lo != UINT_MAX)
+				{
+				uint Length = Col - Lo;
+				if (Length > MinLength)
+					{
+					Los.push_back(Lo);
+					Lengths.push_back(Length);
+					}
+				Lo = UINT_MAX;
+				}
+			}
+		}
+	}
 
 void cmd_afax2colscore()
 	{
@@ -117,6 +122,7 @@ void cmd_afax2colscore()
 	const uint SeqCount = MSAX.GetSeqCount();
 	Input.SetLabelToIndex();
 
+	vector<string> Labels;
 	vector<string> XRows;
 	vector<string> AARows;
 
@@ -140,10 +146,30 @@ void cmd_afax2colscore()
 		asserta(SIZE(XRow) == ColCount);
 		asserta(SIZE(AARow) == ColCount);
 
+		Labels.push_back(Label);
 		XRows.push_back(XRow);
 		AARows.push_back(AARow);
 		}
 	ProgressLog("Done.\n");
+
+	vector<double> GapFracts;
+	for (uint ColIndex = 0; ColIndex < ColCount; ++ColIndex)
+		{
+		uint GapCount = 0;
+		for (uint SeqIndex = 0; SeqIndex < SeqCount; ++SeqIndex)
+			{
+			char aa = AARows[SeqIndex][ColIndex];
+			if (isgap(aa))
+				++GapCount;
+			}
+		GapFracts.push_back(double(GapCount)/SeqCount);
+		}
+
+	const double MaxFract = 0.2;
+	const uint MinLength = 7;
+	vector<uint> Los;
+	vector<uint> Lengths;
+	GetGaplessBlocks(GapFracts, MaxFract, MinLength, Los, Lengths);
 
 	for (uint ColIndex = 0; ColIndex < ColCount; ++ColIndex)
 		{
@@ -161,15 +187,33 @@ void cmd_afax2colscore()
 			}
 		if (double(GapCount)/SeqCount > MAXGAPFRACT)
 			continue;
-		//vector<double> XFreqs;
-		//vector<double> AAFreqs;
-		//GetFreqs(XCol, XFreqs);
-		//GetFreqs(AACol, AAFreqs);
+
 		double AAScore = GetScore(g_Blosum62, AACol);
 		double XScore = GetScore(g_XScoreMx, XCol);
 		double Score = max(AAScore, XScore);
 		if (g_ftsv != 0)
 			fprintf(g_ftsv, "%u\t%.1f\t%.1f\t%.1f\t'%s'\t'%s'\n",
 			  ColIndex, Score, XScore, AAScore, XCol.c_str(), AACol.c_str());
+		}
+	Log("%u blocks\n", SIZE(Los));
+	for (uint SeqIndex = 0; SeqIndex < SeqCount; ++SeqIndex)
+		{
+		const string &Label = Labels[SeqIndex];
+		const string &AARow = AARows[SeqIndex];
+		for (uint BlockIndex = 0; BlockIndex < SIZE(Los); ++BlockIndex)
+			{
+			uint Lo = Los[BlockIndex];
+			uint Len = Lengths[BlockIndex];
+			uint Hi = Lo + Len;
+			string SubSeq;
+			for (uint Col = Lo; Col <= Hi; ++Col)
+				{
+				char aa = AARow[Col];
+				if (!isgap(aa))
+					SubSeq += aa;
+				}
+			Log(" | %*.*s", Len, Len, SubSeq.c_str());
+			}
+		Log("  >%s\n", Label.c_str());
 		}
 	}
