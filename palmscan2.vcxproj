@@ -270,7 +270,7 @@
   <ItemGroup>
     <ClCompile Include="abcxyz.cpp" />
     <ClCompile Include="afax2afa.cpp" />
-    <ClCompile Include="afax2colscore.cpp" />
+    <ClCompile Include="afax2motifs.cpp" />
     <ClCompile Include="aitoms.cpp" />
     <ClCompile Include="alignpalm.cpp" />
     <ClCompile Include="align_msas.cpp" />

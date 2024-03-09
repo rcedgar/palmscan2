@@ -116,7 +116,7 @@ C(calfa2x)
 C(cal2fax)
 C(msax2aln)
 C(afax2afa)
-C(afax2colscore)
+C(afax2motifs)
 C(blosum62scoremx)
 
 #undef C

@@ -677,7 +677,7 @@
     <ClCompile Include="afax2afa.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="afax2colscore.cpp">
+    <ClCompile Include="afax2motifs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

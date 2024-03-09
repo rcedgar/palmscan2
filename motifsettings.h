@@ -57,7 +57,7 @@ void ClearMotifGoodCounts();
 
 #define WriteMotifSettings(f) /* empty */
 
-#define MotifSettingsToFile(f) /* empty */
+#define MotifSettingsToFile(f) fprintf(f, "MotifSettings,-\n")
 
 #define CheckA(A) /* empty */
 #define CheckB(B) /* empty */

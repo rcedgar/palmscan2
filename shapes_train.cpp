@@ -70,8 +70,11 @@ void cmd_shapes_train()
 	S.Train(Chains2, MotifSeqsVec2);
 	S.ToFile(opt_output);
 
-	double MinPredScore = 0.5;
-	if (optset_minscore)
-		MinPredScore = opt_minscore;
-	ShapeSearcher::TestABC(S, Chains2, MotifSeqsVec2, MinPredScore);
+	if (opt_testabc)
+		{
+		double MinPredScore = 0.5;
+		if (optset_minscore)
+			MinPredScore = opt_minscore;
+		ShapeSearcher::TestABC(S, Chains2, MotifSeqsVec2, MinPredScore);
+		}
 	}
