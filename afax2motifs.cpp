@@ -282,7 +282,7 @@ static void WriteMotifsMSAs(const string &FNPrefix,
 		}
 	}
 
-static const char *GetColor(uint MotifIndex)
+const char *GetPymolColor(uint MotifIndex)
 	{
 	static const char *Colors[] =
 		{
@@ -292,7 +292,7 @@ static const char *GetColor(uint MotifIndex)
 		"cyan",
 		"tv_orange",
 		"magenta",
-		"tv_yellow",
+		"lightpink",
 		"white",
 		};
 	static const size_t ColorCount = sizeof(Colors)/sizeof(Colors[0]);
@@ -324,7 +324,7 @@ static void WritePMLs(FILE *f,
 		for (uint MotifIndex = 0; MotifIndex < MotifCount; ++MotifIndex)
 			{
 			char M = 'A' + MotifIndex;
-			const char *Color = GetColor(MotifIndex);
+			const char *Color = GetPymolColor(MotifIndex);
 			const char *MotifSeq = MotifSeqs[MotifIndex].c_str();
 			fprintf(f, "select Mtf%c, pepseq %s\n", M, MotifSeq);
 			fprintf(f, "color %s, Mtf%c\n", Color, M);

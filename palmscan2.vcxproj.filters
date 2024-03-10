@@ -680,6 +680,9 @@
     <ClCompile Include="afax2motifs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="motifs2pmls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

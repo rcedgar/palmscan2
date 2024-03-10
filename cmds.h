@@ -118,5 +118,6 @@ C(msax2aln)
 C(afax2afa)
 C(afax2motifs)
 C(blosum62scoremx)
+C(motifs2pmls)
 
 #undef C

@@ -326,6 +326,7 @@
     <ClCompile Include="hse_train.cpp" />
     <ClCompile Include="joinabcx.cpp" />
     <ClCompile Include="make_trunc_bench.cpp" />
+    <ClCompile Include="motifs2pmls.cpp" />
     <ClCompile Include="motifsettings.cpp" />
     <ClCompile Include="msaqc2.cpp" />
     <ClCompile Include="msax2aln.cpp" />
