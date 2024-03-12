@@ -360,7 +360,9 @@ void cmd_afax2motifs()
 	GetGapFracts(AARows, GapFracts);
 
 	const double MaxFract = 0.2;
-	const uint MinLength = 7;
+	uint MinLength = 7;
+	if (optset_minlen)
+		MinLength = opt_minlen;
 	vector<uint> ColLos;
 	vector<uint> ColLengths;
 	GetGaplessBlocks(GapFracts, MaxFract, MinLength, ColLos, ColLengths);
