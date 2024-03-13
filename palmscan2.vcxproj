@@ -317,6 +317,7 @@
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="firstchain_pssms.cpp" />
     <ClCompile Include="getshapestrainingmotifs.cpp" />
+    <ClCompile Include="glyphs.cpp" />
     <ClCompile Include="gspalign.cpp" />
     <ClCompile Include="gspaligner.cpp" />
     <ClCompile Include="gsprof.cpp" />
@@ -491,6 +492,7 @@
     <ClCompile Include="xprof.cpp" />
     <ClInclude Include="dssp.h" />
     <ClInclude Include="filler.h" />
+    <ClInclude Include="glyphs.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
     <ClInclude Include="shapes.h" />

@@ -683,6 +683,9 @@
     <ClCompile Include="motifs2pmls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="glyphs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -959,6 +962,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="x2data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glyphs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
