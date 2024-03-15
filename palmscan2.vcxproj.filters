@@ -686,6 +686,12 @@
     <ClCompile Include="glyphs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="compress_aa_alphabet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fa2xfeatsubstmx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

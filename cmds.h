@@ -119,5 +119,8 @@ C(afax2afa)
 C(afax2motifs)
 C(blosum62scoremx)
 C(motifs2pmls)
+C(compress_aa_alphabet)
+C(fa2xfeatsubstmx)
+C(nudx)
 
 #undef C

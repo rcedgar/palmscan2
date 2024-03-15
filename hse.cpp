@@ -3,6 +3,7 @@
 #include "chainreader.h"
 #include "abcxyz.h"
 #include "outputfiles.h"
+#include "xprof.h"
 #include <map>
 
 void StaticLogVec(const string &Name, const vector<double> &v)
@@ -93,5 +94,53 @@ void cmd_hse()
 		ProgressStep(i, ChainCount, "Processing");
 		PDBChain &Chain = *Chains[i];
 		HSE(Chain, 12.0);
+		}
+	}
+
+static void NUDX(const PDBChain &Chain)
+	{
+	const uint L = Chain.GetSeqLength();
+	XProf XP;
+	XP.Init(Chain);
+	XP.Set_NUDXVec();
+	const uint BINS = 5;
+	for (uint Pos = 0; Pos < L; ++Pos)
+		{
+		double NUD = XP.Get_NUDX(Pos);
+		//double NULo, NHLo;
+		//XP.Get_NUDX_Lo(Pos, NULo, NHLo);
+		//double NLo = NULo + NHLo;
+		uint Bin = uint(NUD*BINS);
+		if (Bin >= BINS)
+			Bin = BINS - 1;
+		if (g_ftsv != 0)
+			{
+			char c = Chain.m_Seq[Pos];
+			fprintf(g_ftsv, "%s", Chain.m_Label.c_str());
+			fprintf(g_ftsv, "\t%u", Pos);
+			fprintf(g_ftsv, "\t%c", c);
+			//fprintf(g_ftsv, "\t%.1f", NLo);
+			fprintf(g_ftsv, "\t%.4f", NUD);
+			fprintf(g_ftsv, "\t%u", Bin);
+			fprintf(g_ftsv, "\n");
+			}
+		}
+	}
+
+void cmd_nudx()
+	{
+	const string &FN = opt_nudx;
+
+	vector<PDBChain *> Chains;
+	ReadChains(FN, Chains);
+	uint FlankSize = 0;
+
+	const uint ChainCount = SIZE(Chains);
+	vector<double> Angles;
+	for (uint i = 0; i < ChainCount; ++i)
+		{
+		ProgressStep(i, ChainCount, "Processing");
+		PDBChain &Chain = *Chains[i];
+		NUDX(Chain);
 		}
 	}

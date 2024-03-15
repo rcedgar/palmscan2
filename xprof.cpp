@@ -4,6 +4,7 @@
 #include "abcxyz.h"
 #include "pdbchain.h"
 #include "xprof.h"
+#include "quarts.h"
 
 void GetHSE(const PDBChain &Chain, uint Pos, double Radius,
   uint MinPos, uint MaxPos, uint &NU, uint &ND);
@@ -32,6 +33,7 @@ void XProf::Init(const PDBChain &Chain)
 	{
 	m_Chain = &Chain;
 	m_L = m_Chain->GetSeqLength();
+	m_NUDX_ScaledValues.clear();
 	}
 
 void XProf::PosToCfv(FILE *f, uint Pos) const
@@ -187,6 +189,109 @@ double XProf::GetAngle(uint PosA1, uint PosA2,
 	double Radians = GetTheta_Vecs(vA, vB);
 	double Deg = degrees(Radians);
 	return Deg;
+	}
+
+uint XProf::GetFeatureX(uint FeatureIndex, uint Pos)
+	{
+	switch (FeatureIndex)
+		{
+	case 0:
+		{
+		const uint BINS = 8;
+		double Value = Get_NUDX(Pos);
+		uint Bin = min(uint(Value*(BINS+2)), BINS-1);
+		return Bin;
+		}
+		}
+	asserta(false);
+	return UINT_MAX;
+	}
+
+double XProf::Get_NUDX(uint Pos)
+	{
+	if (m_NUDX_ScaledValues.empty())
+		Set_NUDXVec();
+	asserta(Pos < SIZE(m_NUDX_ScaledValues));
+	return m_NUDX_ScaledValues[Pos];
+	}
+
+void XProf::Set_NUDXVec()
+	{
+	const uint L = GetSeqLength();
+	vector<double> Values;
+	m_NUDX_ScaledValues.clear();
+	double MinValue = 45;
+	double MaxValue = 55;
+	for (uint Pos = 0; Pos < L; ++Pos)
+		{
+		double NU, ND;
+		Get_NUDX_Lo(Pos, NU, ND);
+		double Value = NU + ND;
+		Values.push_back(Value);
+		MinValue = min(MinValue, Value);
+		MaxValue = max(MaxValue, Value);
+		}
+
+	double Range = (MaxValue - MinValue);
+	if (Range < 1)
+		Range = 1;
+	for (uint Pos = 0; Pos < L; ++Pos)
+		{
+		double Value = Values[Pos];
+		double ScaledValue = (Value - MinValue)/Range;
+		asserta(ScaledValue >= 0 && ScaledValue <= 1);
+		m_NUDX_ScaledValues.push_back(ScaledValue);
+		}
+	}
+
+void XProf::Get_NUDX_Lo(uint Pos, double &NU, double &ND) const
+	{
+	const double Radius = 12.0;
+	NU = 0;
+	ND = 0;
+	const PDBChain &Chain = *m_Chain;
+	const uint L = SIZE(Chain.m_Seq);
+	if (Pos == 0 || Pos+1 >= L)
+		{
+		NU = 50;
+		ND = 50;
+		return;
+		}
+
+	vector<double> PtPrevCA;
+	vector<double> PtNextCA;
+	vector<double> PtCA;
+	vector<double> PtCB;
+	Chain.GetPt(Pos-1, PtPrevCA);
+	Chain.GetPt(Pos, PtCA);
+	Chain.GetPt(Pos+1, PtNextCA);
+
+	vector<double> d1;
+	vector<double> d2;
+	Sub_Vecs(PtCA, PtPrevCA, d1);
+	Sub_Vecs(PtCA, PtNextCA, d2);
+
+	vector<double> VecPAB;
+	Add_Vecs(d1, d2, VecPAB);
+	NormalizeVec(VecPAB);
+
+	vector<double> Pt2;
+	vector<double> Vec12;
+	for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+		{
+		if (Pos2 + 3 >= Pos && Pos2 <= Pos + 3)
+			continue;
+		double Dist = Chain.GetDist(Pos, Pos2);
+		double DistFactor = exp(-Dist/12.0);
+		Chain.GetPt(Pos2, Pt2);
+		Sub_Vecs(Pt2, PtCA, Vec12);
+		double Theta = GetTheta_Vecs(VecPAB, Vec12);
+		double Deg = degrees(Theta);
+		if (Deg < 90)
+			NU += DistFactor;
+		else
+			ND += DistFactor;
+		}
 	}
 
 void XProf::Get_NU(uint Pos, double &Value, uint &iValue) const

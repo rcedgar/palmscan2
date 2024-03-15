@@ -302,6 +302,7 @@
     <ClCompile Include="cluster_ppc.cpp" />
     <ClCompile Include="cluster_ppm.cpp" />
     <ClCompile Include="cmd_aitoms.cpp" />
+    <ClCompile Include="compress_aa_alphabet.cpp" />
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
@@ -311,6 +312,7 @@
     <ClCompile Include="fa2substmx3di.cpp" />
     <ClCompile Include="calfa2x.cpp" />
     <ClCompile Include="fa2xfeataln.cpp" />
+    <ClCompile Include="fa2xfeatsubstmx.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="filler.cpp" />
     <ClCompile Include="filler_train.cpp" />

@@ -3,6 +3,7 @@
 
 #include "myutils.h"
 #include "pdbchain.h"
+#include "quarts.h"
 
 const uint XBINS = 10;
 const uint XFEATS = 6;
@@ -12,6 +13,8 @@ class XProf
 public:
 	const PDBChain *m_Chain = 0;
 	uint m_L = 0;
+
+	vector<double> m_NUDX_ScaledValues;
 
 public:
 	static vector<vector<double> > g_BinLos;
@@ -39,6 +42,11 @@ public:
 	void Get_Ang01_45(uint Pos, double &Value, uint &iValue) const;
 	void Get_ED_p4(uint Pos, double &Value, uint &iValue) const;
 	void Get_ED_m4(uint Pos, double &Value, uint &iValue) const;
+
+	uint GetFeatureX(uint FeatureIndex, uint Pos);
+	double Get_NUDX(uint Pos);
+	void Get_NUDX_Lo(uint Pos, double &NU, double &ND) const;
+	void Set_NUDXVec();
 
 	uint IntScale(double Value, double MinVal, double MedVal) const;
 
