@@ -34,6 +34,7 @@ void XProf::Init(const PDBChain &Chain)
 	m_Chain = &Chain;
 	m_L = m_Chain->GetSeqLength();
 	m_NUDX_ScaledValues.clear();
+	m_SS.clear();
 	}
 
 void XProf::PosToCfv(FILE *f, uint Pos) const
@@ -199,12 +200,179 @@ uint XProf::GetFeatureX(uint FeatureIndex, uint Pos)
 		{
 		const uint BINS = 8;
 		double Value = Get_NUDX(Pos);
+		if (Value == DBL_MAX)
+			return BINS/2;
 		uint Bin = min(uint(Value*(BINS+2)), BINS-1);
 		return Bin;
 		}
+
+	case 1:
+		{
+		char c = Get_SSX(Pos);
+		switch (c)
+			{
+		case 'h': return 0;
+		case 's': return 1;
+		case 't': return 2;
+		case '~': return 3;
+			}
+		asserta(false);
+		return UINT_MAX;
+		}
+
+	case 2:
+		{
+		char c = Get_SSX2(Pos);
+		switch (c)
+			{
+		case 'h': return 0;
+		case 's': return 1;
+		case 't': return 2;
+		case '~': return 3;
+			}
+		asserta(false);
+		return UINT_MAX;
+		}
+
+	case 3:
+		{
+		double d = Get_SSD2(Pos);
+		if (d < 5)
+			return 0;
+		else if (d < 7)
+			return 1;
+		else if (d < 9)
+			return 2;
+		else
+			return 3;
+		}
+
+	case 4:
+		{
+		double Angle = Get_SSAngle2(Pos);
+		uint i = uint((Angle*90)/360);
+		i = i%4;
+		return i;
+		}
+
+	default:
+		break;
 		}
 	asserta(false);
 	return UINT_MAX;
+	}
+
+char XProf::Get_SSX2(uint Pos)
+	{
+	if (m_SS.empty())
+		m_Chain->GetSS(m_SS);
+	asserta(Pos < SIZE(m_SS));
+	const uint L = GetSeqLength();
+	const int W = 100;
+	const uint w = 12;
+	int iLo = int(Pos) - W;
+	if (iLo < 0)
+		iLo = 0;
+	int iHi = int(Pos) + W;
+	if (iHi >= int(L))
+		iHi = int(L)-1;
+	//for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+	double MinDist = 999;
+	uint MinPos = UINT_MAX;
+	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
+		{
+		if (Pos2 + w >= Pos && Pos2 <= Pos + w)
+			continue;
+		double Dist = m_Chain->GetDist(Pos, Pos2);
+		if (Dist < MinDist)
+			{
+			MinDist = Dist;
+			MinPos = Pos2;
+			}
+		}
+	if (MinPos == UINT_MAX)
+		return '~';
+	char c = m_SS[MinPos];
+	return c;
+	}
+
+double XProf::Get_SSAngle2(uint Pos)
+	{
+	const uint L = GetSeqLength();
+	const int W = 100;
+	const uint w = 12;
+	int iLo = int(Pos) - W;
+	if (iLo < 0)
+		iLo = 0;
+	int iHi = int(Pos) + W;
+	if (iHi >= int(L))
+		iHi = int(L)-1;
+	//for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+	double MinDist = 999;
+	uint MinPos = UINT_MAX;
+	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
+		{
+		if (Pos2 + w >= Pos && Pos2 <= Pos + w)
+			continue;
+		double Dist = m_Chain->GetDist(Pos, Pos2);
+		if (Dist < MinDist)
+			{
+			MinDist = Dist;
+			MinPos = Pos2;
+			}
+		}
+	if (MinPos == UINT_MAX)
+		return 0;
+
+	int PosA1 = int(Pos) - 1;
+	int PosA2 = int(Pos) + 1;
+	int PosB1 = int(MinPos) - 1;
+	int PosB2 = int(MinPos) + 1;
+	if (PosA1 < 0 || PosA2 >= int(L))
+		return 0;
+	if (PosB1 < 0 || PosB2 >= int(L))
+		return 0;
+	double Angle = GetAngle(PosA1, PosA2, PosB1, PosB2);
+	return Angle;
+	}
+
+double XProf::Get_SSD2(uint Pos)
+	{
+	if (m_SS.empty())
+		m_Chain->GetSS(m_SS);
+	asserta(Pos < SIZE(m_SS));
+	const uint L = GetSeqLength();
+	const int W = 100;
+	const uint w = 12;
+	int iLo = int(Pos) - W;
+	if (iLo < 0)
+		iLo = 0;
+	int iHi = int(Pos) + W;
+	if (iHi >= int(L))
+		iHi = int(L)-1;
+	//for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+	double MinDist = 999;
+	uint MinPos = UINT_MAX;
+	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
+		{
+		if (Pos2 + w >= Pos && Pos2 <= Pos + w)
+			continue;
+		double Dist = m_Chain->GetDist(Pos, Pos2);
+		if (Dist < MinDist)
+			{
+			MinDist = Dist;
+			MinPos = Pos2;
+			}
+		}
+	return MinDist;
+	}
+
+char XProf::Get_SSX(uint Pos)
+	{
+	if (m_SS.empty())
+		m_Chain->GetSS(m_SS);
+	asserta(Pos < SIZE(m_SS));
+	return m_SS[Pos];
 	}
 
 double XProf::Get_NUDX(uint Pos)
@@ -220,16 +388,19 @@ void XProf::Set_NUDXVec()
 	const uint L = GetSeqLength();
 	vector<double> Values;
 	m_NUDX_ScaledValues.clear();
-	double MinValue = 45;
-	double MaxValue = 55;
+	double MinValue = 999;
+	double MaxValue = 0;
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
 		double NU, ND;
 		Get_NUDX_Lo(Pos, NU, ND);
-		double Value = NU + ND;
+		double Value = (NU == DBL_MAX || ND == DBL_MAX) ? DBL_MAX : NU + ND;
 		Values.push_back(Value);
-		MinValue = min(MinValue, Value);
-		MaxValue = max(MaxValue, Value);
+		if (Value != DBL_MAX)
+			{
+			MinValue = min(MinValue, Value);
+			MaxValue = max(MaxValue, Value);
+			}
 		}
 
 	double Range = (MaxValue - MinValue);
@@ -238,6 +409,11 @@ void XProf::Set_NUDXVec()
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
 		double Value = Values[Pos];
+		if (Value == DBL_MAX)
+			{
+			m_NUDX_ScaledValues.push_back(DBL_MAX);
+			continue;
+			}
 		double ScaledValue = (Value - MinValue)/Range;
 		asserta(ScaledValue >= 0 && ScaledValue <= 1);
 		m_NUDX_ScaledValues.push_back(ScaledValue);
@@ -253,8 +429,8 @@ void XProf::Get_NUDX_Lo(uint Pos, double &NU, double &ND) const
 	const uint L = SIZE(Chain.m_Seq);
 	if (Pos == 0 || Pos+1 >= L)
 		{
-		NU = 50;
-		ND = 50;
+		NU = DBL_MAX;
+		ND = DBL_MAX;
 		return;
 		}
 
@@ -277,12 +453,22 @@ void XProf::Get_NUDX_Lo(uint Pos, double &NU, double &ND) const
 
 	vector<double> Pt2;
 	vector<double> Vec12;
-	for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+	const int W = 50;
+	//const double RADIUS = 12.0;
+	const double RADIUS = 20.0;
+	int iLo = int(Pos) - W;
+	if (iLo < 0)
+		iLo = 0;
+	int iHi = int(Pos) + W;
+	if (iHi >= int(L))
+		iHi = int(L)-1;
+	//for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
 		{
 		if (Pos2 + 3 >= Pos && Pos2 <= Pos + 3)
 			continue;
 		double Dist = Chain.GetDist(Pos, Pos2);
-		double DistFactor = exp(-Dist/12.0);
+		double DistFactor = exp(-Dist/RADIUS);
 		Chain.GetPt(Pos2, Pt2);
 		Sub_Vecs(Pt2, PtCA, Vec12);
 		double Theta = GetTheta_Vecs(VecPAB, Vec12);

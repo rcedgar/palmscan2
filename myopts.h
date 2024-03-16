@@ -114,6 +114,7 @@ UNS_OPT(pos,				10,			1,			UINT_MAX)
 
 UNS_OPT(secs,				60,			1,			UINT_MAX)
 UNS_OPT(flanks,				60,			1,			UINT_MAX)
+UNS_OPT(feature,			60,			1,			UINT_MAX)
 
 UNS_OPT(maxseqlength,		500000000,		1,			UINT_MAX)
 UNS_OPT(sfasta_buff_bytes,	512*1024*1024,1024,		UINT_MAX)

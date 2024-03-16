@@ -306,6 +306,7 @@
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
+    <ClCompile Include="dss.cpp" />
     <ClCompile Include="dssp.cpp" />
     <ClCompile Include="expvalue.cpp" />
     <ClCompile Include="fa2substmx.cpp" />
@@ -492,6 +493,7 @@
     <ClCompile Include="xfeatures_3di.cpp" />
     <ClCompile Include="xpermute.cpp" />
     <ClCompile Include="xprof.cpp" />
+    <ClInclude Include="dss.h" />
     <ClInclude Include="dssp.h" />
     <ClInclude Include="filler.h" />
     <ClInclude Include="glyphs.h" />

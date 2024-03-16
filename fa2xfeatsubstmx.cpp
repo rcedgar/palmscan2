@@ -2,7 +2,8 @@
 #include "pdbchain.h"
 #include "seqdb.h"
 #include "alpha.h"
-#include "xprof.h"
+//#include "xprof.h"
+#include "dss.h"
 #include "outputfiles.h"
 
 void GetScopDomFromLabel(const string &Label, string &Dom);
@@ -36,7 +37,7 @@ SKP-L-LTKREREVFELL-VQDKTTKEIASELFISEKTVRNHISNAMQKLGVKGRSQAVVELLRMGELEL
 MVLLESEQFLTELTRLFQKCRSSGSVFITLKKY--DEGLEPAENKCLLRATDGKRKISTVV-SSKEVNKFQMAY-SNLLRANMDGLKK---R
 ***/
 
-void ValueVecsToSubstMx(const vector<uint> &Values1,
+double ValueVecsToSubstMx(const vector<uint> &Values1,
   const vector<uint> &Values2)
 	{
 	const uint PairCount = SIZE(Values1);
@@ -90,7 +91,7 @@ void ValueVecsToSubstMx(const vector<uint> &Values1,
 	if (f == 0)
 		{
 		Warning("-output not set");
-		return;
+		return 0;
 		}
 
 	double SumFreq2 = 0;
@@ -131,7 +132,6 @@ void ValueVecsToSubstMx(const vector<uint> &Values1,
 		}
 	asserta(feq(SumFreq2, 1.0));
 	CloseStdioFile(f);
-	ProgressLog("Expected scor3e %.3g\n", ES);
 
 	Log("static double g_AminoSubstMx[K][K] = {\n");
 	Log("//      ");
@@ -160,10 +160,16 @@ void ValueVecsToSubstMx(const vector<uint> &Values1,
 		Log("}, // %c\n", c);
 		}
 	Log("};\n");
+
+	return ES;
 	}
 
 void cmd_fa2xfeatsubstmx()
 	{
+	asserta(optset_feature);
+	const uint FeatureIndex = opt_feature;
+	ProgressLog("Feature=%s\n", DSS::GetFeatureName(FeatureIndex));
+
 	SeqDB Input;
 	Input.FromFasta(opt_fa2xfeatsubstmx, true);
 
@@ -191,9 +197,10 @@ void cmd_fa2xfeatsubstmx()
 	asserta(SeqCount%2 == 0);
 	const uint PairCount = SeqCount/2;
 	uint LetterPairCount = 0;
-	XProf QX;
-	XProf RX;
-	const uint FeatureIndex = 0;
+	//XProf QX;
+	//XProf RX;
+	DSS QX;
+	DSS RX;
 	vector<uint> Values1;
 	vector<uint> Values2;
 	for (uint PairIndex = 0; PairIndex < PairCount; ++PairIndex)
@@ -242,7 +249,7 @@ void cmd_fa2xfeatsubstmx()
 			else
 				{
 				asserta(QPos < QL);
-				ValueQ = QX.GetFeatureX(FeatureIndex, QPos);
+				ValueQ = QX.GetFeature(FeatureIndex, QPos);
 				QFeatRows[FeatureIndex].push_back('a' + ValueQ);
 				}
 
@@ -251,7 +258,7 @@ void cmd_fa2xfeatsubstmx()
 			else
 				{
 				asserta(RPos < RL);
-				ValueR = RX.GetFeatureX(FeatureIndex, RPos);
+				ValueR = RX.GetFeature(FeatureIndex, RPos);
 				RFeatRows[FeatureIndex].push_back('a' + ValueR);
 				}
 			if (!isgap(q) && !isgap(r))
@@ -280,5 +287,7 @@ void cmd_fa2xfeatsubstmx()
 				++RPos;
 			}
 		}
-	ValueVecsToSubstMx(Values1, Values2);
+	double ES = ValueVecsToSubstMx(Values1, Values2);
+	ProgressLog("Expected score %s %.3g\n",
+	  DSS::GetFeatureName(FeatureIndex), ES);
 	}

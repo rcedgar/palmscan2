@@ -3,7 +3,6 @@
 
 #include "myutils.h"
 #include "pdbchain.h"
-#include "quarts.h"
 
 const uint XBINS = 10;
 const uint XFEATS = 6;
@@ -15,6 +14,7 @@ public:
 	uint m_L = 0;
 
 	vector<double> m_NUDX_ScaledValues;
+	string m_SS;
 
 public:
 	static vector<vector<double> > g_BinLos;
@@ -45,6 +45,10 @@ public:
 
 	uint GetFeatureX(uint FeatureIndex, uint Pos);
 	double Get_NUDX(uint Pos);
+	char Get_SSX(uint Pos);
+	char Get_SSX2(uint Pos);
+	double Get_SSD2(uint Pos);
+	double Get_SSAngle2(uint Pos);
 	void Get_NUDX_Lo(uint Pos, double &NU, double &ND) const;
 	void Set_NUDXVec();
 
