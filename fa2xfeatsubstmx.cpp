@@ -38,12 +38,12 @@ MVLLESEQFLTELTRLFQKCRSSGSVFITLKKY--DEGLEPAENKCLLRATDGKRKISTVV-SSKEVNKFQMAY-SNLLR
 ***/
 
 double ValueVecsToSubstMx(const vector<uint> &Values1,
-  const vector<uint> &Values2)
+  const vector<uint> &Values2, uint &K)
 	{
 	const uint PairCount = SIZE(Values1);
 	asserta(SIZE(Values2) == PairCount);
 
-	uint K = 0;
+	K = 0;
 	for (uint i = 0; i < PairCount; ++i)
 		{
 		if (Values1[i] != UINT_MAX)
@@ -287,7 +287,8 @@ void cmd_fa2xfeatsubstmx()
 				++RPos;
 			}
 		}
-	double ES = ValueVecsToSubstMx(Values1, Values2);
-	ProgressLog("Expected score %s %.3g\n",
-	  DSS::GetFeatureName(FeatureIndex), ES);
+	uint K;
+	double ES = ValueVecsToSubstMx(Values1, Values2, K);
+	ProgressLog("Expected score %s [%u] %.3g\n",
+	  DSS::GetFeatureName(FeatureIndex), K, ES);
 	}

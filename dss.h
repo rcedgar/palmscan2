@@ -12,6 +12,14 @@ public:
 	vector<double> m_NUDX_ScaledValues;
 	string m_SS;
 
+	int m_NUDX_W = 50;
+	double m_NUDX_Radius = 20.0;
+	int m_SSD2_W = 100;
+	int m_SSD2_w = 12;
+	double m_SSD2_Step1 = 5;
+	double m_SSD2_Step2 = 7;
+	double m_SSD2_Step3 = 9;
+
 public:
 	static vector<vector<double> > g_BinLos;
 	static vector<vector<double> > g_Scores;

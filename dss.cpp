@@ -89,12 +89,12 @@ void DSS::Get_NUDX_Lo(uint Pos, double &NU, double &ND) const
 
 	vector<double> Pt2;
 	vector<double> Vec12;
-	const int W = 50;
-	const double RADIUS = 20.0;
-	int iLo = int(Pos) - W;
+	//const int W = 50;
+	//const double RADIUS = 20.0;
+	int iLo = int(Pos) - m_NUDX_W;
 	if (iLo < 0)
 		iLo = 0;
-	int iHi = int(Pos) + W;
+	int iHi = int(Pos) + m_NUDX_W;
 	if (iHi >= int(L))
 		iHi = int(L)-1;
 	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
@@ -102,7 +102,7 @@ void DSS::Get_NUDX_Lo(uint Pos, double &NU, double &ND) const
 		if (Pos2 + 3 >= Pos && Pos2 <= Pos + 3)
 			continue;
 		double Dist = Chain.GetDist(Pos, Pos2);
-		double DistFactor = exp(-Dist/RADIUS);
+		double DistFactor = exp(-Dist/m_NUDX_Radius);
 		Chain.GetPt(Pos2, Pt2);
 		Sub_Vecs(Pt2, PtCA, Vec12);
 		double Theta = GetTheta_Vecs(VecPAB, Vec12);
@@ -120,12 +120,12 @@ double DSS::Get_SSD2(uint Pos)
 		m_Chain->GetSS(m_SS);
 	asserta(Pos < SIZE(m_SS));
 	const uint L = GetSeqLength();
-	const int W = 100;
-	const uint w = 12;
-	int iLo = int(Pos) - W;
+	//const int W = 100;
+	//const uint w = 12;
+	int iLo = int(Pos) - m_SSD2_W;
 	if (iLo < 0)
 		iLo = 0;
-	int iHi = int(Pos) + W;
+	int iHi = int(Pos) + m_SSD2_W;
 	if (iHi >= int(L))
 		iHi = int(L)-1;
 	//for (uint Pos2 = 0; Pos2 < L; ++Pos2)
@@ -133,7 +133,7 @@ double DSS::Get_SSD2(uint Pos)
 	uint MinPos = UINT_MAX;
 	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
 		{
-		if (Pos2 + w >= Pos && Pos2 <= Pos + w)
+		if (Pos2 + m_SSD2_w >= Pos && Pos2 <= Pos + m_SSD2_w)
 			continue;
 		double Dist = m_Chain->GetDist(Pos, Pos2);
 		if (Dist < MinDist)
@@ -151,12 +151,12 @@ char DSS::Get_SSX2(uint Pos)
 		m_Chain->GetSS(m_SS);
 	asserta(Pos < SIZE(m_SS));
 	const uint L = GetSeqLength();
-	const int W = 100;
-	const uint w = 12;
-	int iLo = int(Pos) - W;
+	//const int W = 100;
+	//const uint w = 12;
+	int iLo = int(Pos) - m_SSD2_W;
 	if (iLo < 0)
 		iLo = 0;
-	int iHi = int(Pos) + W;
+	int iHi = int(Pos) + m_SSD2_W;
 	if (iHi >= int(L))
 		iHi = int(L)-1;
 	//for (uint Pos2 = 0; Pos2 < L; ++Pos2)
@@ -164,7 +164,7 @@ char DSS::Get_SSX2(uint Pos)
 	uint MinPos = UINT_MAX;
 	for (uint Pos2 = uint(iLo); Pos2 <= uint(iHi); ++Pos2)
 		{
-		if (Pos2 + w >= Pos && Pos2 <= Pos + w)
+		if (Pos2 + m_SSD2_w >= Pos && Pos2 <= Pos + m_SSD2_w)
 			continue;
 		double Dist = m_Chain->GetDist(Pos, Pos2);
 		if (Dist < MinDist)
@@ -237,11 +237,11 @@ uint DSS::GetFeature(uint FeatureIndex, uint Pos)
 	case 3:
 		{
 		double d = Get_SSD2(Pos);
-		if (d < 5)
+		if (d < m_SSD2_Step1)
 			return 0;
-		else if (d < 7)
+		else if (d < m_SSD2_Step2)
 			return 1;
-		else if (d < 9)
+		else if (d < m_SSD2_Step3)
 			return 2;
 		else
 			return 3;
