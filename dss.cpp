@@ -1,7 +1,44 @@
 #include "myutils.h"
 #include "pdbchain.h"
 #include "abcxyz.h"
+#include "alpha.h"
 #include "dss.h"
+
+uint DSS::m_NUDX_Bins = 8;
+string DSS::m_AlphaStr = "AST,C,DN,EHKQR,FWY,G,ILMV,P";
+byte DSS::m_AminoLetterToCompressedLetter[20];
+uint DSS::m_CompressedAminoAlphaSize;
+
+static bool StaticInit()
+	{
+	DSS::SetCharToLetter();
+	return true;
+	}
+static bool g_InitDone = StaticInit();
+
+void DSS::SetCharToLetter()
+	{
+	vector<string> Fields;
+	Split(m_AlphaStr, Fields, ',');
+	m_CompressedAminoAlphaSize = SIZE(Fields);
+	for (uint i = 0; i < 20; ++i)
+		m_AminoLetterToCompressedLetter[i] = INVALID_LETTER;
+
+	for (uint Group = 0; Group < m_CompressedAminoAlphaSize; ++Group)
+		{
+		const string &GroupStr = Fields[Group];
+		for (uint i = 0; i < SIZE(GroupStr); ++i)
+			{
+			byte c = GroupStr[i];
+			uint Letter = g_CharToLetterAmino[c];
+			m_AminoLetterToCompressedLetter[Letter] = Group;
+			}
+		}
+	for (uint i = 0; i < 20; ++i)
+		if (m_AminoLetterToCompressedLetter[i] == INVALID_LETTER)
+			Die("Letter %c missing in DSS::m_AlphaStr='%s'",
+			  g_LetterToCharAmino[i], m_AlphaStr.c_str());
+	}
 
 char DSS::Get_SSX(uint Pos)
 	{
@@ -187,9 +224,34 @@ const char *DSS::GetFeatureName(uint FeatureIndex)
 	case 1: return "SSX";
 	case 2: return "SSX2";
 	case 3: return "SSD2";
+	case 4: return "CMAA";
+	case DSSFeatureIndex: return "DSS";
 		}
 	asserta(false);
 	return "??";
+	}
+
+uint DSS::GetAlphaSize(uint FeatureIndex)
+	{
+	switch (FeatureIndex)
+		{
+	case 0: return m_NUDX_Bins;
+	case 1: return 4;
+	case 2: return 4;
+	case 3: return 4;
+	case 4: return 8;
+	case 99:
+		{
+		uint n0 = GetAlphaSize(0);
+		uint n1 = GetAlphaSize(1);
+		uint n2 = GetAlphaSize(2);
+		uint n3 = GetAlphaSize(3);
+		uint n4 = GetAlphaSize(4);
+		return n0*n1*n2*n3*n4;
+		}
+		}
+	asserta(false);
+	return UINT_MAX;
 	}
 
 uint DSS::GetFeature(uint FeatureIndex, uint Pos)
@@ -198,12 +260,21 @@ uint DSS::GetFeature(uint FeatureIndex, uint Pos)
 		{
 	case 0:
 		{
-		const uint BINS = 8;
+		//const uint BINS = m_NUDX_Bins;
+		//double Value = Get_NUDX(Pos);
+		//if (Value == DBL_MAX)
+		//	return BINS/2;
+		//uint Bin = min(uint(Value*(BINS+2)), BINS-1);
+		//return Bin;
 		double Value = Get_NUDX(Pos);
-		if (Value == DBL_MAX)
-			return BINS/2;
-		uint Bin = min(uint(Value*(BINS+2)), BINS-1);
-		return Bin;
+		if (Value < 0.263661) return 0;
+		if (Value < 0.404948) return 1;
+		if (Value < 0.511572) return 2;
+		if (Value < 0.600825) return 3;
+		if (Value < 0.681155) return 4;
+		if (Value < 0.759807) return 5;
+		if (Value < 0.848306) return 6;
+		return 7;
 		}
 
 	case 1:
@@ -245,6 +316,32 @@ uint DSS::GetFeature(uint FeatureIndex, uint Pos)
 			return 2;
 		else
 			return 3;
+		}
+
+	case 4:
+		{
+		byte c = m_Chain->m_Seq[Pos];
+		uint Letter = g_CharToLetterAmino[c];
+		if (Letter < 20)
+			return m_AminoLetterToCompressedLetter[Letter];
+		return UINT_MAX;
+		}
+
+	case 99:
+		{
+		uint i0 = GetFeature(0, Pos);
+		uint i1 = GetFeature(1, Pos);
+		uint i2 = GetFeature(2, Pos);
+		uint i3 = GetFeature(3, Pos);
+		uint i4 = GetFeature(4, Pos);
+
+		uint n0 = GetAlphaSize(0);
+		uint n1 = GetAlphaSize(1);
+		uint n2 = GetAlphaSize(2);
+		uint n3 = GetAlphaSize(3);
+
+		uint i = i0 + i1*n0 + i2*n0*n1 + i3*n0*n1*n2 + i4*n0*n1*n2*n3;
+		return i;
 		}
 
 	default:

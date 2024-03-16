@@ -3,6 +3,9 @@
 #include "myutils.h"
 #include "pdbchain.h"
 
+const uint DSSFeatureIndex = 99;
+
+// Discrete Structure States
 class DSS
 	{
 public:
@@ -21,8 +24,10 @@ public:
 	double m_SSD2_Step3 = 9;
 
 public:
-	static vector<vector<double> > g_BinLos;
-	static vector<vector<double> > g_Scores;
+	static uint m_NUDX_Bins;
+	static string m_AlphaStr;
+	static byte m_AminoLetterToCompressedLetter[20];
+	static uint m_CompressedAminoAlphaSize;
 
 public:
 	void Init(const PDBChain &Chain)
@@ -31,6 +36,7 @@ public:
 		m_NUDX_ScaledValues.clear();
 		m_SS.clear();
 		}
+
 	uint GetSeqLength() const { return m_Chain->GetSeqLength(); }
 
 	uint GetFeature(uint FeatureIndex, uint Pos);
@@ -43,4 +49,11 @@ public:
 
 public:
 	static const char *GetFeatureName(uint FeatureIndex);
+	static uint GetAlphaSize(uint FeatureIndex);
+	static void SetCharToLetter();
+	static double GetScore(
+		uint i0, uint i1, uint i2, uint i3, uint i4,
+		uint j0, uint j1, uint j2, uint j3, uint j4);
+	static uint GetIdx(uint i0, uint i1, uint i2, uint i3, uint i4);
+	static double GetExpectedScore(const vector<vector<double> > &ObsFreqs);
 	};

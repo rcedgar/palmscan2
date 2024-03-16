@@ -40,14 +40,17 @@ int main(int argc, char **argv)
 		ProgressPrefix(true);
 		}
 
-	OpenOutputFiles();
-	if (0)
-		;
-#define C(x)	else if (optset_##x) { void cmd_##x(); cmd_##x(); }
+	uint CmdCount = 0;
+#define C(x)	if (optset_##x) ++CmdCount;
 #include "cmds.h"
-
-	else
+	if (CmdCount == 0)
 		Die("No command specified");
+	if (CmdCount > 1)
+		Die("Two commands specified");
+
+	OpenOutputFiles();
+#define C(x)	if (optset_##x) { void cmd_##x(); cmd_##x(); }
+#include "cmds.h"
 
 	WriteMotifSettings(g_fLog);
 

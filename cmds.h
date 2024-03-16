@@ -121,6 +121,8 @@ C(blosum62scoremx)
 C(motifs2pmls)
 C(compress_aa_alphabet)
 C(fa2xfeatsubstmx)
+C(fa2xfeatsubstmx2)
 C(nudx)
+C(testdss)
 
 #undef C

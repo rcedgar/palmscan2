@@ -695,6 +695,18 @@
     <ClCompile Include="dss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logodds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fa2xfeatsubstmx2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dssmx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testdss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -977,6 +989,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dss.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logodds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

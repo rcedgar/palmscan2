@@ -4,6 +4,8 @@
 #include "abcxyz.h"
 #include "outputfiles.h"
 #include "xprof.h"
+#include "dss.h"
+#include "quarts.h"
 #include <map>
 
 void StaticLogVec(const string &Name, const vector<double> &v)
@@ -97,33 +99,16 @@ void cmd_hse()
 		}
 	}
 
-static void NUDX(const PDBChain &Chain)
+static void NUDX(const PDBChain &Chain, vector<double> &Values)
 	{
 	const uint L = Chain.GetSeqLength();
-	XProf XP;
-	XP.Init(Chain);
-	XP.Set_NUDXVec();
-	const uint BINS = 5;
+	DSS D;
+	D.Init(Chain);
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
-		double NUD = XP.Get_NUDX(Pos);
-		//double NULo, NHLo;
-		//XP.Get_NUDX_Lo(Pos, NULo, NHLo);
-		//double NLo = NULo + NHLo;
-		uint Bin = uint(NUD*BINS);
-		if (Bin >= BINS)
-			Bin = BINS - 1;
-		if (g_ftsv != 0)
-			{
-			char c = Chain.m_Seq[Pos];
-			fprintf(g_ftsv, "%s", Chain.m_Label.c_str());
-			fprintf(g_ftsv, "\t%u", Pos);
-			fprintf(g_ftsv, "\t%c", c);
-			//fprintf(g_ftsv, "\t%.1f", NLo);
-			fprintf(g_ftsv, "\t%.4f", NUD);
-			fprintf(g_ftsv, "\t%u", Bin);
-			fprintf(g_ftsv, "\n");
-			}
+		double NUD = D.Get_NUDX(Pos);
+		if (NUD != DBL_MAX)
+			Values.push_back(NUD);
 		}
 	}
 
@@ -136,11 +121,19 @@ void cmd_nudx()
 	uint FlankSize = 0;
 
 	const uint ChainCount = SIZE(Chains);
-	vector<double> Angles;
+	vector<double> Values;
 	for (uint i = 0; i < ChainCount; ++i)
 		{
 		ProgressStep(i, ChainCount, "Processing");
 		PDBChain &Chain = *Chains[i];
-		NUDX(Chain);
+		NUDX(Chain, Values);
 		}
+	const uint N = SIZE(Values);
+	sort(Values.begin(), Values.end());
+	const uint BINS = 8;
+	for (uint k = 0; k < BINS; ++k)
+		Log("Bin %u  %.6f\n", k, Values[(N*k)/BINS]);
+	QuartsDouble QD;
+	GetQuartsDouble(Values, QD);
+	QD.LogMe();
 	}

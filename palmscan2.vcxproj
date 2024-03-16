@@ -314,6 +314,7 @@
     <ClCompile Include="calfa2x.cpp" />
     <ClCompile Include="fa2xfeataln.cpp" />
     <ClCompile Include="fa2xfeatsubstmx.cpp" />
+    <ClCompile Include="fa2xfeatsubstmx2.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="filler.cpp" />
     <ClCompile Include="filler_train.cpp" />
@@ -329,6 +330,7 @@
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
     <ClCompile Include="joinabcx.cpp" />
+    <ClCompile Include="logodds.cpp" />
     <ClCompile Include="make_trunc_bench.cpp" />
     <ClCompile Include="motifs2pmls.cpp" />
     <ClCompile Include="motifsettings.cpp" />
@@ -376,6 +378,8 @@
     <ClCompile Include="fastqrec.cpp" />
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getss.cpp" />
+    <ClCompile Include="dssmx.cpp" />
+    <ClCompile Include="testdss.cpp" />
     <ClCompile Include="threedix.cpp" />
     <ClCompile Include="tm.cpp" />
     <ClCompile Include="tm2.cpp" />
@@ -497,6 +501,7 @@
     <ClInclude Include="dssp.h" />
     <ClInclude Include="filler.h" />
     <ClInclude Include="glyphs.h" />
+    <ClInclude Include="logodds.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
     <ClInclude Include="shapes.h" />
