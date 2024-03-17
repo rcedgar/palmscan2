@@ -707,6 +707,9 @@
     <ClCompile Include="testdss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pdb2dss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

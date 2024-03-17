@@ -140,10 +140,5 @@ void cmd_fa2xfeatsubstmx2()
 	LO.MxToSrc(f, string("Score_") + string(FeatureName), ScoreMx);
 	LO.MxToSrc(f, string("Freqs_") + string(FeatureName), FreqMx);
 	LO.VecToSrc(f, FeatureName, Freqs);
-	if (FeatureIndex == 99)
-		{
-		double DSSExpectedScore = DSS::GetExpectedScore(FreqMx);
-		ProgressLog("DSSExpectedScore = %7.3g\n", DSSExpectedScore);
-		}
 	CloseStdioFile(f);
 	}

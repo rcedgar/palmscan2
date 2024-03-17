@@ -97,12 +97,17 @@ static double Freqs4[8] = {
 };
 static uint N4 = 8;
 
-uint DSS::GetIdx(uint i0, uint i1, uint i2, uint i3, uint i4)
+uint DSS::GetIdx_WithCMAA(uint i0, uint i1, uint i2, uint i3, uint i4)
 	{
 	return i0 + i1*N0 + i2*N0*N1 + i3*N0*N1*N2 + i4*N0*N1*N2*N3;
 	}
 
-double DSS::GetScore(
+uint DSS::GetIdx_NoCMAA(uint i0, uint i1, uint i2, uint i3)
+	{
+	return i0 + i1*N0 + i2*N0*N1 + i3*N0*N1*N2;
+	}
+
+double DSS::GetScore_WithCMAA(
   uint i0, uint i1, uint i2, uint i3, uint i4,
   uint j0, uint j1, uint j2, uint j3, uint j4)
 	{
@@ -120,30 +125,18 @@ double DSS::GetScore(
 	return Score0 + Score1 + Score2 + Score3 + Score4;
 	}
 
-double DSS::GetExpectedScore(const vector<vector<double> > &ObsFreqs)
+double DSS::GetScore_NoCMAA(
+  uint i0, uint i1, uint i2, uint i3,
+  uint j0, uint j1, uint j2, uint j3)
 	{
-	double ExpectedScore = 0;
+	if (i0 >= N0 || j0 > N0) return 0;
+	if (i1 >= N1 || j1 > N1) return 0;
+	if (i2 >= N2 || j2 > N2) return 0;
+	if (i3 >= N3 || j3 > N3) return 0;
 
-	double SumFreq = 0;
-	for (uint i0 = 0; i0 < N0; ++i0)
-	for (uint i1 = 0; i1 < N1; ++i1)
-	for (uint i2 = 0; i2 < N2; ++i2)
-	for (uint i3 = 0; i3 < N3; ++i3)
-	for (uint i4 = 0; i4 < N4; ++i4)
-
-	for (uint j0 = 0; j0 < N0; ++j0)
-	for (uint j1 = 0; j1 < N1; ++j1)
-	for (uint j2 = 0; j2 < N2; ++j2)
-	for (uint j3 = 0; j3 < N3; ++j3)
-	for (uint j4 = 0; j4 < N4; ++j4)
-		{
-		uint I = GetIdx(i0, i1, i2, i3, i4);
-		uint J = GetIdx(j0, j1, j2, j3, j4);
-		double ObsFreq = ObsFreqs[I][J];
-		SumFreq += ObsFreq;
-		double Score = GetScore(i0, i1, i2, i3, i4, j0, j1, j2, j3, j4);
-		ExpectedScore = ObsFreq*Score;
-		}
-	asserta(feq(SumFreq, 1.0));
-	return ExpectedScore;
+	double Score0 = Mx0[i0][j0];
+	double Score1 = Mx1[i1][j1];
+	double Score2 = Mx2[i2][j2];
+	double Score3 = Mx3[i3][j3];
+	return Score0 + Score1 + Score2 + Score3;
 	}

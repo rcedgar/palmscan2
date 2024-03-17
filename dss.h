@@ -3,7 +3,7 @@
 #include "myutils.h"
 #include "pdbchain.h"
 
-const uint DSSFeatureIndex = 99;
+const uint DSSFeatureIndex = 100;
 
 // Discrete Structure States
 class DSS
@@ -47,13 +47,19 @@ public:
 	void Get_NUDX_Lo(uint Pos, double &NU, double &ND) const;
 	void Set_NUDXVec();
 
+	void ToStr(string &s);
+
 public:
 	static const char *GetFeatureName(uint FeatureIndex);
 	static uint GetAlphaSize(uint FeatureIndex);
 	static void SetCharToLetter();
-	static double GetScore(
+	static double GetScore_WithCMAA(
 		uint i0, uint i1, uint i2, uint i3, uint i4,
 		uint j0, uint j1, uint j2, uint j3, uint j4);
-	static uint GetIdx(uint i0, uint i1, uint i2, uint i3, uint i4);
-	static double GetExpectedScore(const vector<vector<double> > &ObsFreqs);
+	static uint GetIdx_WithCMAA(uint i0, uint i1, uint i2, uint i3, uint i4);
+
+	static double GetScore_NoCMAA(
+		uint i0, uint i1, uint i2, uint i3,
+		uint j0, uint j1, uint j2, uint j3);
+	static uint GetIdx_NoCMAA(uint i0, uint i1, uint i2, uint i3);
 	};

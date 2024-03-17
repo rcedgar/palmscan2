@@ -240,7 +240,7 @@ uint DSS::GetAlphaSize(uint FeatureIndex)
 	case 2: return 4;
 	case 3: return 4;
 	case 4: return 8;
-	case 99:
+	case DSSFeatureIndex:
 		{
 		uint n0 = GetAlphaSize(0);
 		uint n1 = GetAlphaSize(1);
@@ -254,27 +254,56 @@ uint DSS::GetAlphaSize(uint FeatureIndex)
 	return UINT_MAX;
 	}
 
+void DSS::ToStr(string &s)
+	{
+	s.clear();
+	const uint L = GetSeqLength();
+	const string &Seq = m_Chain->m_Seq;
+	for (uint Pos = 0; Pos < L; ++Pos)
+		{
+		char aa = toupper(Seq[Pos]);
+		s += aa;
+		uint i0 = GetFeature(0, Pos);
+		uint i1 = GetFeature(1, Pos);
+		uint i2 = GetFeature(2, Pos);
+		uint i3 = GetFeature(3, Pos);
+		uint Idx = GetIdx_NoCMAA(i0, i1, i2, i3);
+		char Tmp[4];
+		sprintf(Tmp, "%03x", Idx);
+		s += Tmp[0];
+		s += Tmp[1];
+		s += Tmp[2];
+		s += ' ';
+		}
+	}
+
 uint DSS::GetFeature(uint FeatureIndex, uint Pos)
 	{
 	switch (FeatureIndex)
 		{
 	case 0:
 		{
-		//const uint BINS = m_NUDX_Bins;
-		//double Value = Get_NUDX(Pos);
-		//if (Value == DBL_MAX)
-		//	return BINS/2;
-		//uint Bin = min(uint(Value*(BINS+2)), BINS-1);
-		//return Bin;
 		double Value = Get_NUDX(Pos);
-		if (Value < 0.263661) return 0;
-		if (Value < 0.404948) return 1;
-		if (Value < 0.511572) return 2;
-		if (Value < 0.600825) return 3;
-		if (Value < 0.681155) return 4;
-		if (Value < 0.759807) return 5;
-		if (Value < 0.848306) return 6;
-		return 7;
+		if (m_NUDX_Bins == 8)
+			{
+			if (Value < 0.263661) return 0;
+			if (Value < 0.404948) return 1;
+			if (Value < 0.511572) return 2;
+			if (Value < 0.600825) return 3;
+			if (Value < 0.681155) return 4;
+			if (Value < 0.759807) return 5;
+			if (Value < 0.848306) return 6;
+			return 7;
+			}
+		else if (m_NUDX_Bins == 4)
+			{
+			if (Value < 0.404948) return 0;
+			if (Value < 0.600825) return 1;
+			if (Value < 0.759807) return 2;
+			return 3;
+			}
+		else
+			asserta(false);
 		}
 
 	case 1:
@@ -327,7 +356,7 @@ uint DSS::GetFeature(uint FeatureIndex, uint Pos)
 		return UINT_MAX;
 		}
 
-	case 99:
+	case DSSFeatureIndex:
 		{
 		uint i0 = GetFeature(0, Pos);
 		uint i1 = GetFeature(1, Pos);

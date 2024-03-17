@@ -124,5 +124,6 @@ C(fa2xfeatsubstmx)
 C(fa2xfeatsubstmx2)
 C(nudx)
 C(testdss)
+C(pdb2dss)
 
 #undef C
