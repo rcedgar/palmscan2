@@ -3,6 +3,8 @@
 
 void GetPalmSketch(const string &ss, uint PSL, string &Sketch);
 
+// Based on sec_str() in TMalign.cpp
+//  Zhang & Skolnick 2005
 static char GetSSChar(
   double dis13, double dis14, double dis15,
   double dis24, double dis25, double dis35)
