@@ -1864,7 +1864,7 @@ int TMA::TMalign_main(double** xa, double** ya,
 	TM1 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t0, u0, simplify_step,
 		score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
 	TM_0 = TM1;
-#if 0
+#if 1
 	//normalized by length of structure B
 	parameter_set4final(xlen + 0.0, D0_MIN, Lnorm, d0, d0_search, mol_type);
 	d0B = d0;
@@ -2886,18 +2886,16 @@ double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 		ya[i][2] = R.m_Zs[i];
 		}
 
-	double TM1 = DBL_MAX;
-	double TM2 = DBL_MAX;
 	double d0A = DBL_MAX;
 	double d0B = DBL_MAX;
 	string seqM;
-	int iResult = TMalign_main(xa, ya, seqx, seqy, TM1, TM2, d0A, d0B,
+	int iResult = TMalign_main(xa, ya, seqx, seqy, m_TM1, m_TM2, d0A, d0B,
 	  seqM, m_QRow, m_RRow, xlen, ylen);
 #pragma omp critical
 	{
 	if (iResult == 0)
 		{
-		WriteAln(g_faln, xlen, ylen, TM1, TM2, d0A, d0B, seqM, m_QRow, m_RRow);
+		WriteAln(g_faln, xlen, ylen, m_TM1, m_TM2, d0A, d0B, seqM, m_QRow, m_RRow);
 
 		SeqToFasta(g_ffasta2, m_Q->m_Label, m_QRow);
 		SeqToFasta(g_ffasta2, m_R->m_Label, m_RRow);
@@ -2920,8 +2918,7 @@ double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 	delete[] seqy;
 	if (iResult != 0)
 		return 0;
-	double TM = max(TM1, TM2);
-	return TM;
+	return m_TM1;
 	}
 
 #if 0
@@ -2974,7 +2971,8 @@ void TMAlignPair(TMA &T, const PDBChain &Q, const PDBChain &R)
 		{
 		fprintf(g_ftsv, "%s", QAcc);
 		fprintf(g_ftsv, "\t%s", RAcc);
-		fprintf(g_ftsv, "\t%6.4f", TM);
+		fprintf(g_ftsv, "\t%6.4f", T.m_TM1);
+		fprintf(g_ftsv, "\t%6.4f", T.m_TM2);
 		fprintf(g_ftsv, "\n");
 		}
 		}

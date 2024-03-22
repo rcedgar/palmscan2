@@ -713,6 +713,15 @@
     <ClCompile Include="scop40bit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scop40_roc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scop40bit_fam.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scop40bit_s1fp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

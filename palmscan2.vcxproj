@@ -381,6 +381,9 @@
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="dssmx.cpp" />
     <ClCompile Include="scop40bit.cpp" />
+    <ClCompile Include="scop40bit_fam.cpp" />
+    <ClCompile Include="scop40bit_s1fp.cpp" />
+    <ClCompile Include="scop40_roc.cpp" />
     <ClCompile Include="testdss.cpp" />
     <ClCompile Include="threedix.cpp" />
     <ClCompile Include="tm.cpp" />

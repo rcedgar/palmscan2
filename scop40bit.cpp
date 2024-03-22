@@ -208,7 +208,7 @@ void SCOP40Bit::ReadHits_Bin(const string &FileName)
 	ReadStdioFile(f, m_DomIdx2s.data(), HitCount*sizeof(uint));
 	ReadStdioFile(f, m_Scores.data(), HitCount*sizeof(float));
 	CloseStdioFile(f);
-	Progress("%u hits %s\n", HitCount, FileName.c_str());
+	Progress("%s hits %s\n", IntToStr(HitCount), FileName.c_str());
 	}
 
 void SCOP40Bit::ReadHits_Tsv_DSS()
@@ -245,7 +245,7 @@ void SCOP40Bit::ReadHits_Tsv_DSS()
 		m_Scores.push_back(Score);
 		if (DomIdx1 != DomIdx2)
 			{
-			m_DomIdx1s.push_back(DomIdx1);
+			m_DomIdx1s.push_back(DomIdx2);
 			m_DomIdx2s.push_back(DomIdx1);
 			m_Scores.push_back(Score);
 			}
@@ -400,10 +400,12 @@ void SCOP40Bit::GetROCSteps(vector<double> &ScoreSteps,
 	FPCounts.clear();
 	const uint HitCount = GetHitCount();
 
+	ProgressLogPrefix("GetTFs()\n");
 	vector<bool> TFs;
 	GetTFs(TFs);
 	asserta(SIZE(TFs) == HitCount);
 
+	ProgressLogPrefix("GetOrder()\n");
 	vector<uint> Order;
 	GetOrder(Order);
 	asserta(SIZE(Order) == HitCount);
@@ -415,6 +417,7 @@ void SCOP40Bit::GetROCSteps(vector<double> &ScoreSteps,
 	uint NTP = 0;
 	uint NFP = 0;
 	uint LastNTP = 0;
+	ProgressLogPrefix("TmpSteps\n");
 	for (uint k = 0; k < HitCount; ++k)
 		{
 		uint i = Order[k];
@@ -444,6 +447,7 @@ void SCOP40Bit::GetROCSteps(vector<double> &ScoreSteps,
 		FPCounts = TmpFPCounts;
 		return;
 		}
+	ProgressLog("SmoothSteps\n");
 	for (uint Bin = 0; Bin < SMOOTHN; ++Bin)
 		{
 		uint Idx = UINT_MAX;
@@ -472,54 +476,4 @@ void cmd_scop40bit()
 
 	SB.ReadHits_Tsv(Algo);
 	SB.WriteHits_Bin(opt_output);
-	}
-
-void cmd_read_scop40bit()
-	{
-	const string &FN = g_Arg1;
-	SCOP40Bit SB;
-	SB.ReadDomInfo();
-	SB.ReadHits_Bin(FN);
-	}
-
-void cmd_scop40bit_roc()
-	{
-	asserta(optset_output);
-	const string &FN = g_Arg1;
-	SCOP40Bit SB;
-	SB.ReadDomInfo();
-	SB.ReadHits_Bin(FN);
-	uint NT, NF;
-	SB.CalcNXs(NT, NF);
-	vector<bool> TFs;
-	SB.GetTFs(TFs);
-	ProgressLog("NT %u, NF %u\n", NT, NF);
-
-	vector<double> ScoreSteps;
-	vector<uint> TPCounts;
-	vector<uint> FPCounts;
-	SB.GetROCSteps(ScoreSteps, TPCounts, FPCounts);
-
-	const uint StepCount = SIZE(ScoreSteps);
-	asserta(SIZE(TPCounts) == StepCount);
-	asserta(SIZE(FPCounts) == StepCount);
-	FILE *fOut = CreateStdioFile(opt_output);
-	double FPRAtTPR90 = DBL_MAX;
-	double LastFPR = 0;
-	for (uint StepIdx = 0; StepIdx < StepCount; ++StepIdx)
-		{
-		uint NTP = TPCounts[StepIdx];
-		uint NFP = FPCounts[StepIdx];
-		double TPR = double(NTP)/NT;
-		double FPR = double(NFP)/NF;
-		if (TPR > 0.9 && FPRAtTPR90 == DBL_MAX)
-			FPRAtTPR90 = LastFPR;
-		Log("%.8g\t%u\t%u\t%.6f\t%.6f\n", ScoreSteps[StepIdx],
-		  NTP, NFP, TPR, FPR);
-		fprintf(fOut, "%.8g\t%.6f\t%.6f\n",
-		  ScoreSteps[StepIdx], TPR, FPR);
-		LastFPR = FPR;
-		}
-	CloseStdioFile(fOut);
-	ProgressLog("FPR %.3g at TPR=0.9\n", FPRAtTPR90);
 	}

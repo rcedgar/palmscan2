@@ -126,7 +126,8 @@ C(nudx)
 C(testdss)
 C(pdb2dss)
 C(scop40bit)
-C(read_scop40bit)
 C(scop40bit_roc)
+C(scop40bit_fam)
+C(scop40bit_s1fp)
 
 #undef C

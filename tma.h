@@ -9,6 +9,8 @@ public:
 	const PDBChain *m_R = 0;
 	string m_QRow;
 	string m_RRow;
+	double m_TM1 = 0;
+	double m_TM2 = 0;
 
 public:
 	void NWDP_TM1(double **score, bool **path, double **val,

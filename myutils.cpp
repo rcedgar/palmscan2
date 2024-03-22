@@ -1258,7 +1258,7 @@ void ProgressLogPrefix(const char *Format, ...)
 	string s;
 	GetProgressPrefixStr(s);
 	Log("%s %s\n", s.c_str(), Str.c_str());
-	Progress("%s %s\n", s.c_str(), Str.c_str());
+	Progress("%s\n", Str.c_str());
 	}
 
 void Pr(FILE *f, const char *Format, ...)
@@ -1376,7 +1376,10 @@ const char *PctStr(double x, double y)
 		}
 	static char Str[16];
 	double p = x*100.0/y;
-	sprintf(Str, "%5.1f%%", p);
+	if (p < 0.1)
+		sprintf(Str, "%.3g%%", p);
+	else
+		sprintf(Str, "%5.1f%%", p);
 	return Str;
 	}
 
