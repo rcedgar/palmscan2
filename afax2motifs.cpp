@@ -339,10 +339,6 @@ void cmd_afax2motifs()
 	asserta(optset_input);
 	const string &MSAXFN = opt_afax2motifs;
 
-	SeqDB Seqs;
-	Seqs.FromFasta(opt_input, false);
-	Seqs.SetLabelToIndex();
-
 	SeqDB Input;
 	Input.FromFasta(opt_input, false);
 

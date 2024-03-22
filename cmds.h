@@ -125,5 +125,8 @@ C(fa2xfeatsubstmx2)
 C(nudx)
 C(testdss)
 C(pdb2dss)
+C(scop40bit)
+C(read_scop40bit)
+C(scop40bit_roc)
 
 #undef C

@@ -380,6 +380,7 @@
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="dssmx.cpp" />
+    <ClCompile Include="scop40bit.cpp" />
     <ClCompile Include="testdss.cpp" />
     <ClCompile Include="threedix.cpp" />
     <ClCompile Include="tm.cpp" />
@@ -505,6 +506,7 @@
     <ClInclude Include="logodds.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
+    <ClInclude Include="scop40bit.h" />
     <ClInclude Include="shapes.h" />
     <ClInclude Include="shapesearcher.h" />
     <ClInclude Include="stock.h" />

@@ -710,6 +710,9 @@
     <ClCompile Include="pdb2dss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scop40bit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -995,6 +998,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="logodds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scop40bit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
