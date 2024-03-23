@@ -208,6 +208,17 @@ static double GetDALIScore(const PDBChain &Q, const PDBChain &T,
 	const uint Lali = SIZE(PosQs);
 	asserta(SIZE(PosTs) == Lali);
 
+	const uint QL = Q.GetSeqLength();
+	const uint TL = T.GetSeqLength();
+	Log("QL, TL %u, %u\n", QL, TL);
+	for (uint i = 0; i < QL; ++i)
+		for (uint j = 0; j < i; ++j)
+			Log("dq %u,%u %.1f\n", i, j, Q.GetDist(i, j));
+
+	for (uint i = 0; i < TL; ++i)
+		for (uint j = 0; j < i; ++j)
+			Log("dt %u,%u %.1f\n", i, j, T.GetDist(i, j));
+
 	const double Theta = 0.2;
 	double Sum = 0;
 	for (uint i = 0; i < Lali; ++i)
@@ -226,6 +237,8 @@ static double GetDALIScore(const PDBChain &Q, const PDBChain &T,
 				double dij_Q = Q.GetDist(PosQi, PosQj);
 				double dij_T = T.GetDist(PosTi, PosTj);
 				double x = dpscorefun(dij_Q, dij_T);
+				Log("coli %4u, colj %4u, posQs %5u,%5u posTs %5u,%5u dijQ %d, dijT %d, x %10.3g\n",
+				  i+1, j+1, PosQi+1, PosQj+1, PosTi+1, PosTj+1, int(dij_Q*10+0.5), int(dij_T*10+0.5), x);
 				Sum += x;
 				}
 			}
@@ -332,7 +345,8 @@ double GetDALIZ(const PDBChain &Q, const PDBChain &T,
 	vector<uint> MatchColToCol;
 	vector<uint> ColToMatchCol;
 	GetPosVecs(QRow, TRow, PosQs, PosTs, MatchColToCol, ColToMatchCol);
-	double DALI = GetDALIScore(Q, T, PosQs, PosTs);
+	//double DALI = GetDALIScore(Q, T, PosQs, PosTs);
+	double DALI = GetDALIScore(T, Q, PosTs, PosQs);
 	double Z = GetDALIZFromScoreAndLengths(DALI, QL, TL);
 	return Z;
 	}
@@ -341,7 +355,7 @@ double GetDALIZ(const PDBChain &Q, const PDBChain &T,
 palmscan2
   -daliz d:/a/res/daliz/data/palmprints.cal \
   -ref d:/a/res/daliz/data/palmprints.tsv \
-  -fieldnrs 0,1,7,8 \
+  -fieldnrs 0,1,7,8,2 \
   -tsv daliz.tsv
 
 palmprints.tsv from dali2tsv.py:
@@ -368,12 +382,13 @@ void cmd_daliz()
 
 	vector<string> Fields;
 	Split(opt_fieldnrs, Fields, ',');
-	assert(SIZE(Fields) == 4);
+	assert(SIZE(Fields) == 5);
 
 	uint Qfn = StrToUint(Fields[0]);
 	uint Tfn = StrToUint(Fields[1]);
 	uint QRowfn = StrToUint(Fields[2]);
 	uint TRowfn = StrToUint(Fields[3]);
+	uint Zfn = StrToUint(Fields[4]);
 
 	FILE *f = OpenStdioFile(TsvFN);
 	string Line;
@@ -398,12 +413,14 @@ void cmd_daliz()
 		const string &QRow = Fields[QRowfn];
 		const string &TRow = Fields[TRowfn];
 
-		double Z = GetDALIZ(Q, T, QRow, TRow);
+		double DaliZ = StrToFloat(Fields[Zfn]);
+		double MyZ = GetDALIZ(Q, T, QRow, TRow);
 		if (g_ftsv)
 			{
 			fprintf(g_ftsv, "%s", Q.m_Label.c_str());
 			fprintf(g_ftsv, "\t%s", T.m_Label.c_str());
-			fprintf(g_ftsv, "\t%.3g", Z);
+			fprintf(g_ftsv, "\t%.3g", DaliZ);
+			fprintf(g_ftsv, "\t%.3g", MyZ);
 			fprintf(g_ftsv, "\n");
 			}
 		}
