@@ -722,6 +722,12 @@
     <ClCompile Include="scop40bit_s1fp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scop40bit_evd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fit_gumbel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">

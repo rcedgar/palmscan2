@@ -318,6 +318,15 @@ uint SCOP40Bit::GetFamCount() const
 	return SIZE(m_Fams);
 	}
 
+uint SCOP40Bit::GetDomIdx(const string &DomName) const
+	{
+	map<string, uint>::const_iterator iter =
+	  m_DomToIdx.find(DomName);
+	if (iter == m_DomToIdx.end())
+		Die("GetDomIdx(%s)", DomName.c_str());
+	return iter->second;
+	}
+
 uint SCOP40Bit::GetHitCount() const
 	{
 	uint HitCount = SIZE(m_DomIdx1s);
@@ -362,6 +371,15 @@ void SCOP40Bit::CalcNXs(uint &NT, uint &NF) const
 	NF = TotalPairCount - NT;
 	}
 
+bool SCOP40Bit::IsT(uint DomIdx1, uint DomIdx2) const
+	{
+	assert(DomIdx1 < SIZE(m_DomIdxToFamIdx));
+	assert(DomIdx2 < SIZE(m_DomIdxToFamIdx));
+	uint FamIdx1 = m_DomIdxToFamIdx[DomIdx1];
+	uint FamIdx2 = m_DomIdxToFamIdx[DomIdx2];
+	return FamIdx1 == FamIdx2;
+	}
+
 void SCOP40Bit::GetTFs(vector<bool> &TFs) const
 	{
 	uint HitCount = GetHitCount();
@@ -373,11 +391,8 @@ void SCOP40Bit::GetTFs(vector<bool> &TFs) const
 		{
 		uint DomIdx1 = m_DomIdx1s[i];
 		uint DomIdx2 = m_DomIdx2s[i];
-		assert(DomIdx1 < DomCount);
-		assert(DomIdx2 < DomCount);
-		uint FamIdx1 = m_DomIdxToFamIdx[DomIdx1];
-		uint FamIdx2 = m_DomIdxToFamIdx[DomIdx2];
-		TFs.push_back(FamIdx1 == FamIdx2);
+		double TF = IsT(DomIdx1, DomIdx2);
+		TFs.push_back(TF);
 		}
 	}
 

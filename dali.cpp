@@ -1,8 +1,22 @@
+/***
+####################################################
+NOTE TO SELF
+####################################################
+Applying Z-score to a DSS alignment is unlikely to
+work well because DSS alignment does not optimize
+the DALI similarity score.
+***/
+
 #include "myutils.h"
 #include "pdbchain.h"
 #include "outputfiles.h"
 #include "abcxyz.h"
+#include "alpha.h"
 #include <map>
+
+#define TRACE			0
+#define TRACE_DISTMX	0
+#define DALILITE_GLITCH	0
 
 /***
 DaliLite v5
@@ -202,23 +216,39 @@ double GetDALIScore_Cols(const PDBChain &Q, const PDBChain &T,
 	return Sum;
 	}
 
+static void LogDistMx(const PDBChain &Chain)
+	{
+	const uint L = Chain.GetSeqLength();
+	Log(">%s L=%u\n", Chain.m_Label.c_str(), L);
+	for (uint i = 0; i < L; ++i)
+		{
+		vector<double> Pti;
+		Chain.GetPt(i, Pti);
+		for (uint j = 0; j < i; ++j)
+			{
+			vector<double> Ptj;
+			Chain.GetPt(j, Ptj);
+			double d = Chain.GetDist(i, j);
+			Log("%10u %10u", i+1, j+1);
+			Log(" %5.1f", Pti[0]);
+			Log(" %5.1f", Pti[1]);
+			Log(" %5.1f", Pti[2]);
+			Log(" %5.1f", Ptj[0]);
+			Log(" %5.1f", Ptj[1]);
+			Log(" %5.1f", Ptj[2]);
+			Log(" %.0f", d*10);
+			Log("\n");
+			}
+		}
+	}
+
 static double GetDALIScore(const PDBChain &Q, const PDBChain &T,
   const vector<uint> &PosQs, const vector<uint> &PosTs)
 	{
 	const uint Lali = SIZE(PosQs);
 	asserta(SIZE(PosTs) == Lali);
-
 	const uint QL = Q.GetSeqLength();
 	const uint TL = T.GetSeqLength();
-	Log("QL, TL %u, %u\n", QL, TL);
-	for (uint i = 0; i < QL; ++i)
-		for (uint j = 0; j < i; ++j)
-			Log("dq %u,%u %.1f\n", i, j, Q.GetDist(i, j));
-
-	for (uint i = 0; i < TL; ++i)
-		for (uint j = 0; j < i; ++j)
-			Log("dt %u,%u %.1f\n", i, j, T.GetDist(i, j));
-
 	const double Theta = 0.2;
 	double Sum = 0;
 	for (uint i = 0; i < Lali; ++i)
@@ -227,22 +257,31 @@ static double GetDALIScore(const PDBChain &Q, const PDBChain &T,
 		uint PosTi = PosTs[i];
 		for (uint j = 0; j < Lali; ++j)
 			{
-			if (i == j)
-				Sum += Theta;
-			else
-				{
-				uint PosQj = PosQs[j];
-				uint PosTj = PosTs[j];
+			uint PosQj = PosQs[j];
+			uint PosTj = PosTs[j];
 
-				double dij_Q = Q.GetDist(PosQi, PosQj);
-				double dij_T = T.GetDist(PosTi, PosTj);
-				double x = dpscorefun(dij_Q, dij_T);
-				Log("coli %4u, colj %4u, posQs %5u,%5u posTs %5u,%5u dijQ %d, dijT %d, x %10.3g\n",
-				  i+1, j+1, PosQi+1, PosQj+1, PosTi+1, PosTj+1, int(dij_Q*10+0.5), int(dij_T*10+0.5), x);
-				Sum += x;
-				}
+			double dij_Q = Q.GetDist(PosQi, PosQj);
+			double dij_T = T.GetDist(PosTi, PosTj);
+			double x = (i == j ? Theta : dpscorefun(dij_Q, dij_T));
+			Sum += x;
+#if TRACE
+			Log("coli=%u", i);
+			Log("\tcolj=%u", j);
+			Log("\tpos1i=%u", PosTi);
+			Log("\tpos1j=%u", PosTj);
+			Log("\tpos2i=%u", PosQi);
+			Log("\tpos2j=%u", PosQj);
+			Log("\td1_ij=%u", int(dij_T*10));
+			Log("\td2_ij=%u", int(dij_Q*10));
+			Log("\tx=%.3g", x);
+			Log("\ttot=%.3g", Sum);
+			Log("\n");
+#endif
 			}
 		}
+#if TRACE
+	ProgressLog("finaltot=%.3g\n", Sum);
+#endif
 #if DEBUG
 	{
 	vector<double> ColScores;
@@ -334,20 +373,49 @@ double GetDALIZ_PosVecs(const PDBChain &Q, const PDBChain &T,
 	return Z;
 	}
 
-double GetDALIZ(const PDBChain &Q, const PDBChain &T,
+double GetDALIZ(const PDBChain &Q, const PDBChain &T, uint Lali,
   const string &QRow, const string &TRow)
 	{
 	const uint QL = Q.GetSeqLength();
 	const uint TL = T.GetSeqLength();
+	const uint ColCount = SIZE(QRow);
+	asserta(SIZE(TRow) == ColCount);
+
+#if DALILITE_GLITCH
+	{
+	uint QL2 = 0;
+	uint TL2 = 0;
+	for (uint Col = 0; Col < ColCount; ++Col)
+		{
+		char q = QRow[Col];
+		char t = TRow[Col];
+		if (!isgap(q))
+			++QL2;
+		if (!isgap(t))
+			++TL2;
+		}
+	if (QL2 != QL || TL2 != TL)
+		return DBL_MAX;
+	}
+#endif
 
 	vector<uint> PosQs;
 	vector<uint> PosTs;
 	vector<uint> MatchColToCol;
 	vector<uint> ColToMatchCol;
 	GetPosVecs(QRow, TRow, PosQs, PosTs, MatchColToCol, ColToMatchCol);
-	//double DALI = GetDALIScore(Q, T, PosQs, PosTs);
+	uint MyLali = SIZE(MatchColToCol);
+#if TRACE
+	Log("MyLali=%u\n", MyLali);
+#endif
+	if (MyLali != Lali)
+		return DBL_MAX;
+// T, Q order to agree with redali RCE tracing
 	double DALI = GetDALIScore(T, Q, PosTs, PosQs);
 	double Z = GetDALIZFromScoreAndLengths(DALI, QL, TL);
+#if TRACE
+	Log("MyScore=%.1f, MyZ=%.1f\n", DALI, Z);
+#endif
 	return Z;
 	}
 
@@ -382,13 +450,14 @@ void cmd_daliz()
 
 	vector<string> Fields;
 	Split(opt_fieldnrs, Fields, ',');
-	assert(SIZE(Fields) == 5);
+	asserta(SIZE(Fields) == 6);
 
 	uint Qfn = StrToUint(Fields[0]);
 	uint Tfn = StrToUint(Fields[1]);
 	uint QRowfn = StrToUint(Fields[2]);
 	uint TRowfn = StrToUint(Fields[3]);
 	uint Zfn = StrToUint(Fields[4]);
+	uint Lalifn = StrToUint(Fields[5]);
 
 	FILE *f = OpenStdioFile(TsvFN);
 	string Line;
@@ -408,19 +477,33 @@ void cmd_daliz()
 
 		const PDBChain &Q = *Chains[iQ];
 		const PDBChain &T = *Chains[iT];
+#if TRACE_DISTMX
+		LogDistMx(Q);
+		LogDistMx(T);
+#endif
 		asserta(Q.m_Label == Query && T.m_Label == Target);
 
 		const string &QRow = Fields[QRowfn];
 		const string &TRow = Fields[TRowfn];
 
 		double DaliZ = StrToFloat(Fields[Zfn]);
-		double MyZ = GetDALIZ(Q, T, QRow, TRow);
+		uint Lali = StrToUint(Fields[Lalifn]);
+		double MyZ = GetDALIZ(Q, T, Lali, QRow, TRow);
 		if (g_ftsv)
 			{
 			fprintf(g_ftsv, "%s", Q.m_Label.c_str());
 			fprintf(g_ftsv, "\t%s", T.m_Label.c_str());
-			fprintf(g_ftsv, "\t%.3g", DaliZ);
-			fprintf(g_ftsv, "\t%.3g", MyZ);
+			fprintf(g_ftsv, "\t%.1f", DaliZ);
+			if (MyZ == DBL_MAX)
+				{
+				fprintf(g_ftsv, "\tBADLENGTH");
+				fprintf(g_ftsv, "\tBADLENGTH");
+				}
+			else
+				{
+				fprintf(g_ftsv, "\t%.1f", MyZ);
+				fprintf(g_ftsv, "\t%+.1f", MyZ - DaliZ);
+				}
 			fprintf(g_ftsv, "\n");
 			}
 		}

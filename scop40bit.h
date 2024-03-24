@@ -32,10 +32,12 @@ public:
 	void ReadHits_Tsv_DSS();
 	void WriteHits_Bin(const string &FileName) const;
 	void ReadHits_Bin(const string &FileName);
+	bool IsT(uint DomIdx1, uint DomIdx2) const;
 	void GetTFs(vector<bool> &TFs) const;
 	void GetFamSizes(vector<uint> &FamSizes) const;
 	void CalcNXs(uint &NT, uint &NF) const;
 	void GetOrder(vector<uint> &Order) const;
 	void GetROCSteps(vector<double> &ScoreSteps,
 	   vector<uint> &TPCounts, vector<uint> &FPCounts) const;
+	uint GetDomIdx(const string &DomName) const;
 	};

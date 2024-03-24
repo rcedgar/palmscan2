@@ -320,6 +320,7 @@
     <ClCompile Include="filler_train.cpp" />
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="firstchain_pssms.cpp" />
+    <ClCompile Include="fit_gumbel.cpp" />
     <ClCompile Include="getshapestrainingmotifs.cpp" />
     <ClCompile Include="glyphs.cpp" />
     <ClCompile Include="gspalign.cpp" />
@@ -381,6 +382,7 @@
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="dssmx.cpp" />
     <ClCompile Include="scop40bit.cpp" />
+    <ClCompile Include="scop40bit_evd.cpp" />
     <ClCompile Include="scop40bit_fam.cpp" />
     <ClCompile Include="scop40bit_s1fp.cpp" />
     <ClCompile Include="scop40_roc.cpp" />

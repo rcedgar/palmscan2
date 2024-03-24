@@ -129,5 +129,7 @@ C(scop40bit)
 C(scop40bit_roc)
 C(scop40bit_fam)
 C(scop40bit_s1fp)
+C(scop40bit_evd)
+C(fit_gumbel)
 
 #undef C
