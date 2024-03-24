@@ -382,6 +382,7 @@
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="dssmx.cpp" />
     <ClCompile Include="scop40bit.cpp" />
+    <ClCompile Include="scop40bit_calibrate_dss.cpp" />
     <ClCompile Include="scop40bit_evd.cpp" />
     <ClCompile Include="scop40bit_fam.cpp" />
     <ClCompile Include="scop40bit_s1fp.cpp" />
@@ -508,6 +509,7 @@
     <ClInclude Include="dssp.h" />
     <ClInclude Include="filler.h" />
     <ClInclude Include="glyphs.h" />
+    <ClInclude Include="gumbel.h" />
     <ClInclude Include="logodds.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />

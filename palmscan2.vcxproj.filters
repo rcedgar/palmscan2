@@ -728,6 +728,9 @@
     <ClCompile Include="fit_gumbel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scop40bit_calibrate_dss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -1016,6 +1019,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="scop40bit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gumbel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

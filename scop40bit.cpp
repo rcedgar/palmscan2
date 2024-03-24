@@ -228,11 +228,11 @@ void SCOP40Bit::ReadHits_Tsv_DSS()
 			Progress("Hits %.2f%%  %s\r", GetPct(Pos, FileSize), IntToStr(HitCount));
 			}
 		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) == 5);
+		asserta(SIZE(Fields) == 3);
 		string Dom1;
 		string Dom2;
-		GetDomFromDomSlashFam(Fields[3], Dom1);
-		GetDomFromDomSlashFam(Fields[4], Dom2);
+		GetDomFromDomSlashFam(Fields[1], Dom1);
+		GetDomFromDomSlashFam(Fields[2], Dom2);
 		const map<string, uint>::iterator iter1 = m_DomToIdx.find(Dom1);
 		const map<string, uint>::iterator iter2 = m_DomToIdx.find(Dom2);
 		if (iter1 == m_DomToIdx.end() || iter2 == m_DomToIdx.end())

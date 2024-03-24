@@ -27,7 +27,8 @@ double ConvertEvalueToScore(double Score)
 	return Score;
 	}
 
-static void ScoresToTsv(FILE *f, const vector<double> &Scores,
+static void ScoresToTsv_Binned(FILE *f,
+  const vector<double> &Scores,
   const vector<bool> &TFs)
 	{
 	const uint N = SIZE(Scores);
@@ -84,6 +85,18 @@ static void ScoresToTsv(FILE *f, const vector<double> &Scores,
 	asserta(feq(SumFract, 1.0));
 	}
 
+static void ScoresToTsv(FILE *f,
+  const vector<double> &Scores,
+  const vector<bool> &TFs)
+	{
+	if (f == 0)
+		return;
+	const uint N = SIZE(Scores);
+	asserta(SIZE(TFs) == N);
+	for (uint i = 0; i < N; ++i)
+		fprintf(f, "%.4g\t%c\n", Scores[i], tof(TFs[i]));
+	}
+
 void cmd_scop40bit_evd()
 	{
 	asserta(optset_ref); // name of domain
@@ -108,11 +121,12 @@ void cmd_scop40bit_evd()
 		if (DomIdx1 == DomIdx || DomIdx2 == DomIdx)
 			{
 			bool TF = SB.IsT(DomIdx1, DomIdx2);
+			TFs.push_back(TF);
+
 			double Score = SB.m_Scores[i];
 			if (ScoresAreEvalues)
 				Score = ConvertEvalueToScore(Score);
 			Scores.push_back(Score);
-			TFs.push_back(TF);
 			}
 		}
 
@@ -128,5 +142,6 @@ void cmd_scop40bit_evd()
 		TrimmedScores.push_back(Scores[i]);
 		TrimmedTFs.push_back(TFs[i]);
 		}
+	//ScoresToTsv_Binned(g_ftsv, TrimmedScores, TrimmedTFs);
 	ScoresToTsv(g_ftsv, TrimmedScores, TrimmedTFs);
 	}

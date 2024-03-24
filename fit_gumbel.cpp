@@ -1,26 +1,84 @@
 #include "myutils.h"
+#include "gumbel.h"
 
-double Gumbel_PDF(double mu, double beta, double x)
-	{
-	double z = float(x - mu)/beta;
-	double e_z = exp(-z);
-	double PDF = (1.0/beta)*exp(-(z + e_z));
-	return PDF;
-	}
+const double PI = 3.1415926536;
+const double PI2 = PI*PI;
 
-double Gumbel_CDF(double mu, double beta, double x)
+void FitGumbel(const vector<double> &xs, double dx,
+  double &mu, double &beta)
 	{
-	double a = -(x - mu)/beta;
-	double exp1 = exp(-a);
-	double exp2 = exp(-exp1);
-	return exp2;
-	}
+	mu = DBL_MAX;
+	beta = DBL_MAX;
 
-double Gumbel_logCDF(double mu, double beta, double x)
-	{
-	double a = -(x - mu)/beta;
-	double exp1 = exp(-a);
-	return 1.0/exp1;
+	const uint N = SIZE(xs);
+	vector<double> smoothed_xs;
+	vector<double> smoothed_ys;
+
+// mu is modal x value
+	double sumx = 0;
+	double lox = xs[0];
+	uint y = 0;
+	uint maxy = 0;
+	for (uint i = 1; i < N; ++i)
+		{
+		double x = xs[i];
+		if (x - lox >= dx)
+			{
+			double meanx = (xs[i-1] + lox)/2; 
+			smoothed_xs.push_back(meanx);
+			smoothed_ys.push_back(y);
+			if (y > maxy)
+				{
+				maxy = y;
+				mu = meanx;
+				}
+			Log("smoothed\t%.3g\t%u\n", meanx, y);
+			lox = x;
+			y = 0;
+			}
+		else
+			++y;
+		}
+	double meanx = (xs[N-1] + lox)/2; 
+	smoothed_xs.push_back(meanx);
+	smoothed_ys.push_back(y);
+	const uint M = SIZE(smoothed_xs);
+	asserta(SIZE(smoothed_ys) == M);
+
+	vector<double> Ps;
+	double SumP = 0;
+	for (uint i = 0; i < M; ++i)
+		{
+		double y = smoothed_ys[i];
+		double P = y/N;
+		SumP += P;
+		Ps.push_back(P);
+		}
+	asserta(feq(SumP, 1.0));
+
+// Variance is expected value of (x - mu)^2
+	double sumPdx2 = 0;
+	for (uint i = 0; i < M; ++i)
+		{
+		double x = smoothed_xs[i];
+		double P = Ps[i];
+		double dx = (x - mu);
+		sumPdx2 += P*dx*dx;
+		}
+	double Var = sumPdx2;
+
+// Var = (PI^2/6)Beta^2
+// Var*6/(PI^2) = Beta^2
+// Beta = sqrt(6 Var/PI^2)
+	beta = sqrt(Var/PI2);
+
+	for (uint i = 0; i < M; ++i)
+		{
+		double x = smoothed_xs[i];
+		double y = smoothed_ys[i];
+		double G = Gumbel_PDF(mu, beta, x);
+		Log("G\t%.3g\t%.3g\t%.3g\n", x, y, G);
+		}
 	}
 
 void cmd_fit_gumbel()
@@ -29,73 +87,15 @@ void cmd_fit_gumbel()
 	string Line;
 	vector<string> Fields;
 	vector<double> xs;
-	vector<double> ys;
-	double Mode = 0;
-	double Maxy = 0;
-	uint N = 0;
-	double Sumy = 0;
 	while (ReadLineStdioFile(f, Line))
 		{
 		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) >= 2);
 		double x = StrToFloat(Fields[0]);
-		double y = StrToFloat(Fields[1]);
-		Sumy += y;
-		xs.push_back(x);
-		ys.push_back(y);
-		if (y > Maxy)
-			{
-			Maxy = y;
-			Mode = x;
-			}
-		}
-	const uint BinCount = SIZE(xs);
-	asserta(SIZE(ys) == BinCount);
-
-	vector<double> Freqs;
-	double SumFreq = 0;
-	for (uint Bin = 0; Bin < BinCount; ++Bin)
-		{
-		double y = ys[Bin];
-		double Freq = y/Sumy;
-		SumFreq += Freq;
-		Freqs.push_back(Freq);
-		}
-	asserta(feq(SumFreq, 1.0));
-
-	double Sumydx2 = 0;
-	for (uint Bin = 0; Bin < BinCount; ++Bin)
-		{
-		double x = xs[Bin];
-		double y = ys[Bin];
-		double Freq = Freqs[Bin];
-		double dx = (x - Mode);
-		Sumydx2 += Freq*dx*dx;
-		}
-	double Var = Sumydx2/Sumy;
-// Var = (PI^2/6)Beta^2
-// Var*6/(PI^2) = Beta^2
-// Beta = sqrt(6 Var/PI)
-	const double PI = 3.1416;
-	double Beta = sqrt(Var/(PI*PI));
-	double SumRatio = 0;
-	for (uint Bin = 0; Bin < BinCount; ++Bin)
-		{
-		double x = xs[Bin];
-		double y = ys[Bin];
-		double G = Gumbel_PDF(Mode, Beta, x);
+		if (x != 0)
+			xs.push_back(x);
 		}
 
-	ProgressLog("Mode = %.3g, var = %.3g, beta = %.3g\n",
-	  Mode, Var, Beta);
-	Log("x\ty\tG\tC\tlogC\n");
-	for (uint Bin = 0; Bin < BinCount; ++Bin)
-		{
-		double x = xs[Bin];
-		double y = ys[Bin];
-		double G = Gumbel_PDF(Mode, Beta, x);
-		double C = Gumbel_CDF(Mode, Beta, x);
-		double logC = Gumbel_logCDF(Mode, Beta, x);
-		Log("%.3g\t%.3g\t%.3g\t%.3g\t%.3g\n", x, y, G, C, logC);
-		}
+	double mu, beta;
+	FitGumbel(xs, 5, mu, beta);
+	ProgressLog("mu %.3g beta %3g\n", mu, beta);
 	}
