@@ -17,9 +17,9 @@ void cmd_scop40bit_s1fp()
 	const uint HitCount = SB.GetHitCount();
 	vector<float> DomToScoreFirstFP;
 	if (SB.m_ScoresAreEvalues)
-		DomToScoreFirstFP.resize(HitCount, FLT_MAX);
+		DomToScoreFirstFP.resize(DomCount, FLT_MAX);
 	else
-		DomToScoreFirstFP.resize(HitCount, 0);
+		DomToScoreFirstFP.resize(DomCount, 0);
 
 	for (uint i = 0; i < HitCount; ++i)
 		{

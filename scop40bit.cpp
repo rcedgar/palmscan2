@@ -228,7 +228,7 @@ void SCOP40Bit::ReadHits_Tsv_DSS()
 			Progress("Hits %.2f%%  %s\r", GetPct(Pos, FileSize), IntToStr(HitCount));
 			}
 		Split(Line, Fields, '\t');
-		asserta(SIZE(Fields) == 3);
+		asserta(SIZE(Fields) >= 3);
 		string Dom1;
 		string Dom2;
 		GetDomFromDomSlashFam(Fields[1], Dom1);
