@@ -35,20 +35,24 @@ HDRS = \
   cmsearcher.h \
   conncomp.h \
   diagbox.h \
+  dss.h \
   dssp.h \
   fastaseqsource.h \
   fastq.h \
   fastqrec.h \
   fileseqsource.h \
   filler.h \
+  glyphs.h \
   gobuff.h \
   gspaligner.h \
   gsprof.h \
+  gumbel.h \
   heuristics.h \
   hsp.h \
   linereader.h \
   lockobj.h \
   lockobjs.h \
+  logodds.h \
   motifprofile.h \
   motifsettings.h \
   mpcluster.h \
@@ -86,6 +90,7 @@ HDRS = \
   rdrpmodel.h \
   rdrpsearcher.h \
   rphit.h \
+  scop40bit.h \
   searchparams.h \
   segfiles.h \
   segs.h \
@@ -110,6 +115,9 @@ HDRS = \
   usage.h \
   usearch.h \
   viterbi.h \
+  x2data.h \
+  xbinner.h \
+  xcluster.h \
   xdpmem.h \
   xprof.h \
   xprofdata.h \
@@ -117,6 +125,8 @@ HDRS = \
 
 OBJS = \
   $(OBJDIR)/abcxyz.o \
+  $(OBJDIR)/afax2afa.o \
+  $(OBJDIR)/afax2motifs.o \
   $(OBJDIR)/aitoms.o \
   $(OBJDIR)/alignpalm.o \
   $(OBJDIR)/align_msas.o \
@@ -129,6 +139,7 @@ OBJS = \
   $(OBJDIR)/buildpsm.o \
   $(OBJDIR)/build_rdrp_model.o \
   $(OBJDIR)/cal2fa.o \
+  $(OBJDIR)/cal2fax.o \
   $(OBJDIR)/calreader.o \
   $(OBJDIR)/cavitypic.o \
   $(OBJDIR)/cddata.o \
@@ -147,17 +158,27 @@ OBJS = \
   $(OBJDIR)/cluster_ppc.o \
   $(OBJDIR)/cluster_ppm.o \
   $(OBJDIR)/cmd_aitoms.o \
+  $(OBJDIR)/compress_aa_alphabet.o \
   $(OBJDIR)/dali.o \
   $(OBJDIR)/default_shapes.o \
   $(OBJDIR)/distmx.o \
+  $(OBJDIR)/dss.o \
   $(OBJDIR)/dssp.o \
   $(OBJDIR)/expvalue.o \
+  $(OBJDIR)/fa2substmx.o \
+  $(OBJDIR)/fa2substmx3di.o \
+  $(OBJDIR)/calfa2x.o \
+  $(OBJDIR)/fa2xfeataln.o \
+  $(OBJDIR)/fa2xfeatsubstmx.o \
+  $(OBJDIR)/fa2xfeatsubstmx2.o \
   $(OBJDIR)/fasta_xlat.o \
   $(OBJDIR)/filler.o \
   $(OBJDIR)/filler_train.o \
   $(OBJDIR)/findcavity.o \
   $(OBJDIR)/firstchain_pssms.o \
+  $(OBJDIR)/fit_gumbel.o \
   $(OBJDIR)/getshapestrainingmotifs.o \
+  $(OBJDIR)/glyphs.o \
   $(OBJDIR)/gspalign.o \
   $(OBJDIR)/gspaligner.o \
   $(OBJDIR)/gsprof.o \
@@ -166,14 +187,18 @@ OBJS = \
   $(OBJDIR)/hse_cmp.o \
   $(OBJDIR)/hse_train.o \
   $(OBJDIR)/joinabcx.o \
+  $(OBJDIR)/logodds.o \
   $(OBJDIR)/make_trunc_bench.o \
+  $(OBJDIR)/motifs2pmls.o \
   $(OBJDIR)/motifsettings.o \
   $(OBJDIR)/msaqc2.o \
+  $(OBJDIR)/msax2aln.o \
   $(OBJDIR)/old_search3d.o \
   $(OBJDIR)/palmprint_pssms.o \
   $(OBJDIR)/pamerger.o \
   $(OBJDIR)/pamerge.o \
   $(OBJDIR)/palmcator.o \
+  $(OBJDIR)/pdb2dss.o \
   $(OBJDIR)/planec.o \
   $(OBJDIR)/pseudo_cb_angles.o \
   $(OBJDIR)/kabsch.o \
@@ -211,9 +236,19 @@ OBJS = \
   $(OBJDIR)/fastqrec.o \
   $(OBJDIR)/fileseqsource.o \
   $(OBJDIR)/getss.o \
+  $(OBJDIR)/dssmx.o \
+  $(OBJDIR)/scop40bit.o \
+  $(OBJDIR)/scop40bit_calibrate_dss.o \
+  $(OBJDIR)/scop40bit_evd.o \
+  $(OBJDIR)/scop40bit_fam.o \
+  $(OBJDIR)/scop40bit_s1fp.o \
+  $(OBJDIR)/scop40_roc.o \
+  $(OBJDIR)/testdss.o \
+  $(OBJDIR)/threedix.o \
   $(OBJDIR)/tm.o \
   $(OBJDIR)/tm2.o \
   $(OBJDIR)/tmallvsall.o \
+  $(OBJDIR)/tmscop.o \
   $(OBJDIR)/tmsubsample.o \
   $(OBJDIR)/usage.o \
   $(OBJDIR)/invertmx.o \
@@ -310,10 +345,21 @@ OBJS = \
   $(OBJDIR)/validate.o \
   $(OBJDIR)/viterbifastmem.o \
   $(OBJDIR)/writepml.o \
+  $(OBJDIR)/x2data.o \
   $(OBJDIR)/xalign.o \
   $(OBJDIR)/xalign2.o \
   $(OBJDIR)/xalign_calibrate.o \
   $(OBJDIR)/xbasis.o \
+  $(OBJDIR)/xbinner.o \
+  $(OBJDIR)/xbinner_explore.o \
+  $(OBJDIR)/xbinner_substmx.o \
+  $(OBJDIR)/xcluster.o \
+  $(OBJDIR)/xdiscrete.o \
+  $(OBJDIR)/xdiscrete_score.o \
+  $(OBJDIR)/xfeatures.o \
+  $(OBJDIR)/xfeaturescore.o \
+  $(OBJDIR)/xfeatures_3di.o \
+  $(OBJDIR)/xpermute.o \
   $(OBJDIR)/xprof.o \
   $(OBJDIR)/xprofdata.o \
   $(OBJDIR)/xprof_train.o \
