@@ -128,6 +128,7 @@ UNS_OPT(sample_size,		16,			1,			UINT_MAX)
 UNS_OPT(topn,				16,			1,			UINT_MAX)
 UNS_OPT(k,					5,			0,			UINT_MAX)
 
+FLT_OPT(maxgapfract,		0.6,		0.0,			1.0)
 FLT_OPT(mintm,				0.6,		0.0,			1.0)
 FLT_OPT(maxtm,				0.8,		0.0,			1.0)
 FLT_OPT(minscore,			10.0,		-9e9,		+9e9)

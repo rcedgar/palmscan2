@@ -355,7 +355,9 @@ void cmd_afax2motifs()
 	vector<double> GapFracts;
 	GetGapFracts(AARows, GapFracts);
 
-	const double MaxFract = 0.2;
+	double MaxFract = 0.2;
+	if (optset_maxgapfract)
+		MaxFract = opt_maxgapfract;
 	uint MinLength = 7;
 	if (optset_minlen)
 		MinLength = opt_minlen;
