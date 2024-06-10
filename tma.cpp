@@ -83,7 +83,7 @@ static string TrimWhiteSpace(const string& inputString)
 	return result;
 	}
 
-static double dist(double x[3], double y[3])
+double TMA::dist(double x[3], double y[3])
 	{
 	double d1 = x[0] - y[0];
 	double d2 = x[1] - y[1];
@@ -104,7 +104,7 @@ static void transform(double t[3], double u[3][3], double* x, double* x1)
 	x1[2] = t[2] + dot(&u[2][0], x);
 	}
 
-static void do_rotation(double** x, double** x1, int len, double t[3], double u[3][3])
+void TMA::do_rotation(double** x, double** x1, int len, double t[3], double u[3][3])
 	{
 	for (int i = 0; i < len; i++)
 		{
@@ -112,10 +112,14 @@ static void do_rotation(double** x, double** x1, int len, double t[3], double u[
 		}
 	}
 
-double TMA::TMscore8_search(double** r1, double** r2, double** xtm, double** ytm,
-	double** xt, int Lali, double t0[3], double u0[3][3], int simplify_step,
-	int score_sum_method, double* Rcomm, double local_d0_search, double Lnorm,
-	double score_d8, double d0)
+double TMA::TMscore8_search(
+	double** r1, double** r2,
+	double** xtm, double** ytm,
+	double** xt, int Lali,
+	double t0[3], double u0[3][3],
+	int simplify_step, int score_sum_method,
+	double* Rcomm, double local_d0_search,
+	double Lnorm, double score_d8, double d0)
 	{
 	int i, m;
 	double score_max, score, rmsd;
@@ -483,10 +487,15 @@ double TMA::detailed_search(double** r1, double** r2, double** xtm, double** ytm
 	return tmscore;
 	}
 
-double TMA::detailed_search_standard(double** r1, double** r2,
-	double** xtm, double** ytm, double** xt, double** x, double** y,
-	int xlen, int ylen, const int invmap0[], double t[3], double u[3][3],
-	int simplify_step, int score_sum_method, double local_d0_search,
+double TMA::detailed_search_standard(
+	double** r1, double** r2,
+	double** xtm, double** ytm,
+	double** xt, double** x, double** y,
+	int /*xlen*/, int ylen,
+	const int invmap0[],
+	double t[3], double u[3][3],
+	int simplify_step, int score_sum_method,
+	double local_d0_search,
 	const bool& bNormalize, double Lnorm, double score_d8, double d0)
 	{
 	//x is model, y is template, try to superpose onto y
@@ -1502,9 +1511,6 @@ int TMA::TMalign_main(double** xa, double** ya,
 	string& seqM, string& seqxA, string& seqyA,
 	const int xlen, const int ylen)
 	{
-	////////////////////////////////////////////////////////
-	/// NOT USED
-	////////////////////////////////////////////////////////
 	double t0[3], u0[3][3];
 	double d0_0, TM_0;
 	double d0_out = 5.0;
@@ -2904,42 +2910,6 @@ double TMA::AlignChains(const PDBChain &Q, const PDBChain &R)
 		return 0;
 	return m_TM1;
 	}
-
-#if 0
-void cmd_tm()
-	{
-	const string &QueryFileName = opt_tm;
-	const string &RefFileName = opt_ref;
-
-	TMA T;
-
-	char *seqx = new char[1024];
-	char *seqy = new char[1024];
-
-	double **xa = 0;
-	double **ya = 0;
-	NewArray(&xa, 1024, 3);
-	NewArray(&ya, 1024, 3);
-
-	int xlen = T.ReadCal(QueryFileName, seqx, xa);
-	int ylen = T.ReadCal(RefFileName, seqy, ya);
-
-	double TM1, TM2;
-	double d0A, d0B;
-	string seqM, seqxA, seqyA;
-	int iResult = T.TMalign_main(xa, ya, seqx, seqy, TM1, TM2, d0A, d0B,
-	  seqM, seqxA, seqyA, xlen, ylen);
-	if (iResult == 0)
-		T.LogAln(xlen, ylen, TM1, TM2, d0A, d0B, seqM, seqxA, seqyA);
-	else
-		ProgressLog("TM failed to align\n");
-
-	DeleteArray(&xa, 1024);
-	DeleteArray(&ya, 1024);
-	delete[] seqx;
-	delete[] seqy;
-	}
-#endif
 
 void TMAlignPair(TMA &T, const PDBChain &Q, const PDBChain &R)
 	{

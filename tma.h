@@ -141,6 +141,15 @@ public:
 		string& seqM, string& seqxA, string& seqyA,
 		const int xlen, const int ylen);
 
+	int TMalign_main_score(
+		const string &rowa, const string &rowb,
+		double** xa, double** ya,
+		const char* seqx, const char* secy,
+		double& TM1, double& TM2,
+		double& d0A, double& d0B,
+		string& seqM, string& seqxA, string& seqyA,
+		const int xlen, const int ylen);
+
 	void WriteAln(FILE *f,
 		const int xlen, const int ylen,
 		const double TM1, const double TM2,
@@ -154,4 +163,8 @@ public:
 	double AlignChains(const PDBChain &Q, const PDBChain &R);
 	double CalcTMScore(const PDBChain &Q, const PDBChain &R,
 	  const string &RowQ, const string &RowR);
+
+public:
+	void do_rotation(double** x, double** x1, int len, double t[3], double u[3][3]);
+	double dist(double x[3], double y[3]);
 	};
