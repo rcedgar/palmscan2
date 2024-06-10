@@ -1,70 +1,85 @@
 #include "myutils.h"
-#include "trisearcher.h"
-#include "abcxyz.h"
+#include "tma.h"
+#include "seqdb.h"
+#include "outputfiles.h"
 
-/***
-	d0 = 1.24 cuberoot(L - 15) - 1.8  (eq.5)
-
-	T_i = 1/{1 + (d_i/d0)^2}
-
-	TM = 1/L Sum(i=1..L) T_i
-
-When h = 0.75, eq. (4) can be well approximated by a 
-simpler formula (eq. 5) which drops, for example,
-from 6.4 to 2.3 Angstrom when LN changes from 300
-to 50 residues.
-
-tmscore_d0.py 300 = 6.36
-tmscore_d0.py 50 = 2.26
-
-Motif lengths 12+14+8 = 34
-
-tmscore_d0.py 34 = 1.51
-***/
-
-static const double d0 = 1.51;
-static const double d02 = d0*d0;
-
-double TriSearcher::GetMotifsTM() const
+double TMA::CalcTMScore(const PDBChain &Q, const PDBChain &R,
+  const string &RowQ, const string &RowR)
 	{
-	uint QPosA, QPosB, QPosC;
-	bool Found = GetTopHit(QPosA, QPosB, QPosC);
-	if (!Found)
-		return DBL_MAX;
+	m_Q = &Q;
+	m_R = &R;
 
-	asserta(m_Ref != 0);
-	asserta(m_Ref->m_MotifPosVec.size() == 3);
+	const uint QL = Q.GetSeqLength();
+	const uint RL = R.GetSeqLength();
 
-	uint RPosA = m_Ref->m_MotifPosVec[A];
-	uint RPosB = m_Ref->m_MotifPosVec[B];
-	uint RPosC = m_Ref->m_MotifPosVec[C];
+	char *seqx = new char[QL+1];
+	char *seqy = new char[RL+1];
 
-	double Sum = 0;
-	Sum += GetTMSum(QPosA, RPosA, AL);
-	Sum += GetTMSum(QPosB, RPosB, BL);
-	Sum += GetTMSum(QPosC, RPosC, CL);
+	memcpy(seqx, Q.m_Seq.c_str(), QL+1);
+	memcpy(seqy, R.m_Seq.c_str(), RL+1);
 
-	double TM = Sum/(AL + BL + CL);
-	return TM;
+	double **xa = 0;
+	double **ya = 0;
+	NewArray(&xa, QL, 3);
+	NewArray(&ya, RL, 3);
+
+	int xlen = (int) QL;
+	int ylen = (int) RL;
+
+	for (int i = 0; i < xlen; ++i)
+		{
+		xa[i][0] = Q.m_Xs[i];
+		xa[i][1] = Q.m_Ys[i];
+		xa[i][2] = Q.m_Zs[i];
+		}
+
+	for (int i = 0; i < ylen; ++i)
+		{
+		ya[i][0] = R.m_Xs[i];
+		ya[i][1] = R.m_Ys[i];
+		ya[i][2] = R.m_Zs[i];
+		}
+
+	double d0A = DBL_MAX;
+	double d0B = DBL_MAX;
+	return -1;
 	}
 
-double TriSearcher::GetTMSum(uint QPos, uint RPos, uint n) const
+void cmd_tmscore()
 	{
-	vector<double> RefPt(3);
-	vector<double> QPt(3);
-	vector<double> QPtX(3);
+	const string &QueryFileName = opt_tmscore;
+	const string &RefFileName = opt_ref;
+	const string &AlnFileName = opt_input;
 
-	double Sum = 0;
-	for (uint i = 0; i < n; ++i)
-		{
-		m_Query->GetPt(QPos + i, QPt);
-		m_Ref->GetPt(RPos + i, RefPt);
+	SeqDB Aln;
+	Aln.FromFasta(AlnFileName, true);
+	asserta(Aln.IsAligned());
+	Aln.SetLabelToIndex();
 
-		XFormPt(QPt, m_TriForm_t, m_TriForm_R, QPtX);
+	TMA T;
 
-		double d2 = GetDist2(RefPt, QPtX);
-		double T = 1.0/(1.0 + d2/d02);
-		Sum += T;
-		}
-	return Sum;
+	PDBChain Q;
+	PDBChain R;
+	Q.FromCal(QueryFileName);
+	R.FromCal(RefFileName);
+
+	const string &QLabel = Q.m_Label;
+	const string &RLabel = R.m_Label;
+
+	string RowQ;
+	string RowR;
+	Aln.GetSeqByLabel(QLabel, RowQ);
+	Aln.GetSeqByLabel(RLabel, RowR);
+	asserta(SIZE(RowQ) == SIZE(RowR));
+
+	string QAcc;
+	string RAcc;
+	Q.GetAcc(QAcc);
+	R.GetAcc(RAcc);
+
+	double TM = T.AlignChains(Q, R);
+	ProgressLog("%.4f  %s  %s\n", TM, QAcc.c_str(), RAcc.c_str());
+
+	double TM2 = T.CalcTMScore(Q, R, RowQ, RowR);
+	ProgressLog("TM2=%.4f\n", TM2);
 	}

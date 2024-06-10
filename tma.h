@@ -2,6 +2,20 @@
 
 #include "pdbchain.h"
 
+template <class A> void NewArray(A *** array, int Narray1, int Narray2)
+	{
+    *array=new A* [Narray1];
+    for(int i=0; i<Narray1; i++) *(*array+i)=new A [Narray2];
+	}
+
+template <class A> void DeleteArray(A *** array, int Narray)
+	{
+    for(int i=0; i<Narray; i++)
+        if(*(*array+i)) delete [] *(*array+i);
+    if(Narray) delete [] (*array);
+    (*array)=NULL;
+	}
+
 class TMA
 	{
 public:
@@ -99,15 +113,10 @@ public:
 	char sec_str(double dis13, double dis14, double dis15,
 		double dis24, double dis25, double dis35);
 
-//	void make_sec(double** x, int len, char* sec);
-
 	bool get_initial5(double** r1, double** r2, double** xtm, double** ytm,
 		bool** path, double** val,
 		double** x, double** y, int xlen, int ylen, int* y2x,
 		double d0, double d0_search, const double D0_MIN);
-
-	//void get_initial_ss(bool** path, double** val,
-	//	const char* secx, const char* secy, int xlen, int ylen, int* y2x);
 
 	bool Kabsch(double **x, double **y, int n, int mode, double *rms,
 		double t[3], double u[3][3]);
@@ -143,4 +152,6 @@ public:
 	uint ReadCal(const string &FileName, char *Seq, double **a);
 
 	double AlignChains(const PDBChain &Q, const PDBChain &R);
+	double CalcTMScore(const PDBChain &Q, const PDBChain &R,
+	  const string &RowQ, const string &RowR);
 	};

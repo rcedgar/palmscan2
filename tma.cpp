@@ -44,20 +44,6 @@ static void SetRCEtu(double t[3], double u[3][3])
 	u[2][2] = 1;
 	}
 
-template <class A> void NewArray(A *** array, int Narray1, int Narray2)
-	{
-    *array=new A* [Narray1];
-    for(int i=0; i<Narray1; i++) *(*array+i)=new A [Narray2];
-	}
-
-template <class A> void DeleteArray(A *** array, int Narray)
-	{
-    for(int i=0; i<Narray; i++)
-        if(*(*array+i)) delete [] *(*array+i);
-    if(Narray) delete [] (*array);
-    (*array)=NULL;
-	}
-
 void TMA::LogTU(const char *Msg, const double t[3], const double u[3][3]) const
 	{
 	Log("LogTU(%s):\n  t(%10.3f,  %10.3f,  %10.3f)\n", Msg, t[0], t[1], t[2]);
@@ -1541,10 +1527,8 @@ int TMA::TMalign_main(double** xa, double** ya,
 	double** xt;          //for saving the superposed version of r_1 or xtm
 	double** r1, ** r2;    // for Kabsch rotation
 
-//	const double TMcut = -1;
 	const int a_opt = 0;
 	const int mol_type = -2; // > 0 is RNA
-	const int i_opt = 0;
 
 	/***********************/
 	/* allocate memory     */
@@ -1816,7 +1800,7 @@ int TMA::TMalign_main(double** xa, double** ya,
 			{
 			n_ali++;
 			d = sqrt(dist(&xt[i][0], &ya[j][0]));
-			if (d <= score_d8 || (i_opt == 3))
+			if (d <= score_d8)
 				{
 				m1[k] = i;
 				m2[k] = j;
