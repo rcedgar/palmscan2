@@ -43,11 +43,13 @@ void cmd_pamerge()
 			}
 			  
 		PAM.FromLine(Line);
-		PAM.ToFev(g_ffev);
-		PAM.ToTsv(g_ftsv);
 		double RdRpScore = PAM.GetRdRpScore();
 		if (RdRpScore >= MinScoreRdRp)
+			{
+			PAM.ToFev(g_ffev);
+			PAM.ToTsv(g_ftsv);
 			PAM.ToFasta(g_ffasta);
+			}
 
 		if (RdRpScore == 100)
 			++N100;
