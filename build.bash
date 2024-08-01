@@ -6,9 +6,9 @@ githash=`git rev-parse --short HEAD`
 echo "static const char *build_info = \"$mydate:$githash\";" \
   > build_info.txt
 
-txt2cpp.py usage.txt \
+python3 $py/txt2cpp.py usage.txt \
   > usage.h
 
-vcxproj2makefile.py
+python3 $py/vcxproj2makefile.py
 
 make

@@ -2574,7 +2574,7 @@ bool g_IsAminoChar[256] =
 	false, // [ 85] 'U'
 	true,  // [ 86] 'V' = Val
 	true,  // [ 87] 'W' = Trp
-	false, // [ 88] 'X'
+	true, // [ 88] 'X'
 	true,  // [ 89] 'Y' = Tyr
 	false, // [ 90] 'Z'
 	false, // [ 91] '['
@@ -2606,7 +2606,7 @@ bool g_IsAminoChar[256] =
 	false, // [117] 'U'
 	true,  // [118] 'V' = Val
 	true,  // [119] 'W' = Trp
-	false, // [120] 'X'
+	true, // [120] 'X'
 	true,  // [121] 'Y' = Tyr
 	false, // [122] 'Z'
 	false, // [123] '{'
