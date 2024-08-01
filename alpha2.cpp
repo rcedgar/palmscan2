@@ -302,7 +302,12 @@ unsigned char GetAminoCharFrom3NucChars(unsigned char c1, unsigned char c2,
 	unsigned Letter1 = g_CharToLetterNucleo[c1];
 	unsigned Letter2 = g_CharToLetterNucleo[c2];
 	unsigned Letter3 = g_CharToLetterNucleo[c3];
+	if (Letter1 == INVALID_LETTER || Letter2 == INVALID_LETTER || Letter3 == INVALID_LETTER)
+		return 'X';
+
 	unsigned Word = Letter1*(4*4) + Letter2*4 + Letter3;
+	if (Word >= 4*4*4)
+		return 'X';
 
 	unsigned Letter = g_CodonWordToAminoLetter[Word];
 	return g_LetterToCharAmino[Letter];
