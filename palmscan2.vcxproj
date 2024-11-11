@@ -330,6 +330,7 @@
     <ClCompile Include="hse.cpp" />
     <ClCompile Include="hse_cmp.cpp" />
     <ClCompile Include="hse_train.cpp" />
+    <ClCompile Include="jalview.cpp" />
     <ClCompile Include="joinabcx.cpp" />
     <ClCompile Include="logodds.cpp" />
     <ClCompile Include="make_trunc_bench.cpp" />

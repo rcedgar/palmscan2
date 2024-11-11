@@ -12,6 +12,8 @@ void OpenOutputFiles()
 
 void CloseOutputFiles()
 	{
+	if (g_fjalview != 0)
+		fprintf(g_fjalview, "ENDGROUP\n");
 #define F(x)	CloseStdioFile(g_f##x);
 #include "ofiles.h"
 	}

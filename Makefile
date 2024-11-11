@@ -189,6 +189,7 @@ OBJS = \
   $(OBJDIR)/hse.o \
   $(OBJDIR)/hse_cmp.o \
   $(OBJDIR)/hse_train.o \
+  $(OBJDIR)/jalview.o \
   $(OBJDIR)/joinabcx.o \
   $(OBJDIR)/logodds.o \
   $(OBJDIR)/make_trunc_bench.o \

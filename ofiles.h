@@ -44,5 +44,6 @@ F(cfv)
 F(aln)
 F(shapes_train_tsv)
 F(atomdists)
+F(jalview)
 
 #undef F

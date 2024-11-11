@@ -173,6 +173,7 @@ public:
 
 	void ToPmlABC(FILE *f) const;
 	void ToPml(FILE *f, const string &LoadName) const;
+	void ToJalview(FILE *f) const;
 
 	void LogShapes(const vector<uint> &ShapeIndexes,
 	  const vector<string> &ShapeSeqs) const;

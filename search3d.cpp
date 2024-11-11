@@ -28,6 +28,7 @@ static bool Search1(const PDBChain &Q, ShapeSearcher &SS)
 		LoadName += Q.m_Label;
 		LoadName += ".pdb";
 		SS.ToPml(g_fpml, LoadName.c_str());
+		SS.ToJalview(g_fjalview);
 		}
 	return Hit;
 	}

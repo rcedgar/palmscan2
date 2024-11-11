@@ -731,6 +731,9 @@
     <ClCompile Include="scop40bit_calibrate_dss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="jalview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
