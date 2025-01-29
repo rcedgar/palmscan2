@@ -317,6 +317,7 @@
     <ClCompile Include="fa2xfeatsubstmx.cpp" />
     <ClCompile Include="fa2xfeatsubstmx2.cpp" />
     <ClCompile Include="fake.cpp" />
+    <ClCompile Include="fakechain.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="filler.cpp" />
     <ClCompile Include="filler_train.cpp" />
@@ -512,6 +513,7 @@
     <ClCompile Include="xprof.cpp" />
     <ClInclude Include="dss.h" />
     <ClInclude Include="dssp.h" />
+    <ClInclude Include="fakechain.h" />
     <ClInclude Include="filler.h" />
     <ClInclude Include="glyphs.h" />
     <ClInclude Include="gumbel.h" />
