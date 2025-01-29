@@ -1,6 +1,18 @@
 #include "myutils.h"
+#include "pdbchain.h"
 
-#if 0
+static double dot(const double a[3], const double b[3])
+	{
+	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+	}
+
+static void transform(const double t[3], const double u[3][3],
+  const double x[3], double x_transformed[3])
+	{
+	x_transformed[0] = t[0] + dot(u[0], x);
+	x_transformed[1] = t[1] + dot(u[1], x);
+	x_transformed[2] = t[2] + dot(u[2], x);
+	}
 
 /***
 Based on Kabsch() function in TM-align source code v20220412.
@@ -15,14 +27,13 @@ Implemetation of Kabsch algoritm for finding the best rotation matrix
 x     - x(i,m) are coordinates of atom m in set x            (input)
 y     - y(i,m) are coordinates of atom m in set y            (input)
 n     - n is number of atom pairs                            (input)
-mode  - 0: calculate rms only                                (input)
-        1:calculate u,t only                                 (takes medium)
-        2:calculate rms,u,t                                  (takes longer)
 rms   - sum of w*(ux+t-y)**2 over all atom pairs             (output)
 u     - u(i,j) is   rotation  matrix for best superposition  (output)
 t     - t(i)   is translation vector for best superposition  (output)
 **************************************************************************/
-bool Kabsch(double** x, double** y, int n, int mode, double* rms,
+double Kabsch(
+  const double * const *x, 
+  const double * const *y, int n,
   double t[3], double u[3][3])
 	{
 	int i, j, m, m1, l, k;
@@ -33,12 +44,13 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 	double sqrt3 = 1.73205080756888, tol = 0.01;
 	int ip[] = { 0, 1, 3, 1, 2, 4, 3, 4, 5 };
 	int ip2312[] = { 1, 2, 0, 1 };
+	asserta(n > 0);
 
 	int a_failed = 0, b_failed = 0;
 	double epsilon = 0.00000001;
 
 	//initializtation
-	*rms = 0;
+	double rms = 0;
 	rms1 = 0;
 	e0 = 0;
 	double c1[3], c2[3];
@@ -72,8 +84,6 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 			}
 		}
 
-	if (n < 1) return false;
-
 	//compute centers for vector sets x, y
 	for (i = 0; i < n; i++)
 		{
@@ -98,11 +108,12 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 		xc[i] = s1[i] / n;
 		yc[i] = s2[i] / n;
 		}
-	if (mode == 2 || mode == 0)
-		for (int mm = 0; mm < n; mm++)
-			for (int nn = 0; nn < 3; nn++)
-				e0 += (x[mm][nn] - xc[nn]) * (x[mm][nn] - xc[nn]) +
-				(y[mm][nn] - yc[nn]) * (y[mm][nn] - yc[nn]);
+
+	for (int mm = 0; mm < n; mm++)
+		for (int nn = 0; nn < 3; nn++)
+			e0 += (x[mm][nn] - xc[nn]) * (x[mm][nn] - xc[nn]) +
+			(y[mm][nn] - yc[nn]) * (y[mm][nn] - yc[nn]);
+
 	for (j = 0; j < 3; j++)
 		{
 		r[j][0] = sx[j] - s1[0] * s2[j] / n;
@@ -152,7 +163,6 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 			e[1] = (spur - cth) + sth;
 			e[2] = (spur - cth) - sth;
 
-			if (mode != 0)
 				{//compute a                
 				for (l = 0; l < 3; l = l + 2)
 					{
@@ -246,8 +256,6 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 				}//if(mode!=0)       
 			}//h>0
 
-			//compute b anyway
-		if (mode != 0 && a_failed != 1)//a is computed correctly
 			{
 			//compute b
 			for (l = 0; l < 2; l++)
@@ -316,15 +324,7 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 				u[i][2] * xc[2];
 			}//if(mode!=0 && a_failed!=1)
 		}//spur>0
-	else //just compute t and errors
-		{
-		//compute t
-		for (i = 0; i < 3; i++)
-			t[i] = ((yc[i] - u[i][0] * xc[0]) - u[i][1] * xc[1]) -
-			u[i][2] * xc[2];
-		}//else spur>0 
-
-		//compute rms
+	//compute rms
 	for (i = 0; i < 3; i++)
 		{
 		if (e[i] < 0) e[i] = 0;
@@ -334,13 +334,143 @@ bool Kabsch(double** x, double** y, int n, int mode, double* rms,
 	if (sigma < 0.0) d = -d;
 	d = (d + e[1]) + e[0];
 
-	if (mode == 2 || mode == 0)
+	rms = (e0 - d) - d;
+	if (rms < 0.0) rms = 0.0;
+
+	return rms;
+	}
+
+double Kabsch(const PDBChain &ChainA, const PDBChain &ChainB,
+  uint LoA, uint LoB, const string &Path,
+  double t[3], double u[3][3])
+	{
+	uint ColCount = SIZE(Path);
+	double **x = myalloc(double *, ColCount);
+	double **y = myalloc(double *, ColCount);
+	uint M = 0;
+	uint PosA = LoA;
+	uint PosB = LoB;
+	for (uint Col = 0; Col < ColCount; ++Col)
 		{
-		rms1 = (e0 - d) - d;
-		if (rms1 < 0.0) rms1 = 0.0;
+		switch (Path[Col])
+			{
+		case 'M':
+			{
+			x[M] = myalloc(double, 3);
+			y[M] = myalloc(double, 3);
+			vector<double> PtA;
+			vector<double> PtB;
+			ChainA.GetPt(PosA, PtA);
+			ChainB.GetPt(PosB, PtB);
+			x[M][0] = PtA[0];
+			y[M][0] = PtB[0];
+			x[M][1] = PtA[1];
+			y[M][1] = PtB[1];
+			x[M][2] = PtA[2];
+			y[M][2] = PtB[2];
+			++PosA;
+			++PosB;
+			++M;
+			break;
+			}
+
+		case 'D':
+			++PosA;
+			break;
+
+		case 'I':
+			++PosB;
+			break;
+
+		default:
+			asserta(false);
+			}
+		}
+	double RMS = Kabsch(x, y, M, t, u);
+	for (uint i = 0; i < M; ++i)
+		{
+		myfree(x[i]);
+		myfree(y[i]);
+		}
+	myfree(x);
+	myfree(y);
+	asserta(M > 0);
+	return RMS/M;
+	}
+
+#include "abcxyz.h"
+
+static void Test(const double t_in[3],
+  const double u_in[3][3], uint n)
+	{
+	Log("t_in = %.1f %.1f %.1f\n", t_in[0], t_in[1], t_in[2]);
+	Log("uin0 = %7.3f %7.3f %7.3f\n", u_in[0][0], u_in[0][1], u_in[0][2]);
+	Log("uin1 = %7.3f %7.3f %7.3f\n", u_in[1][0], u_in[1][1], u_in[1][2]);
+	Log("uin2 = %7.3f %7.3f %7.3f\n", u_in[2][0], u_in[2][1], u_in[2][2]);
+
+	double **x = myalloc(double *, n);
+	double **y = myalloc(double *, n);
+
+	for (uint i = 0; i < n; ++i)
+		{
+		x[i] = myalloc(double, 3);
+		y[i] = myalloc(double, 3);
+
+		x[i][0] = randu32()%10;
+		x[i][1] = randu32()%10;
+		x[i][2] = randu32()%10;
+
+		transform(t_in, u_in, x[i], y[i]);
 		}
 
-	*rms = rms1;
-	return true;
+	double t[3];
+	double u[3][3];
+
+	double rms = Kabsch(x, y, n, t, u);
+
+	Log(" rms = %.2f\n", rms);
+	Log("   t = %.1f %.1f %.1f\n", t[0], t[1], t[2]);
+	Log("  u0 = %7.3f %7.3f %7.3f\n", u[0][0], u[0][1], u[0][2]);
+	Log("  u1 = %7.3f %7.3f %7.3f\n", u[1][0], u[1][1], u[1][2]);
+	Log("  u2 = %7.3f %7.3f %7.3f\n", u[2][0], u[2][1], u[2][2]);
+
+	Log(" %8.8s,  %8.8s,  %8.8s ", "x1", "y1", "z1");
+	Log("   %8.8s,  %8.8s,  %8.8s ", "x2", "y2", "z2");
+	Log("   %8.8s,  %8.8s,  %8.8s ", "Kx", "Ky", "Kz");
+	Log("\n");
+	for (uint i = 0; i < n; ++i)
+		{
+		double x_transformed[3];
+		transform(t, u, x[i], x_transformed);
+
+		Log("(%8.1f,  %8.1f,  %8.1f)", x[i][0], x[i][1], x[i][2]);
+		Log("  (%8.1f,  %8.1f,  %8.1f)", y[i][0], y[i][1], y[i][2]);
+		Log("  (%8.1f,  %8.1f,  %8.1f)", x_transformed[0], x_transformed[1], x_transformed[2]);
+		Log("\n");
+		}
 	}
-#endif  // 0
+
+#if 0
+void cmd_test()
+	{
+	double t[3] = { 1, 2, 3 };
+	double u[3][3] =
+		{
+		{ 1, 0, 0 },
+		{ 0, 1, 0 },
+		{ 0, 0, 1 }
+		};
+
+// https://en.wikipedia.org/wiki/Rotation_matrix
+
+	double theta = 1;
+	double c = cos(theta);
+	double s = sin(theta);
+
+	u[0][0] = 1;		u[0][1] = 0;		u[0][1] = 0;
+	u[1][0] = 0;		u[1][1] = c;		u[1][1] = -s;
+	u[1][0] = 0;		u[1][1] = s;		u[1][1] = c;
+
+	Test(t, u, 4);
+	}
+#endif // 0

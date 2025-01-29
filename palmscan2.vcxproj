@@ -303,6 +303,7 @@
     <ClCompile Include="cluster_ppm.cpp" />
     <ClCompile Include="cmd_aitoms.cpp" />
     <ClCompile Include="compress_aa_alphabet.cpp" />
+    <ClCompile Include="cubes.cpp" />
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
@@ -315,12 +316,14 @@
     <ClCompile Include="fa2xfeataln.cpp" />
     <ClCompile Include="fa2xfeatsubstmx.cpp" />
     <ClCompile Include="fa2xfeatsubstmx2.cpp" />
+    <ClCompile Include="fake.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
     <ClCompile Include="filler.cpp" />
     <ClCompile Include="filler_train.cpp" />
     <ClCompile Include="findcavity.cpp" />
     <ClCompile Include="firstchain_pssms.cpp" />
     <ClCompile Include="fit_gumbel.cpp" />
+    <ClCompile Include="fragment_library.cpp" />
     <ClCompile Include="getshapestrainingmotifs.cpp" />
     <ClCompile Include="glyphs.cpp" />
     <ClCompile Include="gspalign.cpp" />
@@ -382,6 +385,7 @@
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="dssmx.cpp" />
+    <ClCompile Include="rotate3d.cpp" />
     <ClCompile Include="scop40bit.cpp" />
     <ClCompile Include="scop40bit_calibrate_dss.cpp" />
     <ClCompile Include="scop40bit_evd.cpp" />

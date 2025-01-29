@@ -132,5 +132,11 @@ C(scop40bit_s1fp)
 C(scop40bit_evd)
 C(scop40bit_calibrate_dss)
 C(fit_gumbel)
+C(backbone_dist)
+C(nen_dist)
+C(fragment_library)
+C(fake)
+C(rotate3d)
+C(cubes)
 
 #undef C

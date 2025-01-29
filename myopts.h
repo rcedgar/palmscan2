@@ -198,6 +198,9 @@ FLAG_OPT(pmlrevmotifs)
 FLAG_OPT(noappendchain)
 FLAG_OPT(besthit)
 FLAG_OPT(scores_are_evalues)
+FLAG_OPT(flip)
+FLAG_OPT(randrev)
+FLAG_OPT(shuffle)
 
 #undef FLAG_OPT
 #undef UNS_OPT

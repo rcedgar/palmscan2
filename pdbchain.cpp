@@ -1087,6 +1087,22 @@ void PDBChain::GetTriFormChain_MotifCoords(PDBChain &XChain) const
 	GetXFormChain_tR(t, R, XChain);
 	}
 
+void PDBChain::GetXFormChain_tu(double t[3], double u[3][3], PDBChain &XChain) const
+	{
+	vector<double> tv;
+	tv.push_back(t[0]);
+	tv.push_back(t[1]);
+	tv.push_back(t[2]);
+
+	vector<vector<double> > R(3);
+	for (uint i = 0; i < 3; ++i)
+		R[i].resize(3);
+	for (uint i = 0; i < 3; ++i)
+		for (uint j = 0; j < 3; ++j)
+			R[i][j] = u[i][j];
+	GetXFormChain_tR(tv, R, XChain);
+	}
+
 void PDBChain::GetXFormChain_tR(
   const vector<double> &t,
   const vector<vector<double> > &R,

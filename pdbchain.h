@@ -51,6 +51,7 @@ public:
 	  const vector<double> &t,
 	  const vector<vector<double> > &R,
 	  PDBChain &XChain) const;
+	void GetXFormChain_tu(double t[3], double u[3][3], PDBChain &XChain) const;
 	void GetTriFormChain_MotifCoords(PDBChain &XChain) const;
 	void GetTriFormChain_DGD(PDBChain &XChain) const;
 	void LogMe(bool WithCoords = false) const;
