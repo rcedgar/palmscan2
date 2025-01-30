@@ -277,6 +277,8 @@
     <ClCompile Include="alloc.cpp" />
     <ClCompile Include="alpha.cpp" />
     <ClCompile Include="alpha2.cpp" />
+    <ClCompile Include="angles.cpp" />
+    <ClCompile Include="angles_data.cpp" />
     <ClCompile Include="annotate.cpp" />
     <ClCompile Include="blosum.cpp" />
     <ClCompile Include="blosum62.cpp" />

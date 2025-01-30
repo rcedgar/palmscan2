@@ -2,6 +2,9 @@
 #include "pdbchain.h"
 #include "fakechain.h"
 
+void GetRandomAnglePair_Radians(double &rad_bc, double &rad_vc);
+double get_norm(const coords_t a);
+
 static const double MEDIAN_CALPHA_DIST = 3.81;
 
 void RotateChain(PDBChain &Chain, double alpha, double beta, double gamma);
@@ -23,29 +26,38 @@ static double get_dist(const coords_t &c1, const coords_t &c2)
 	return sqrt(dx*dx + dy*dy + dz*dz);
 	}
 
-// x = r * sin(theta) * cos(phi)
-// y = r * sin(theta) * sin(phi)
-// z = r * cos(theta)
-static void GetRandomCoordsByDistance(const coords_t &c, double d, coords_t &rc)
+void FakeChain::GetNEN_Plus(coords_t c, uint &Pos, double &Dist) const
 	{
-	double theta = get_rand_radians();
-	double phi = get_rand_radians();
-	double sin_theta = sin(theta);
-	double cos_theta = cos(theta);
-	double sin_phi = sin(phi);
-	double cos_phi = cos(phi);
-
-	rc.x = c.x + d*sin_theta*cos_phi;
-	rc.y = c.y + d*sin_theta*sin_phi;
-	rc.z = c.z + d*cos_theta;
-
-#if DEBUG
-	{
-	double dist = get_dist(c, rc);
-	double diff = fabs(dist - d);
-	assert(diff < 0.1);
+	Pos = UINT_MAX;
+	Dist = DBL_MAX;
+	const uint L = m_Chain.GetSeqLength();
+	for (uint Pos2 = Pos + 4; Pos2 < L; ++Pos2)
+		{
+		coords_t cPos = GetCoords(Pos2);
+		double d = get_dist(c, cPos);
+		if (d < Dist)
+			{
+			Dist = d;
+			Pos = Pos2;
+			}
+		}
 	}
-#endif
+
+void FakeChain::GetNEN_Minus(coords_t c, uint &Pos, double &Dist) const
+	{
+	Pos = UINT_MAX;
+	Dist = DBL_MAX;
+	const uint L = m_Chain.GetSeqLength();
+	for (int Pos2 = int(Pos) - 4; Pos2 >= 0; --Pos2)
+		{
+		coords_t cPos = GetCoords(uint(Pos2));
+		double d = get_dist(c, cPos);
+		if (d < Dist)
+			{
+			Dist = d;
+			Pos = Pos2;
+			}
+		}
 	}
 
 void FakeChain::LogMe() const
@@ -57,49 +69,28 @@ void FakeChain::LogMe() const
 	int64 lasth = 0;
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
-		coords_t c;
-		m_Chain.GetCoords(Pos, c);
+		coords_t c = m_Chain.GetCoords(Pos);
 
-		Log("%5u |%c|  X=%5.1f  Y=%5.1f  Z=%5.1f",
+		Log("%5u |%c|  X=%5.1f  Y=%5.1f  Z=%5.1f\n",
 			Pos, Seq[Pos], c.x, c.y, c.z);
-
-		intpt_t Cube;
-		GetCube(c, Cube);
-		Log("  Cube=(%4d, %4d, %4d)",
-			Cube.x, Cube.y, Cube.z);
-
-		int64 h = GetHash(Cube);
-		if (h != lasth)
-			{
-			Log("  %16llx", h);
-		
-			map<int64, vector<uint> >::const_iterator iter = m_HashToPosVec.find(h);
-			asserta(iter != m_HashToPosVec.end());
-
-			const vector<uint> &PosVec = iter->second;
-			const uint n = SIZE(PosVec);
-			Log(" posvec(%u)", n);
-			for (uint i = 0; i < n; ++i)
-				Log(" %u", PosVec[i]);
-			}
-		lasth = h;
-		Log("\n");
 		}
 	}
 
-bool FakeChain::IsOccupied(coords_t c) const
+bool FakeChain::IsOccupied(coords_t c, uint &Pos) const
 	{
-	intpt_t Cube;
-	GetCube(c, Cube);
-	int64 h = GetHash(Cube);
-	return m_HashSet.find(h) != m_HashSet.end();
-	}
-
-void FakeChain::GetCube(coords_t c, intpt_t &Cube) const
-	{
-	Cube.x = int(round(c.x)/m_Size);
-	Cube.y = int(round(c.y)/m_Size);
-	Cube.z = int(round(c.z)/m_Size);
+	Pos = UINT_MAX;
+	const uint L = m_Chain.GetSeqLength();
+	for (uint Pos2 = 0; Pos2 < L; ++Pos2)
+		{
+		coords_t cPos2 = GetCoords(Pos2);
+		double d = get_dist(c, cPos2);
+		if (d < m_MinNENDist)
+			{
+			Pos = Pos2;
+			return true;
+			}
+		}
+	return false;
 	}
 
 bool FakeChain::GetAppendCoords(coords_t &Coords) const
@@ -113,30 +104,19 @@ bool FakeChain::GetAppendCoords(coords_t &Coords) const
 		return true;
 		}
 	asserta(L >= 2);
-	coords_t cterm;
-	m_Chain.GetCoords(L-1, cterm);
+	coords_t cterm1 = m_Chain.GetCoords(L-2);
+	coords_t cterm = m_Chain.GetCoords(L-1);
 	for (int Try = 0; Try < 100; ++Try)
 		{
-		GetRandomCoordsByDistance(cterm, MEDIAN_CALPHA_DIST, Coords);
-		if (!IsOccupied(Coords))
+		double theta_bc, theta_vc;
+		GetRandomAnglePair_Radians(theta_bc, theta_vc);
+		Die("TODO");
+		//Coords = NextCoords(cterm1, cterm, theta_bc, theta_vc);
+		uint OvPos;
+		if (!IsOccupied(Coords, OvPos))
 			return true;
 		}
 	return false;
-	}
-
-uint64 FakeChain::GetHash(int x, int y, int z) const
-	{
-	intpt_t p(x, y, z);
-	return GetHash(p);
-	}
-
-uint64 FakeChain::GetHash(intpt_t p) const
-	{
-	static int64 a = 6364136223846793005;
-	static int64 c = 1442695040888963407;
-	int64 h = int64(p.x + 100*(p.y + 100) + 10000*(p.z + 100));
-	h = h*a + c;
-	return h;
 	}
 
 uint FakeChain::FindOverlap(const PDBChain &Chain) const
@@ -144,13 +124,9 @@ uint FakeChain::FindOverlap(const PDBChain &Chain) const
 	const uint L = Chain.GetSeqLength();
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
-		coords_t Coords;
-		Chain.GetCoords(Pos, Coords);
-
-		intpt_t Cube;
-		GetCube(Coords, Cube);
-		int64 h = GetHash(Cube);
-		if (m_HashSet.find(h) != m_HashSet.end())
+		coords_t Coords = Chain.GetCoords(Pos);
+		uint OvPos;
+		if (IsOccupied(Coords, OvPos))
 			return Pos;
 		}
 	return UINT_MAX;
@@ -181,18 +157,13 @@ bool FakeChain::TryAppendFrag(const PDBChain &Frag)
 		{
 		if (1)
 			{
-			coords_t c;
-			NewFrag->GetCoords(OvPos, c);
-
-			intpt_t Cube;
-			GetCube(c, Cube);
+			coords_t c = NewFrag->GetCoords(OvPos);
 
 			Log("\n");
 			LogMe();
 			Log("AppendCoords %.1f, %.1f, %.1f\n", a.x, a.y, a.z);
 			Log("OvPos = %u", OvPos);
 			Log(" x=%.1f, y=%.1f, z=%.1f", c.x, c.y, c.z);
-			Log(" cube=%d,%d,%d", Cube.x, Cube.y, Cube.z);
 			Log("\n");
 			}
 		delete NewFrag;
@@ -211,43 +182,12 @@ void FakeChain::AppendFrag(const PDBChain &Frag, coords_t a)
 
 	m_Frags.push_back(&Frag);
 	m_AppendCoordsVec.push_back(a);
-	set<int64> NewSet;
-	for (uint Pos = 0; Pos < L; ++Pos)
-		{
-		coords_t Coords;
-		Frag.GetCoords(Pos, Coords);
-
-		intpt_t Cube;
-		GetCube(Coords, Cube);
-		int64 h = GetHash(Cube);
-		NewSet.insert(h);
-		}
-	for (set<int64>::const_iterator iter = NewSet.begin();
-		 iter != NewSet.end(); ++iter)
-		{
-		int64 h = *iter;
-		if (m_HashSet.find(h) != m_HashSet.end())
-			Die("Overlap");
-		m_HashSet.insert(h);
-		}
 
 	for (uint FragPos = 0; FragPos < L; ++FragPos)
 		{
-		coords_t Coords;
-		Frag.GetCoords(FragPos, Coords);
-
-		intpt_t Cube;
-		GetCube(Coords, Cube);
-		int64 h = GetHash(Cube);
-
-		map<int64, vector<uint> >::iterator iter = m_HashToPosVec.find(h);
-		if (iter == m_HashToPosVec.end())
-			{
-			vector<uint> EmptyPosVec;
-			m_HashToPosVec[h] = EmptyPosVec;
-			}
-		uint Pos = SIZE(m_Chain.m_Xs);
-		m_HashToPosVec[h].push_back(Pos);
+		coords_t Coords = Frag.GetCoords(FragPos);
+		uint OvPos;
+		asserta(!IsOccupied(Coords, OvPos));
 
 		m_Chain.m_Xs.push_back(Coords.x);
 		m_Chain.m_Ys.push_back(Coords.y);
@@ -267,8 +207,7 @@ void FakeChain::Validate() const
 	const uint L = m_Chain.GetSeqLength();
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
-		coords_t c;
-		m_Chain.GetCoords(Pos, c);
+		coords_t c = m_Chain.GetCoords(Pos);
 
 		uint FragIdx = m_PosToFragIdx[Pos];
 		uint FragPos = m_PosToFragPos[Pos];
@@ -276,26 +215,6 @@ void FakeChain::Validate() const
 		const PDBChain &Frag = *m_Frags[FragIdx];
 		const uint FragL = Frag.GetSeqLength();
 		asserta(FragPos < FragL);
-
-		intpt_t Cube;
-		GetCube(c, Cube);
-		int64 h = GetHash(Cube);
-		asserta(m_HashSet.find(h) != m_HashSet.end());
-		map<int64, vector<uint> >::const_iterator iter = m_HashToPosVec.find(h);
-		asserta(iter != m_HashToPosVec.end());
-		const vector<uint> &PosVec = iter->second;
-		const uint n = SIZE(PosVec);
-		asserta(n > 0);
-		bool Found = 0;
-		for (uint i = 0; i < n; ++i)
-			{
-			if (PosVec[i] == Pos)
-				{
-				Found = true;
-				break;
-				}
-			}
-		asserta(Found);
 		}
 	}
 
@@ -357,4 +276,33 @@ bool FakeChain::AppendBest(const vector<PDBChain *> &Frags, uint Iters)
 	bool Ok = TryAppendFrag(*NewFrag);
 	asserta(Ok);
 	return true;
+	}
+
+coords_t FakeChain::NextCoords(
+	const coords_t cterm2, const coords_t cterm1, const coords_t cterm,
+	double theta_bc, double theta_vc) const
+	{
+	coords_t a, b;
+	a.x = cterm1.x - cterm2.x;
+	a.y = cterm1.y - cterm2.y;
+	a.z = cterm1.z - cterm2.z;
+
+	b.x = cterm.x - cterm1.x;
+	b.y = cterm.y - cterm1.y;
+	b.z = cterm.z - cterm1.z;
+
+#if DEBUG
+	{
+	double moda = get_norm(a);
+	double modb = get_norm(b);
+	asserta(moda > 3.5 && moda < 4);
+	asserta(modb > 3.5 && modb < 4);
+	}
+#endif
+
+	coords_t nextc;
+	nextc.x = cterm.x + (b.x - a.x)*m_CADist*sin(theta_bc);
+	nextc.y = cterm.y + (b.y - a.y)*m_CADist*cos(theta_bc);
+	Die("TODO");
+	return a;
 	}

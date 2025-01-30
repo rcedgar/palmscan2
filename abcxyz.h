@@ -252,6 +252,7 @@ static inline double GetTheta_Mxij(const vector<vector<double> > &Mx,
 	}
 
 static inline double degrees(double Radians) { return Radians*180.0/PI; }
+static inline double radians(double Degrees) { return Degrees*PI/180.0; }
 
 static inline double degrees_0_to_360(double Radians)
 	{

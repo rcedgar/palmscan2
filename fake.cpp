@@ -28,6 +28,7 @@ void cmd_fake()
 	const uint N = SIZE(Frags);
 
 	FakeChain FC;
+	FC.m_Chain.m_Label = "FC";
 	bool Ok = FC.AppendBest(Frags, 100);
 	asserta(Ok);
 	FC.Validate();

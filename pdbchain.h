@@ -31,7 +31,7 @@ public:
 		m_SS.clear();
 		}
 
-	void GetCoords(uint Pos, coords_t &Coords) const;
+	coords_t GetCoords(uint Pos) const;
 	void GetReverse(PDBChain &Chain) const;
 	void WriteSeqWithCoords(FILE *f) const;
 	void SetMotifPosVec(uint PosA, uint PosB, uint PosC);

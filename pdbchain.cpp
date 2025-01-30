@@ -691,12 +691,14 @@ void PDBChain::ZeroOrigin()
 		}
 	}
 
-void PDBChain::GetCoords(uint Pos, coords_t &Coords) const
+coords_t PDBChain::GetCoords(uint Pos) const
 	{
 	assert(Pos < SIZE(m_Xs));
+	coords_t Coords;
 	Coords.x = m_Xs[Pos];
 	Coords.y = m_Ys[Pos];
 	Coords.z = m_Zs[Pos];
+	return Coords;
 	}
 
 double PDBChain::GetX(uint Pos) const

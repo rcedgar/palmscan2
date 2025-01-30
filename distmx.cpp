@@ -2,6 +2,7 @@
 #include "pdbchain.h"
 #include "outputfiles.h"
 #include "quarts.h"
+#include "binner.h"
 
 void cmd_distmx()
 	{
@@ -118,4 +119,7 @@ void cmd_nen_dist()
 	GetQuartsDouble(vNN, QD);
 	Log(" NN: ");
 	QD.LogMe();
+
+	Binner<double> B(vNEN, 32);
+	B.ToTsv("nen_dist.tsv");
 	}

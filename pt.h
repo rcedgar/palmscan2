@@ -15,7 +15,7 @@ public:
 		z = 0;
 		}
 
-	tpl_pt(int ax, int ay, int az)
+	tpl_pt(T ax, T ay, T az)
 		{
 		x = ax;
 		y = ay;
@@ -43,5 +43,5 @@ public:
 		}
 	};
 
-typedef tpl_pt<int> intpt_t;
+//typedef tpl_pt<int> intpt_t;
 typedef tpl_pt<double> coords_t;

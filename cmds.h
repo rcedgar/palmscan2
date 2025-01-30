@@ -137,5 +137,6 @@ C(nen_dist)
 C(fragment_library)
 C(fake)
 C(protein_features)
+C(angles)
 
 #undef C
