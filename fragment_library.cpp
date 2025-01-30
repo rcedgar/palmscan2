@@ -43,9 +43,6 @@ static void GetCuts(const string &SS, vector<uint> &Cuts)
 		else
 			scut += '_';
 		}
-	//Log("\n");
-	//Log("%s\n", SS.c_str());
-	//Log("%s\n", scut.c_str());
 	}
 
 static bool MakeFrag(PDBChain &Q, uint CutPos)
@@ -80,6 +77,7 @@ static bool MakeFrag(PDBChain &Q, uint CutPos)
 		Ps(FragR.m_Label, "%s|%d-%d(%d%c)", Q.m_Label.c_str(), Lo, Hi, Hi-Lo+1, pom(Fwd));
 		if (opt_shuffle)
 			random_shuffle(FragR.m_Seq.begin(), FragR.m_Seq.end());
+		FragR.ZeroOrigin();
 		FragR.ToCal(g_fcal);
 		}
 	else
@@ -87,6 +85,7 @@ static bool MakeFrag(PDBChain &Q, uint CutPos)
 		if (opt_shuffle)
 			random_shuffle(Frag.m_Seq.begin(), Frag.m_Seq.end());
 		Ps(Frag.m_Label, "%s[%d-%d]%d%c", Q.m_Label.c_str(), Lo, Hi, Hi-Lo+1, pom(Fwd));
+		Frag.ZeroOrigin();
 		Frag.ToCal(g_fcal);
 		}
 	return true;

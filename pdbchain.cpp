@@ -661,6 +661,44 @@ bool PDBChain::Get_CB_XYZ(uint Pos, double &x, double &y, double &z) const
 	return false;
 	}
 
+void PDBChain::SetOrigin(double x, double y, double z)
+	{
+	const uint L = GetSeqLength();
+	if (L == 0)
+		return;
+	ZeroOrigin();
+	for (uint i = 0; i < L; ++i)
+		{
+		m_Xs[i] += x;
+		m_Ys[i] += y;
+		m_Zs[i] += z;
+		}
+	}
+
+void PDBChain::ZeroOrigin()
+	{
+	const uint L = GetSeqLength();
+	if (L == 0)
+		return;
+	const double x0 = m_Xs[0];
+	const double y0 = m_Ys[0];
+	const double z0 = m_Zs[0];
+	for (uint i = 0; i < L; ++i)
+		{
+		m_Xs[i] -= x0;
+		m_Ys[i] -= y0;
+		m_Zs[i] -= z0;
+		}
+	}
+
+void PDBChain::GetCoords(uint Pos, coords_t &Coords) const
+	{
+	assert(Pos < SIZE(m_Xs));
+	Coords.x = m_Xs[Pos];
+	Coords.y = m_Ys[Pos];
+	Coords.z = m_Zs[Pos];
+	}
+
 double PDBChain::GetX(uint Pos) const
 	{
 	assert(Pos < SIZE(m_Xs));

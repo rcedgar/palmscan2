@@ -520,6 +520,7 @@
     <ClInclude Include="logodds.h" />
     <ClInclude Include="motifsettings.h" />
     <ClInclude Include="pamerger.h" />
+    <ClInclude Include="pt.h" />
     <ClInclude Include="scop40bit.h" />
     <ClInclude Include="shapes.h" />
     <ClInclude Include="shapesearcher.h" />

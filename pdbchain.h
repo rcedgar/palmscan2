@@ -2,6 +2,7 @@
 #define pdbchain_h
 
 #include "myutils.h"
+#include "pt.h"
 
 class PDBChain
 	{
@@ -30,6 +31,7 @@ public:
 		m_SS.clear();
 		}
 
+	void GetCoords(uint Pos, coords_t &Coords) const;
 	void GetReverse(PDBChain &Chain) const;
 	void WriteSeqWithCoords(FILE *f) const;
 	void SetMotifPosVec(uint PosA, uint PosB, uint PosC);
@@ -111,6 +113,8 @@ public:
 	  vector<string> &ElementNames,
 	  vector<string> &AtomNames,
 	  vector<string> &Lines) const;
+	void ZeroOrigin();
+	void SetOrigin(double x, double y, double z);
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
