@@ -30,6 +30,7 @@ STR_OPT(tree)
 STR_OPT(splitb)
 STR_OPT(shapes)
 STR_OPT(loaddir)
+STR_OPT(outdir)
 STR_OPT(alphastr)
 
 STR_OPT(train_cal)

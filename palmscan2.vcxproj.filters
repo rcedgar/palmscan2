@@ -740,13 +740,13 @@
     <ClCompile Include="fake.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rotate3d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cubes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fakechain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="protein_features.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rotate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1046,6 +1046,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="binner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

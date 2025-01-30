@@ -136,7 +136,6 @@ C(backbone_dist)
 C(nen_dist)
 C(fragment_library)
 C(fake)
-C(rotate3d)
-C(cubes)
+C(protein_features)
 
 #undef C

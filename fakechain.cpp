@@ -2,6 +2,52 @@
 #include "pdbchain.h"
 #include "fakechain.h"
 
+static const double MEDIAN_CALPHA_DIST = 3.81;
+
+void RotateChain(PDBChain &Chain, double alpha, double beta, double gamma);
+
+static double get_rand_radians()
+	{
+	const double TWOPI = 2*3.1415926535;
+	double zero_to_one = (randu32()%1500450271)/1500450271.0;
+	assert(zero_to_one >= 0 && zero_to_one < 1);
+	double radians = zero_to_one*TWOPI;
+	return radians;
+	}
+
+static double get_dist(const coords_t &c1, const coords_t &c2)
+	{
+	double dx = c1.x - c2.x;
+	double dy = c1.y - c2.y;
+	double dz = c1.z - c2.z;
+	return sqrt(dx*dx + dy*dy + dz*dz);
+	}
+
+// x = r * sin(theta) * cos(phi)
+// y = r * sin(theta) * sin(phi)
+// z = r * cos(theta)
+static void GetRandomCoordsByDistance(const coords_t &c, double d, coords_t &rc)
+	{
+	double theta = get_rand_radians();
+	double phi = get_rand_radians();
+	double sin_theta = sin(theta);
+	double cos_theta = cos(theta);
+	double sin_phi = sin(phi);
+	double cos_phi = cos(phi);
+
+	rc.x = c.x + d*sin_theta*cos_phi;
+	rc.y = c.y + d*sin_theta*sin_phi;
+	rc.z = c.z + d*cos_theta;
+
+#if DEBUG
+	{
+	double dist = get_dist(c, rc);
+	double diff = fabs(dist - d);
+	assert(diff < 0.1);
+	}
+#endif
+	}
+
 void FakeChain::LogMe() const
 	{
 	const uint L = m_Chain.GetSeqLength();
@@ -67,23 +113,11 @@ bool FakeChain::GetAppendCoords(coords_t &Coords) const
 		return true;
 		}
 	asserta(L >= 2);
-	coords_t c1;
-	coords_t c2;
-	m_Chain.GetCoords(L-2, c1);
-	m_Chain.GetCoords(L-1, c2);
-
-	double dx = c2.x - c1.x;
-	double dy = c2.y - c1.y;
-	double dz = c2.z - c1.z;
-
+	coords_t cterm;
+	m_Chain.GetCoords(L-1, cterm);
 	for (int Try = 0; Try < 100; ++Try)
 		{
-		double fx = randu32()%200/100.0;
-		double fy = randu32()%200/100.0;
-		double fz = randu32()%200/100.0;
-		Coords.x = c2.x + dx*fx;
-		Coords.y = c2.y + dy*fx;
-		Coords.z = c2.z + dz*fx;
+		GetRandomCoordsByDistance(cterm, MEDIAN_CALPHA_DIST, Coords);
 		if (!IsOccupied(Coords))
 			return true;
 		}
@@ -133,7 +167,10 @@ bool FakeChain::TryAppendFrag(const PDBChain &Frag)
 	coords_t a;
 	bool Ok = GetAppendCoords(a);
 	if (!Ok)
+		{
+		Log("AppendCoords failed\n");
 		return false;
+		}
 
 	PDBChain *NewFrag = new PDBChain;
 	*NewFrag = Frag;
@@ -142,23 +179,27 @@ bool FakeChain::TryAppendFrag(const PDBChain &Frag)
 	uint OvPos = FindOverlap(*NewFrag);
 	if (OvPos != UINT_MAX)
 		{
-		coords_t c;
-		NewFrag->GetCoords(OvPos, c);
+		if (1)
+			{
+			coords_t c;
+			NewFrag->GetCoords(OvPos, c);
 
-		intpt_t Cube;
-		GetCube(c, Cube);
+			intpt_t Cube;
+			GetCube(c, Cube);
 
-		Log("\n");
-		Log("AppendCoords %.1f, %.1f, %.1f\n", a.x, a.y, a.z);
-		Log("OvPos = %u", OvPos);
-		Log(" x=%.1f, y=%.1f, z=%.1f", c.x, c.y, c.z);
-		Log(" cube=%d,%d,%d", Cube.x, Cube.y, Cube.z);
-		Log("\n");
+			Log("\n");
+			LogMe();
+			Log("AppendCoords %.1f, %.1f, %.1f\n", a.x, a.y, a.z);
+			Log("OvPos = %u", OvPos);
+			Log(" x=%.1f, y=%.1f, z=%.1f", c.x, c.y, c.z);
+			Log(" cube=%d,%d,%d", Cube.x, Cube.y, Cube.z);
+			Log("\n");
+			}
 		delete NewFrag;
+		Log("Found overlap\n");
 		return false;
 		}
 	AppendFrag(*NewFrag, a);
-	Log("Append ok %s\n", Frag.m_Seq.c_str());
 	return true;
 	}
 
@@ -256,4 +297,64 @@ void FakeChain::Validate() const
 			}
 		asserta(Found);
 		}
+	}
+
+bool FakeChain::AppendBest(const vector<PDBChain *> &Frags, uint Iters)
+	{
+	const uint FragCount = SIZE(Frags);
+	if (m_Chain.GetSeqLength() == 0)
+		{
+		uint FragIdx = randu32()%FragCount;
+		const PDBChain &Frag = *Frags[FragIdx];
+		coords_t c0;
+		c0.x = 0;
+		c0.y = 0;
+		c0.z = 0;
+		AppendFrag(Frag, c0);
+		return true;
+		}
+
+	uint BestFragIdx = UINT_MAX;
+	double BestDiameter = DBL_MAX;
+	double best_alpha = DBL_MAX;
+	double best_beta = DBL_MAX;
+	double best_gamma = DBL_MAX;
+	for (uint Iter = 0; Iter < Iters; ++Iter)
+		{
+		FakeChain FC2 = *this;
+		Ps(FC2.m_Chain.m_Label, "FC2.%u", Iter);
+		uint FragIdx = randu32()%FragCount;
+		const PDBChain &Frag = *Frags[FragIdx];
+		PDBChain *NewFrag = new PDBChain;
+		*NewFrag = Frag;
+		double alpha = get_rand_radians();
+		double beta = get_rand_radians();
+		double gamma = get_rand_radians();
+		RotateChain(*NewFrag, alpha, beta, gamma);
+		bool Ok = FC2.TryAppendFrag(*NewFrag);
+		delete NewFrag;
+		if (!Ok)
+			continue;
+
+		double Diameter = m_Chain.GetDiameter();
+		if (Diameter < BestDiameter)
+			{
+			BestDiameter = Diameter;
+			BestFragIdx = FragIdx;
+			best_alpha = alpha;
+			best_beta = beta;
+			best_gamma = gamma;
+			}
+		}
+
+	if (BestFragIdx == UINT_MAX)
+		return false;
+
+	const PDBChain &Frag = *Frags[BestFragIdx];
+	PDBChain *NewFrag = new PDBChain;
+	*NewFrag = Frag;
+	RotateChain(*NewFrag, best_alpha, best_beta, best_gamma);
+	bool Ok = TryAppendFrag(*NewFrag);
+	asserta(Ok);
+	return true;
 	}

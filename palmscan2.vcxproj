@@ -303,7 +303,6 @@
     <ClCompile Include="cluster_ppm.cpp" />
     <ClCompile Include="cmd_aitoms.cpp" />
     <ClCompile Include="compress_aa_alphabet.cpp" />
-    <ClCompile Include="cubes.cpp" />
     <ClCompile Include="dali.cpp" />
     <ClCompile Include="default_shapes.cpp" />
     <ClCompile Include="distmx.cpp" />
@@ -349,6 +348,7 @@
     <ClCompile Include="palmcator.cpp" />
     <ClCompile Include="pdb2dss.cpp" />
     <ClCompile Include="planec.cpp" />
+    <ClCompile Include="protein_features.cpp" />
     <ClCompile Include="pseudo_cb_angles.cpp" />
     <ClCompile Include="kabsch.cpp" />
     <ClCompile Include="palmcore.cpp" />
@@ -386,7 +386,7 @@
     <ClCompile Include="fileseqsource.cpp" />
     <ClCompile Include="getss.cpp" />
     <ClCompile Include="dssmx.cpp" />
-    <ClCompile Include="rotate3d.cpp" />
+    <ClCompile Include="rotate.cpp" />
     <ClCompile Include="scop40bit.cpp" />
     <ClCompile Include="scop40bit_calibrate_dss.cpp" />
     <ClCompile Include="scop40bit_evd.cpp" />
@@ -511,6 +511,7 @@
     <ClCompile Include="xfeatures_3di.cpp" />
     <ClCompile Include="xpermute.cpp" />
     <ClCompile Include="xprof.cpp" />
+    <ClInclude Include="binner.h" />
     <ClInclude Include="dss.h" />
     <ClInclude Include="dssp.h" />
     <ClInclude Include="fakechain.h" />

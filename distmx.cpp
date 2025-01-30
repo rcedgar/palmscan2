@@ -65,7 +65,7 @@ void cmd_backbone_dist()
 	QD.LogMe();
 	}
 
-static double GetNENDistance(const PDBChain &Q, uint Pos)
+double GetNENDistance(const PDBChain &Q, uint Pos)
 	{
 	double NEN = 999;
 	uint QL = Q.GetSeqLength();

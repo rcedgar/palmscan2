@@ -28,6 +28,9 @@ public:
 	bool GetAppendCoords(coords_t &Coords) const;
 	void Validate() const;
 	void LogMe() const;
+	bool MakeFake(const vector<PDBChain *> &Frags,
+				  uint L, PDBChain &Fake);
+	bool AppendBest(const vector<PDBChain *> &Frags, uint Iters);
 
 private:
 	void AppendFrag(const PDBChain &Frag, coords_t AppendCoords);

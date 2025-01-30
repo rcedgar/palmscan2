@@ -68,6 +68,7 @@ public:
 	double GetCoord(uint Axis, uint Pos) const;
 	void GetPt(uint Pos, vector<double> &Pt) const;
 	void SetPt(uint Pos, const vector<double> &Pt);
+	double GetDiameter() const;
 	double GetDist(uint Pos1, uint Pos2) const;
 	double GetDist2(uint Pos1, uint Pos2) const;
 	void GetMotifCoords(vector<vector<double> > &MotifCoords) const;

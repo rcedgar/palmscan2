@@ -752,6 +752,21 @@ double PDBChain::GetDist(uint Pos1, uint Pos2) const
 	return d;
 	}
 
+double PDBChain::GetDiameter() const
+	{
+	const uint L = GetSeqLength();
+	double Diameter = 0;
+	for (uint i = 0; i < L; ++i)
+		{
+		for (uint j = i+1; j < L; ++j)
+			{
+			double d = GetDist(i, j);
+			Diameter = max(d, Diameter);
+			}
+		}
+	return Diameter;
+	}
+
 double PDBChain::GetDist2(uint Pos1, uint Pos2) const
 	{
 	double x1 = m_Xs[Pos1];
