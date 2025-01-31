@@ -13,6 +13,7 @@ public:
 	vector<PDBChain *> m_Library;
 	vector<const PDBChain *> m_Frags;
 	vector<coords_t> m_AppendCoordsVec;
+	vector<uint> m_LibIdxs;
 	vector<double> m_Alphas;
 	vector<double> m_Betas;
 	vector<double> m_Gammas;

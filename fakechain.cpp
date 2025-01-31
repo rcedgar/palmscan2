@@ -250,6 +250,7 @@ void FakeChain::AppendFrag(uint LibIdx,
 										  alpha, beta, gamma);
 	const uint FragL = NewFrag->GetSeqLength();
 	m_Frags.push_back(NewFrag);
+	m_LibIdxs.push_back(LibIdx);
 	m_AppendCoordsVec.push_back(AppendCoords);
 	m_Alphas.push_back(alpha);
 	m_Betas.push_back(beta);
@@ -339,6 +340,14 @@ bool FakeChain::BestFit(uint Iters,
 
 void FakeChain::Init()
 	{
+	m_Chain.Clear();
+	m_Frags.clear();
+	m_LibIdxs.clear();
+	m_AppendCoordsVec.clear();
+	m_Alphas.clear();
+	m_Betas.clear();
+	m_Gammas.clear();
+
 	const uint LibSize = SIZE(m_Library);
 	uint LibIdx = randu32()%LibSize;
 	coords_t ZeroCoords;
@@ -354,11 +363,6 @@ bool FakeChain::MakeFake(uint L)
 	double Beta;
 	double Gamma;
 	coords_t AppendCoords;
-
-	//bool Ok = BestFit(100, LibIdx, Alpha, Beta, Gamma, AppendCoords);
-	//asserta(Ok);
-	//AppendFrag(LibIdx, AppendCoords, Alpha, Beta, Gamma);
-	//return true;
 
 	for (uint Try = 0; Try < 100; ++Try)
 		{
