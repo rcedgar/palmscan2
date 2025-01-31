@@ -10,26 +10,42 @@ class FakeChain
 public:
 	PDBChain m_Chain;
 	double m_Size = 5;
+	vector<PDBChain *> m_Library;
 	vector<const PDBChain *> m_Frags;
 	vector<coords_t> m_AppendCoordsVec;
-	vector<uint> m_PosToFragIdx;
-	vector<uint> m_PosToFragPos;
+	vector<double> m_Alphas;
+	vector<double> m_Betas;
+	vector<double> m_Gammas;
 	double m_MinNENDist = 4;
 	double m_CADist = 3.81;
 
-	bool IsOccupied(coords_t c, uint &Pos) const;
-	uint FindOverlap(const PDBChain &Chain) const;
-	bool TryAppendFrag(const PDBChain &Frag);
+	void Init();
+	const PDBChain *CreateFrag(uint LibIdx,
+							   const coords_t &AppendCoords,
+							   double alpha,
+							   double beta,
+							   double gamma) const;
+	void AppendFrag(uint LibIdx,
+					const coords_t &AppendCoords,
+					double alpha, double beta, double gamma);
+
+	uint FindCollision(coords_t c, uint Lo, uint Hi) const;
+	bool FitOk(const PDBChain &Frag,
+			   uint &CollisionFakePos,
+			   uint &CollisionFragPos) const;
 	bool GetAppendCoords(coords_t &Coords) const;
 	void Validate() const;
 	void LogMe() const;
-	bool MakeFake(const vector<PDBChain *> &Frags,
-				  uint L, PDBChain &Fake);
-	bool AppendBest(const vector<PDBChain *> &Frags, uint Iters);
-	void GetNEN_Plus(coords_t p, uint &Pos, double &Dist) const;
-	void GetNEN_Minus(coords_t p, uint &Pos, double &Dist) const;
+	bool MakeFake(uint L);
+	bool BestFit(uint Iters,
+				 uint &BestLibIdx,
+				 double &BestAlpha,
+				 double &BestBeta,
+				 double &BestGamma,
+				 coords_t &BestAppendCoords) const;
+	void GetNEN_Plus(uint Pos, uint &NENPos, double &Dist) const;
+	void GetNEN_Minus(uint Pos, uint &NENPos, double &Dist) const;
 	coords_t GetCoords(int Pos) const { return m_Chain.GetCoords(Pos); }
-
-private:
-	void AppendFrag(const PDBChain &Frag, coords_t AppendCoords);
+	double GetQualityScore(const PDBChain &Chain) const;
+	double GetQualityScoreFrag(const PDBChain &Frag) const;
 	};

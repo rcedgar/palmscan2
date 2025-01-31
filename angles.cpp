@@ -132,7 +132,7 @@ static void LogCoord(double x)
 		Log("%.2f", x);
 	}
 
-static void LogCoords(const char *Name, coords_t c)
+void LogCoords(const char *Name, coords_t c)
 	{
 	Log("%s=(", Name);
 	LogCoord(c.x);
