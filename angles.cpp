@@ -184,15 +184,58 @@ static void LogCoords(const char *Name, coords_t c)
 	}
 
 static void calculate_theta_phi(coords_t A, coords_t B, coords_t C, coords_t D,
-								  double &theta, double &phi)
+								  double &theta_rad, double &phi_rad)
 	{
 	coords_t ab = subtract(B, A);
 	coords_t bc = subtract(C, B);
-	coords_t cd = subtract(D, C);
+	coords_t cd2 = subtract(D, C);
+	coords_t vert_abc = cross_product(ab, bc);
+	theta_rad = get_angle(bc, cd2);
+
+	coords_t vert_bcd2 = cross_product(bc, cd2);
+
+	phi_rad = get_angle(vert_abc, vert_bcd2);
+	}
+
+static double randangle()
+	{
+	double x = 0.1*PI*(randu32()%7829)/7829.0;
+	return x;
+	}
+
+static double randcoord()
+	{
+	double x = 10.0*(randu32()%7829)/7829.0;
+	return x;
+	}
+
+static void TestAnglesRand()
+	{
+	coords_t A(randcoord(), randcoord(), randcoord());
+	coords_t B(randcoord(), randcoord(), randcoord());
+	coords_t C(randcoord(), randcoord(), randcoord());
+
+	coords_t ab = subtract(B, A);
+	coords_t bc = subtract(C, B);
 	coords_t vert_abc = cross_product(ab, bc);
 
-	theta = get_angle(bc, cd);
-	phi = get_angle(vert_abc, cd);
+	double theta_rad = randangle();
+	double phi_rad = randangle();
+	coords_t cd1 = rotate_around_vector(bc, vert_abc, theta_rad);
+	coords_t cd2 = rotate_around_vector(cd1, bc, phi_rad);
+	coords_t D = add(C, cd2);
+
+	double theta2_rad, phi2_rad;
+	calculate_theta_phi(A, B, C, D, theta2_rad, phi2_rad);
+
+	double theta_deg = degrees(theta_rad);
+	double phi_deg = degrees(phi_rad);
+
+	double theta2_deg = degrees(theta2_rad);
+	double phi2_deg = degrees(phi2_rad);
+
+	ProgressLog("theta %.1f, %.1f   phi %.1f, %.1f, %.1f\n",
+		theta_deg, theta2_deg, phi_deg, phi2_deg, 180 - phi2_deg);
 	}
 
 static void TestAngles()
@@ -247,7 +290,8 @@ static void TestAngles()
 
 void cmd_angles()
 	{
-	TestAngles();
+	for (uint i = 0; i < 4; ++i)
+		TestAnglesRand();
 	return;
 
 	const string &InputFN = g_Arg1;
