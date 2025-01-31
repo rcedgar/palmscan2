@@ -17,10 +17,6 @@ public:
 	double m_MinNENDist = 4;
 	double m_CADist = 3.81;
 
-	coords_t NextCoords(const coords_t cterm2,
-						const coords_t cterm1, 
-						const coords_t cterm,
-						double theta_bc, double theta_vc) const;
 	bool IsOccupied(coords_t c, uint &Pos) const;
 	uint FindOverlap(const PDBChain &Chain) const;
 	bool TryAppendFrag(const PDBChain &Frag);

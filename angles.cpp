@@ -62,15 +62,16 @@ static double get_angle(const coords_t a, const coords_t b)
 	return theta;
 	}
 
-static void GetAngles(coords_t a, coords_t b, coords_t c,
-					  double &theta_bc, double &theta_vc)
-	{
-	theta_bc = get_angle(b, c);
-	coords_t v = cross_product(a, b);
-	theta_vc = get_angle(v, c);
-	}
+//static void GetAngles(coords_t a, coords_t b, coords_t c,
+//					  double &theta_bc, double &theta_vc)
+//	{
+//	theta_bc = get_angle(b, c);
+//	coords_t v = cross_product(a, b);
+//	theta_vc = get_angle(v, c);
+//	}
 
 // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+// k_ defines the axis for rotation
 coords_t rotate_around_vector(const coords_t v, const coords_t k_, double theta)
 	{
 	coords_t k = normalize(k_);
@@ -106,58 +107,17 @@ coords_t rotate_around_vector(const coords_t v, const coords_t k_, double theta)
 	return v_rot;
 	}
 
-coords_t Invert_GetAngles(const coords_t &a, const coords_t &b,
-						  double theta_bc, double theta_vc)
-	{
-	coords_t unita = a; normalize(unita);
-	coords_t unitb = b; normalize(unitb);
-
-	coords_t v = cross_product(a, b);
-	coords_t unitv = v; normalize(unitv);
-
-	assert(feq(get_norm(unita), 1));
-	assert(feq(get_norm(unitb), 1));
-	assert(feq(get_norm(unitv), 1));
-
-// Rotate by theta_bc around v
-	coords_t c = rotate_around_vector(b, v, PI/2 - theta_bc);
-
-// Rotate by theta_vc around b
-	c = rotate_around_vector(c, v, theta_vc);
-
-	return c;
-	}
-
-static coords_t GetVec(const PDBChain &Chain, uint Pos)
-	{
-	asserta(Pos > 0);
-	coords_t c0 = Chain.GetCoords(Pos-1);
-	coords_t c = Chain.GetCoords(Pos);
-	coords_t v;
-	v.x = c.x - c0.x;
-	v.y = c.y - c0.y;
-	v.z = c.z - c0.z;
-	return v;
-	}
-
-static void Angles(FILE *f, const PDBChain &Chain)
-	{
-	static uint Counter;
-	const uint L = Chain.GetSeqLength();
-	for (uint Pos = 3; Pos < L; ++Pos)
-		{
-		coords_t a = GetVec(Chain, Pos-2);
-		coords_t b = GetVec(Chain, Pos-1);
-		coords_t c = GetVec(Chain, Pos);
-		double theta_bc, theta_vc;
-		GetAngles(a, b, c, theta_bc, theta_vc);
-		double deg_bc = degrees(theta_bc);
-		double deg_vc = degrees(theta_vc);
-		if (Counter++%5 == 0)
-			Log("\n");
-		Log(" {%5.1f, %5.1f},", deg_bc, deg_vc);
-		}
-	}
+//static coords_t GetVec(const PDBChain &Chain, uint Pos)
+//	{
+//	asserta(Pos > 0);
+//	coords_t c0 = Chain.GetCoords(Pos-1);
+//	coords_t c = Chain.GetCoords(Pos);
+//	coords_t v;
+//	v.x = c.x - c0.x;
+//	v.y = c.y - c0.y;
+//	v.z = c.z - c0.z;
+//	return v;
+//	}
 
 static void LogCoord(double x)
 	{
@@ -194,7 +154,7 @@ static void calculate_theta_phi(coords_t A, coords_t B, coords_t C, coords_t D,
 
 	coords_t vert_bcd2 = cross_product(bc, cd2);
 
-	phi_rad = get_angle(vert_abc, vert_bcd2);
+	phi_rad = PI - get_angle(vert_abc, vert_bcd2);
 	}
 
 static double randangle()
@@ -209,7 +169,20 @@ static double randcoord()
 	return x;
 	}
 
-static void TestAnglesRand()
+coords_t get_unit_cd(coords_t A, coords_t B, coords_t C,
+			   double theta_rad, double phi_rad)
+	{
+	coords_t ab = subtract(B, A);
+	coords_t bc = subtract(C, B);
+	coords_t vert_abc = cross_product(ab, bc);
+
+	coords_t cd1 = rotate_around_vector(bc, vert_abc, theta_rad);
+	coords_t cd2 = rotate_around_vector(cd1, bc, phi_rad);
+	coords_t unit_cd = normalize(cd2);
+	return unit_cd;
+	}
+
+static bool TestAnglesRand1()
 	{
 	coords_t A(randcoord(), randcoord(), randcoord());
 	coords_t B(randcoord(), randcoord(), randcoord());
@@ -236,6 +209,9 @@ static void TestAnglesRand()
 
 	ProgressLog("theta %.1f, %.1f   phi %.1f, %.1f, %.1f\n",
 		theta_deg, theta2_deg, phi_deg, phi2_deg, 180 - phi2_deg);
+
+	bool Ok = feq(theta_rad, theta2_rad) && feq(phi_rad, phi2_rad);
+	return Ok;
 	}
 
 static void TestAngles()
@@ -288,12 +264,44 @@ static void TestAngles()
 	Log("phi2_deg = %.1f\n", degrees(phi_rad));
 	}
 
+static void TestAnglesRand()
+	{
+	uint N = 1000;
+	uint n = 0;
+	for (uint i = 0; i < N; ++i)
+		{
+		bool Ok = TestAnglesRand1();
+		if (Ok) ++n;
+		}
+	ProgressLog("%u / %u ok\n", n, N);
+	return;
+	}
+
+
+static void Angles(FILE *f, const PDBChain &Chain)
+	{
+	static uint Counter;
+	const uint L = Chain.GetSeqLength();
+	for (uint Pos = 4; Pos < L; ++Pos)
+		{
+		coords_t A = Chain.GetCoords(Pos-3);
+		coords_t B = Chain.GetCoords(Pos-2);
+		coords_t C = Chain.GetCoords(Pos-1);
+		coords_t D = Chain.GetCoords(Pos);
+		double theta_rad, phi_rad;
+		calculate_theta_phi(A, B, C, D, theta_rad, phi_rad);
+		double theta_deg = degrees(theta_rad);
+		double phi_deg = degrees(phi_rad);
+		if (Counter++%5 == 0)
+			Log("\n");
+		Log(" {%5.1f, %5.1f},", theta_deg, phi_deg);
+		if (f != 0)
+			fprintf(f, "%.1f\t%.1f\n", theta_deg, phi_deg);
+		}
+	}
+
 void cmd_angles()
 	{
-	for (uint i = 0; i < 4; ++i)
-		TestAnglesRand();
-	return;
-
 	const string &InputFN = g_Arg1;
 	FILE *f = CreateStdioFile(opt_output);
 	vector<PDBChain *> Chains;

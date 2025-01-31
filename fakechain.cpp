@@ -93,6 +93,9 @@ bool FakeChain::IsOccupied(coords_t c, uint &Pos) const
 	return false;
 	}
 
+coords_t get_unit_cd(coords_t A, coords_t B, coords_t C,
+			   double theta_rad, double phi_rad);
+
 bool FakeChain::GetAppendCoords(coords_t &Coords) const
 	{
 	const uint L = m_Chain.GetSeqLength();
@@ -103,15 +106,21 @@ bool FakeChain::GetAppendCoords(coords_t &Coords) const
 		Coords.z = 0;
 		return true;
 		}
-	asserta(L >= 2);
-	coords_t cterm1 = m_Chain.GetCoords(L-2);
-	coords_t cterm = m_Chain.GetCoords(L-1);
+	asserta(L >= 3);
+	coords_t A = m_Chain.GetCoords(L-3);
+	coords_t B = m_Chain.GetCoords(L-2);
+	coords_t C = m_Chain.GetCoords(L-1);
 	for (int Try = 0; Try < 100; ++Try)
 		{
-		double theta_bc, theta_vc;
-		GetRandomAnglePair_Radians(theta_bc, theta_vc);
-		Die("TODO");
-		//Coords = NextCoords(cterm1, cterm, theta_bc, theta_vc);
+		double theta_rad, phi_rad;
+		GetRandomAnglePair_Radians(theta_rad, phi_rad);
+		
+		coords_t unit_cd = get_unit_cd(A, B, C, theta_rad, phi_rad);
+		
+		Coords.x = C.x + unit_cd.x*m_CADist;
+		Coords.y = C.y + unit_cd.y*m_CADist;
+		Coords.x = C.z + unit_cd.z*m_CADist;
+
 		uint OvPos;
 		if (!IsOccupied(Coords, OvPos))
 			return true;
@@ -276,33 +285,4 @@ bool FakeChain::AppendBest(const vector<PDBChain *> &Frags, uint Iters)
 	bool Ok = TryAppendFrag(*NewFrag);
 	asserta(Ok);
 	return true;
-	}
-
-coords_t FakeChain::NextCoords(
-	const coords_t cterm2, const coords_t cterm1, const coords_t cterm,
-	double theta_bc, double theta_vc) const
-	{
-	coords_t a, b;
-	a.x = cterm1.x - cterm2.x;
-	a.y = cterm1.y - cterm2.y;
-	a.z = cterm1.z - cterm2.z;
-
-	b.x = cterm.x - cterm1.x;
-	b.y = cterm.y - cterm1.y;
-	b.z = cterm.z - cterm1.z;
-
-#if DEBUG
-	{
-	double moda = get_norm(a);
-	double modb = get_norm(b);
-	asserta(moda > 3.5 && moda < 4);
-	asserta(modb > 3.5 && modb < 4);
-	}
-#endif
-
-	coords_t nextc;
-	nextc.x = cterm.x + (b.x - a.x)*m_CADist*sin(theta_bc);
-	nextc.y = cterm.y + (b.y - a.y)*m_CADist*cos(theta_bc);
-	Die("TODO");
-	return a;
 	}
