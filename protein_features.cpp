@@ -25,7 +25,7 @@ static void GetCenter(const PDBChain &Q,
 	z /= L;
 	}
 
-static double GetMDL(const PDBChain &Q)
+double GetMDL(const PDBChain &Q)
 	{
 	double cx, cy, cz;
 	GetCenter(Q, cx, cy, cz);
@@ -48,6 +48,23 @@ static double GetMDL(const PDBChain &Q)
 static vector<double> s_NENMeds;
 static vector<double> s_NENStdDevs;
 static vector<double> s_MDLs;
+
+double GetNENMed(const PDBChain &Q)
+	{
+	vector<double> NENs;
+	uint QL = Q.GetSeqLength();
+	for (uint i = 0; i < QL; ++i)
+		{
+		double d = GetNENDistance(Q, i);
+		if (d < 20)
+			NENs.push_back(d);
+		}
+	QuartsDouble QD;
+	GetQuartsDouble(NENs, QD);
+
+	double NENMed = QD.Med;
+	return NENMed;
+	}
 
 static void ProteinFeatures(FILE *f, PDBChain &Q)
 	{

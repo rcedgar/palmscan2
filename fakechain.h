@@ -10,7 +10,7 @@ class FakeChain
 public:
 	PDBChain m_Chain;
 	double m_Size = 5;
-	vector<PDBChain *> m_Library;
+	const vector<PDBChain *> *m_Library = 0;
 	vector<const PDBChain *> m_Frags;
 	vector<coords_t> m_AppendCoordsVec;
 	vector<uint> m_LibIdxs;
@@ -20,7 +20,7 @@ public:
 	double m_MinNENDist = 4;
 	double m_CADist = 3.81;
 
-	void Init();
+	void Init(uint LibIdx);
 	const PDBChain *CreateFrag(uint LibIdx,
 							   const coords_t &AppendCoords,
 							   double alpha,
@@ -49,4 +49,7 @@ public:
 	coords_t GetCoords(int Pos) const { return m_Chain.GetCoords(Pos); }
 	double GetQualityScore(const PDBChain &Chain) const;
 	double GetQualityScoreFrag(const PDBChain &Frag) const;
+	void ToTsv(FILE *f) const;
+	void BuildPDB(const string &LoadDir, PDBChain &Chain) const;
+	void LoadFrag(const string &LoadDir, uint FragIdx, PDBChain &Frag) const;
 	};

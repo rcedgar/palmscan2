@@ -5,8 +5,8 @@
 void GetRandomAnglePair_Radians(double &rad_bc, double &rad_vc);
 double get_norm(const coords_t a);
 void LogCoords(const char *Name, coords_t c);
-
-static const double MEDIAN_CALPHA_DIST = 3.81;
+double GetMDL(const PDBChain &Q);
+double GetNENMed(const PDBChain &Q);
 
 void RotateChain(PDBChain &Chain, double alpha, double beta, double gamma);
 
@@ -70,12 +70,32 @@ void FakeChain::LogMe() const
 		m_Chain.m_Label.c_str(), L);
 	const string &Seq = m_Chain.m_Seq;
 	int64 lasth = 0;
+	uint FragIdx = 0;
+	uint FragPos = 0;
+	const PDBChain *CurrFrag = m_Frags[0];
 	for (uint Pos = 0; Pos < L; ++Pos)
 		{
 		coords_t c = m_Chain.GetCoords(Pos);
 
 		Log("%5u |%c|  X=%5.1f  Y=%5.1f  Z=%5.1f",
 			Pos, Seq[Pos], c.x, c.y, c.z);
+
+		Log(" {%3d,%2d}", FragIdx, FragPos);
+		Log(" %.1f,%.1f,%.1f",
+			CurrFrag->m_Xs[FragPos],
+			CurrFrag->m_Ys[FragPos],
+			CurrFrag->m_Zs[FragPos]);
+		++FragPos;
+		if (FragPos >= CurrFrag->GetSeqLength())
+			{
+			++FragIdx;
+			FragPos = 0;
+			if (Pos+1 < L)
+				{
+				asserta(FragIdx < SIZE(m_Frags));
+				CurrFrag = m_Frags[FragIdx];
+				}
+			}
 
 		if (Pos > 0)
 			{
@@ -224,9 +244,9 @@ const PDBChain *FakeChain::CreateFrag(uint LibIdx,
 							double beta,
 							double gamma) const
 	{
-	asserta(LibIdx < SIZE(m_Library));
+	asserta(LibIdx < SIZE(*m_Library));
 	PDBChain *NewFrag = new PDBChain;
-	*NewFrag = *m_Library[LibIdx];
+	*NewFrag = *(*m_Library)[LibIdx];
 	RotateChain(*NewFrag, alpha, beta, gamma);
 	const uint FragL = NewFrag->GetSeqLength();
 	asserta(FragL > 4);
@@ -268,7 +288,30 @@ void FakeChain::AppendFrag(uint LibIdx,
 
 void FakeChain::Validate() const
 	{
-	Die("TODO");
+	const uint N = SIZE(m_LibIdxs);
+	if (N == 0)
+		return;
+
+	FakeChain FC;
+	FC.m_Library = m_Library;
+	uint LibIdx0 = m_LibIdxs[0];
+	FC.Init(LibIdx0);
+	for (uint i = 1; i < N; ++i)
+		{
+		FC.AppendFrag(m_LibIdxs[i],
+					  m_AppendCoordsVec[i],
+					  m_Alphas[i],
+					  m_Betas[i],
+					  m_Gammas[i]);
+		}
+	const uint L = m_Chain.GetSeqLength();
+	asserta(FC.m_Chain.GetSeqLength() == L);
+	for (uint i = 0; i < L; ++i)
+		{
+		asserta(feq(m_Chain.m_Xs[i], FC.m_Chain.m_Xs[i]));
+		asserta(feq(m_Chain.m_Ys[i], FC.m_Chain.m_Ys[i]));
+		asserta(feq(m_Chain.m_Zs[i], FC.m_Chain.m_Zs[i]));
+		}
 	}
 
 double FakeChain::GetQualityScore(const PDBChain &Chain) const
@@ -297,7 +340,7 @@ bool FakeChain::BestFit(uint Iters,
 	BestGamma = DBL_MAX;
 	BestBeta = DBL_MAX;
 
-	const uint LibSize = SIZE(m_Library);
+	const uint LibSize = SIZE(*m_Library);
 	asserta(m_Chain.GetSeqLength() > 0);
 
 	double BestDiameter = DBL_MAX;
@@ -338,7 +381,7 @@ bool FakeChain::BestFit(uint Iters,
 	return true;
 	}
 
-void FakeChain::Init()
+void FakeChain::Init(uint LibIdx)
 	{
 	m_Chain.Clear();
 	m_Frags.clear();
@@ -348,15 +391,16 @@ void FakeChain::Init()
 	m_Betas.clear();
 	m_Gammas.clear();
 
-	const uint LibSize = SIZE(m_Library);
-	uint LibIdx = randu32()%LibSize;
+	const uint LibSize = SIZE(*m_Library);
 	coords_t ZeroCoords;
 	AppendFrag(LibIdx, ZeroCoords, 0, 0, 0);
 	}
 
 bool FakeChain::MakeFake(uint L)
 	{
-	Init();
+	uint LibSize = SIZE(*m_Library);
+	asserta(LibSize > 0);
+	Init(randu32()%LibSize);
 
 	uint LibIdx;
 	double Alpha;
@@ -377,4 +421,135 @@ bool FakeChain::MakeFake(uint L)
 		}
 
 	return false;
+	}
+
+void FakeChain::ToTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	fprintf(f, "%s", m_Chain.m_Label.c_str());
+	const uint N = SIZE(m_LibIdxs);
+	double MDL = GetMDL(m_Chain);
+	double NENMed = GetNENMed(m_Chain);
+	fprintf(f, "\t%.3f", MDL);
+	fprintf(f, "\t%.3f", NENMed);
+	fprintf(f, "\t%u", N);
+	for (uint i = 0; i < N; ++i)
+		{
+		uint LibIdx = m_LibIdxs[i];
+		fprintf(f, "\t%s", (*m_Library)[LibIdx]->m_Label.c_str());
+		const coords_t ac = m_AppendCoordsVec[i];
+		fprintf(f, "\t%.1f", ac.x);
+		fprintf(f, "\t%.1f", ac.y);
+		fprintf(f, "\t%.1f", ac.z);
+		fprintf(f, "\t%.4f", m_Alphas[i]);
+		fprintf(f, "\t%.4f", m_Betas[i]);
+		fprintf(f, "\t%.4f", m_Gammas[i]);
+		}
+	fprintf(f, "\n");
+	}
+
+void FakeChain::LoadFrag(const string &LoadDir, uint FragIdx, PDBChain &Frag) const
+	{
+	asserta(FragIdx < SIZE(m_Frags));
+	const string &Label = m_Frags[FragIdx]->m_Label;
+	vector<string> Fields;
+	Split(Label, Fields, '|');
+//        0       1   2   3       4
+// frag6023|d1ijba_|107|130|H2S8L14
+	asserta(SIZE(Fields) == 5);
+	const string &Name = Fields[1];
+	uint Lo = StrToUint(Fields[2]);
+	uint Hi = StrToUint(Fields[3]);
+	string FN = LoadDir + Name;
+	PDBChain FullChain;
+	vector<string> Lines;
+	ReadLinesFromFile(FN, Lines);
+	FullChain.FromPDBLines(Name, Lines);
+	const uint FullLength = FullChain.GetSeqLength();
+	asserta(SIZE(FullChain.m_ATOMs) == FullLength);
+	asserta(Lo < Hi);
+	asserta(Hi < FullLength);
+	Frag.Clear();
+	Frag.m_Label = Label;
+	const uint FragL = Hi - Lo + 1;
+	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+		{
+		char c = FullChain.m_Seq[Pos];
+		double X = FullChain.m_Xs[Pos];
+		double Y = FullChain.m_Ys[Pos];
+		double Z = FullChain.m_Zs[Pos];
+
+		Frag.m_Seq.push_back(c);
+		Frag.m_Xs.push_back(X);
+		Frag.m_Ys.push_back(Y);
+		Frag.m_Zs.push_back(Z);
+
+		Frag.m_ATOMs.push_back(FullChain.m_ATOMs[Pos]);
+		}
+	Frag.ZeroOrigin();
+	const coords_t AppendCoords = m_AppendCoordsVec[FragIdx];
+	RotateChain(Frag, m_Alphas[FragIdx], m_Betas[FragIdx], m_Gammas[FragIdx]);
+	asserta(Frag.GetSeqLength() == FragL);
+	for (uint FragPos = 0; FragPos < FragL; ++FragPos)
+		{
+		Frag.m_Xs[FragPos] += AppendCoords.x;
+		Frag.m_Ys[FragPos] += AppendCoords.y;
+		Frag.m_Zs[FragPos] += AppendCoords.z;
+
+		vector<string> ResATOMs;
+		const uint n = SIZE(Frag.m_ATOMs[FragPos]);
+		for (uint i = 0; i < n; ++i)
+			{
+			double x, y, z;
+			const string &Line = Frag.m_ATOMs[FragPos][i];
+			PDBChain::GetXYZFromATOMLine(Line, x, y, z);
+			x += AppendCoords.x;
+			y += AppendCoords.y;
+			z += AppendCoords.z;
+			string UpdatedLine;
+			PDBChain::SetXYZInATOMLine(Line, x, y, z, UpdatedLine);
+			ResATOMs.push_back(UpdatedLine);
+			}
+		Frag.m_ATOMs[FragPos] = ResATOMs;
+		}
+
+	Log("\n");
+	Log("============================\n");
+	Log("LoadFrag(%u)\n", FragIdx);
+	const PDBChain *OldFrag = m_Frags[FragIdx];
+	OldFrag->LogMe(true);
+	Log("\n");
+	Frag.LogMe(true);
+	string BuildFN;
+	Ps(BuildFN, "build%u.pdb", FragIdx);
+	Frag.ToPDB(BuildFN);
+	}
+
+void FakeChain::BuildPDB(const string &LoadDir, PDBChain &Chain) const
+	{
+	const uint FragCount = SIZE(m_LibIdxs);
+	for (uint FragIdx = 0; FragIdx < FragCount; ++FragIdx)
+		{
+		PDBChain Frag;
+		LoadFrag(LoadDir, FragIdx, Frag);
+
+		const uint FragL = Frag.GetSeqLength();
+		asserta(SIZE(Frag.m_Seq) == FragL);
+		asserta(SIZE(Frag.m_Xs) == FragL);
+		asserta(SIZE(Frag.m_Ys) == FragL);
+		asserta(SIZE(Frag.m_Zs) == FragL);
+		asserta(SIZE(Frag.m_ATOMs) == FragL);
+
+		Chain.m_Seq += Frag.m_Seq;
+		for (uint i = 0; i < FragL; ++i)
+			{
+			Chain.m_Xs.push_back(Frag.m_Xs[i]);
+			Chain.m_Ys.push_back(Frag.m_Ys[i]);
+			Chain.m_Zs.push_back(Frag.m_Zs[i]);
+			Chain.m_ATOMs.push_back(Frag.m_ATOMs[i]);
+			}
+		}
+
+	Chain.RenumberResidues(1);
 	}

@@ -265,10 +265,12 @@ void PDBChain::RenumberResidues(uint Start)
 			const string &InputLine = InputLines[j];
 			string OutputLine;
 			SetResidueNrInATOMLine(InputLine,
-			  Start+OutputResidueIndex+1, OutputLine);
-			SetAtomNrInATOMLine(InputLine,
-			  AtomNr, OutputLine);
-			OutputLines.push_back(OutputLine);
+			  Start+OutputResidueIndex, OutputLine);
+
+			string OutputLine2;
+			SetAtomNrInATOMLine(OutputLine,
+			  AtomNr, OutputLine2);
+			OutputLines.push_back(OutputLine2);
 			}
 		OutputAtoms.push_back(OutputLines);
 		}
@@ -680,6 +682,7 @@ void PDBChain::ZeroOrigin()
 	const uint L = GetSeqLength();
 	if (L == 0)
 		return;
+
 	const double x0 = m_Xs[0];
 	const double y0 = m_Ys[0];
 	const double z0 = m_Zs[0];
@@ -688,6 +691,27 @@ void PDBChain::ZeroOrigin()
 		m_Xs[i] -= x0;
 		m_Ys[i] -= y0;
 		m_Zs[i] -= z0;
+		}
+	if (m_ATOMs.empty())
+		return;
+
+	asserta(SIZE(m_ATOMs) == L);
+	for (uint i = 0; i < L; ++i)
+		{
+		const vector<string> &ResATOMs = m_ATOMs[i];
+		const uint n = SIZE(ResATOMs);
+		for (uint j = 0; j < n; ++j)
+			{
+			const string &Line = ResATOMs[j];
+			double x, y, z;
+			GetXYZFromATOMLine(Line, x, y, z);
+			x -= x0;
+			y -= y0;
+			z -= z0;
+			string UpdatedLine;
+			SetXYZInATOMLine(Line, x, y, z, UpdatedLine);
+			m_ATOMs[i][j] = UpdatedLine;
+			}
 		}
 	}
 

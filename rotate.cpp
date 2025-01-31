@@ -57,4 +57,36 @@ void RotateChain(PDBChain &Chain, double alpha, double beta, double gamma)
 		Chain.m_Ys[i] = PtOut[1];
 		Chain.m_Zs[i] = PtOut[2];
 		}
+	const uint n = SIZE(Chain.m_ATOMs);
+	if (n == 0)
+		return;
+	asserta(n == L);
+	asserta(SIZE(Chain.m_ATOMs) == L);
+	for (uint i = 0; i < L; ++i)
+		{
+		vector<string> &ResATOMs = Chain.m_ATOMs[i];
+		const uint n = SIZE(ResATOMs);
+		for (uint j = 0; j < n; ++j)
+			{
+			string &Line = ResATOMs[j];
+			double x, y, z;
+			PDBChain::GetXYZFromATOMLine(Line, x, y, z);
+
+			double Pt[3];
+			Pt[0] = x;
+			Pt[1] = y;
+			Pt[2] = z;
+		
+			double PtOut[3];
+			RotatePt(Pt, alpha, beta, gamma, PtOut);
+
+			x = PtOut[0];
+			y = PtOut[1];
+			z = PtOut[2];
+
+			string UpdatedLine;
+			PDBChain::SetXYZInATOMLine(Line, x, y, z, UpdatedLine);
+			Chain.m_ATOMs[i][j] = UpdatedLine;
+			}
+		}
 	}

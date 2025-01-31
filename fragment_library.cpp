@@ -3,6 +3,7 @@
 #include "outputfiles.h"
 #include "chainreader.h"
 
+static uint s_FragIdx;
 static uint MinLen = 16;
 static uint MaxLen = 32;
 static uint RandTick = 64;
@@ -45,79 +46,100 @@ static void GetCuts(const string &SS, vector<uint> &Cuts)
 		}
 	}
 
-static bool MakeFrag(PDBChain &Q, uint CutPos)
+static void GetSSum(const string &SS, uint Lo, uint Hi, string &SSum)
+	{
+	const uint L = SIZE(SS);
+	asserta(Lo < Hi);
+	asserta(Hi < L);
+	uint ns = 0;
+	uint nh = 0;
+	uint nl = 0;
+	for (uint Pos = Lo; Pos <= Hi; ++Pos)
+		{
+		char c = SS[Pos];
+		if (c == 'h')
+			++nh;
+		else if (c == 's')
+			++ns;
+		else if (c == '~' || c == 't')
+			++nl;
+		else
+			Die("Bad ss '%c'", c);
+		}
+	Ps(SSum, "H%uS%uL%u", nh, ns, nl);
+	}
+
+static bool MakeFrag(const string &FN, PDBChain &Q, uint CutPos)
 	{
 	uint L = Q.GetSeqLength();
-	bool Fwd = true;
-	if (opt_randrev)
-		Fwd = (randu32()%2 == 0);
 	uint n = MinLen + randu32()%(MaxLen - MinLen);
-	int Lo = -1;
-	int Hi = -1;
-	if (Fwd)
-		{
-		Lo = int(CutPos);
-		Hi = Lo + int(n);
-		}
-	else
-		{
-		Lo = int(CutPos) - n;
-		Hi = Lo + n;
-		}
+	int Lo = int(CutPos);
+	int Hi = Lo + int(n);
 	if (Lo < 0 || Hi >= int(L))
 		return false;
 
 	PDBChain Frag;
 	Q.GetRange(uint(Lo), uint(Hi), Frag);
 
-	if (opt_flip)
-		{
-		PDBChain FragR;
-		Frag.GetReverse(FragR);
-		Ps(FragR.m_Label, "%s|%d-%d(%d%c)", Q.m_Label.c_str(), Lo, Hi, Hi-Lo+1, pom(Fwd));
-		if (opt_shuffle)
-			random_shuffle(FragR.m_Seq.begin(), FragR.m_Seq.end());
-		FragR.ZeroOrigin();
-		FragR.ToCal(g_fcal);
-		}
-	else
-		{
-		if (opt_shuffle)
-			random_shuffle(Frag.m_Seq.begin(), Frag.m_Seq.end());
-		Ps(Frag.m_Label, "%s[%d-%d]%d%c", Q.m_Label.c_str(), Lo, Hi, Hi-Lo+1, pom(Fwd));
-		Frag.ZeroOrigin();
-		Frag.ToCal(g_fcal);
-		}
+	if (opt_shuffle)
+		random_shuffle(Frag.m_Seq.begin(), Frag.m_Seq.end());
+
+	string SSum;
+	GetSSum(Q.m_SS, uint(Lo), uint(Hi), SSum);
+	Frag.ZeroOrigin();
+
+	string &Label = Frag.m_Label;
+	Ps(Label, "frag%u", s_FragIdx);
+	Psa(Label, "|%s", FN.c_str());
+	Psa(Label, "|%d", Lo);
+	Psa(Label, "|%d", Hi);
+	Psa(Label, "|%s", SSum.c_str());
+	Frag.ToCal(g_fcal);
+
+	s_FragIdx++;
 	return true;
 	}
 
-static void Frag(PDBChain &Q)
+static void Chop(const string &FN, PDBChain &Q)
 	{
 	Q.SetSS();
-	string SSS;
 	vector<uint> Cuts;
 	GetCuts(Q.m_SS, Cuts);
 	const uint N = SIZE(Cuts);
 	for (uint i = 0; i < N; ++i)
 		{
 		uint CutPos = Cuts[i];
-		MakeFrag(Q, CutPos);
+		MakeFrag(FN, Q, CutPos);
 		}
 	}
 
 void cmd_fragment_library()
 	{
-	const string &QFN = opt_fragment_library;
+	string PDBDir = string(opt_fragment_library);
+	if (!EndsWith(PDBDir, "/"))
+		PDBDir += "/";
 
-	ChainReader CR;
-	CR.Open(QFN);
+	vector<string> FNs;
+	mylistdir(PDBDir, FNs);
 
-	PDBChain Q;
-	for (;;)
+	const uint N = SIZE(FNs);
+	for (uint i = 0; i < N; ++i)
 		{
-		bool Ok = CR.GetNext(Q);
-		if (!Ok)
-			break;
-		Frag(Q);
+		ProgressStep(i, N, "Fragging");
+		const string &FN = FNs[i];
+		if (FN == "." || FN == "..")
+			continue;
+		string PathName = PDBDir + FN;
+
+		vector<string> Lines;
+		ReadLinesFromFile(PathName, Lines);
+
+		string Label;
+		Label = string(BaseName(FN.c_str()));
+
+		PDBChain Q;
+		Q.FromPDBLines(Label, Lines);
+
+		Chop(FN, Q);
 		}
 	}

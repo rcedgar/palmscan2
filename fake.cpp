@@ -8,9 +8,13 @@ void cmd_fake()
 	{
 	const string &InputFN = g_Arg1;
 	FILE *fCal = CreateStdioFile(opt_cal);
+	FILE *fTsv = CreateStdioFile(opt_tsv);
+
+	vector<PDBChain *> Frags;
+	ReadChains(InputFN, Frags);
 
 	FakeChain FC;
-	ReadChains(InputFN, FC.m_Library);
+	FC.m_Library = &Frags;
 
 	uint K = 10;
 	if (optset_k)
@@ -27,7 +31,9 @@ void cmd_fake()
 			++FailCount;
 			continue;
 			}
-		//FC.LogMe();
+		FC.Validate();
+		FC.ToTsv(fTsv);
+
 		if (optset_outdir)
 			{
 			string FN = opt_outdir;
@@ -38,6 +44,17 @@ void cmd_fake()
 			FC.m_Chain.ToPDB(FN);
 			FC.m_Chain.ToCal(fCal);
 			}
+
+		if (optset_loaddir)
+			{
+			FC.LogMe();
+			FC.m_Chain.ToPDB("fake_caonly.pdb");
+			PDBChain Chain;
+			FC.BuildPDB(opt_loaddir, Chain);
+			Chain.ToPDB("fake.pdb");
+			Die("TODO");
+			}
 		}
 	CloseStdioFile(fCal);
+	CloseStdioFile(fTsv);
 	}
