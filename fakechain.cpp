@@ -198,7 +198,7 @@ bool FakeChain::GetAppendCoords(coords_t &Coords) const
 	return false;
 	}
 
-bool FakeChain::FitOk(const PDBChain &Frag,
+double FakeChain::FitOk(const PDBChain &Frag,
 					  uint &CollisionFakePos,
 					  uint &CollisionFragPos) const
 	{
@@ -207,6 +207,7 @@ bool FakeChain::FitOk(const PDBChain &Frag,
 
 	const uint FakeL = m_Chain.GetSeqLength();
 	const uint FragL = Frag.GetSeqLength();
+	double MaxDist = 0;
 	for (uint FragPos = 0; FragPos < FragL; ++FragPos)
 		{
 		coords_t FragCoords = Frag.GetCoords(FragPos);
@@ -214,6 +215,7 @@ bool FakeChain::FitOk(const PDBChain &Frag,
 			{
 			coords_t FakeCoords = GetCoords(FakePos);
 			double d = get_dist(FragCoords, FakeCoords);
+			MaxDist = max(d, MaxDist);
 			if (FragPos == 0 && FakePos + 1 == FakeL)
 				{
 				if (d < 3.5 || d > 4)
@@ -236,11 +238,11 @@ bool FakeChain::FitOk(const PDBChain &Frag,
 					LogCoords("", Frag.GetCoords(FragPos));
 					Log("\n");
 					}
-				return false;
+				return DBL_MAX;
 				}
 			}
 		}
-	return true;
+	return MaxDist;
 	}
 
 const PDBChain *FakeChain::CreateFrag(uint LibIdx,
@@ -364,13 +366,15 @@ bool FakeChain::BestFit(uint Iters,
 			CreateFrag(LibIdx, AppendCoords, alpha, beta, gamma);
 
 		uint CollFakePos, CollFragPos;
-		Ok = FitOk(*NewFrag, CollFakePos, CollFragPos);
-		if (Ok)
+		double MaxDist = FitOk(*NewFrag, CollFakePos, CollFragPos);
+		if (MaxDist != DBL_MAX)
 			{
-			double Diameter = GetQualityScoreFrag(*NewFrag);
-			if (Diameter < BestDiameter)
+			//double Diameter = GetQualityScoreFrag(*NewFrag);
+			//if (Diameter < BestDiameter)
+			if (MaxDist < BestDiameter)
 				{
-				BestDiameter = Diameter;
+				//BestDiameter = Diameter;
+				BestDiameter = MaxDist;
 				BestLibIdx = LibIdx;
 				BestAlpha = alpha;
 				BestBeta = beta;
@@ -423,9 +427,9 @@ bool FakeChain::MakeFake(uint L)
 	double Gamma;
 	coords_t AppendCoords;
 
-	for (uint Try = 0; Try < 10; ++Try)
+	for (uint Try = 0; Try < 100; ++Try)
 		{
-		bool Ok = BestFit(300, LibIdx, Alpha, Beta, Gamma, AppendCoords);
+		bool Ok = BestFit(50, LibIdx, Alpha, Beta, Gamma, AppendCoords);
 		if (!Ok)
 			break;
 		if (m_Chain.GetSeqLength() >= L)
@@ -467,9 +471,15 @@ void FakeChain::ToTsv(FILE *f) const
 	fprintf(f, "\n");
 	}
 
+// To color by chain at pymol command line or pml script:
+// util.cbc()
 void FakeChain::LoadFrag(const string &LoadDir, uint FragIdx, PDBChain &Frag) const
 	{
+	static const char ChainChars[] =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwzyz";
+	const uint NrChainChars = sizeof(ChainChars);
 	asserta(FragIdx < SIZE(m_Frags));
+	const char ChainChar = ChainChars[FragIdx%NrChainChars];
 	const string &Label = m_Frags[FragIdx]->m_Label;
 	vector<string> Fields;
 	Split(Label, Fields, '|');
@@ -527,25 +537,22 @@ void FakeChain::LoadFrag(const string &LoadDir, uint FragIdx, PDBChain &Frag) co
 			z += AppendCoords.z;
 			string UpdatedLine;
 			PDBChain::SetXYZInATOMLine(Line, x, y, z, UpdatedLine);
+			UpdatedLine[21] = ChainChar;
 			ResATOMs.push_back(UpdatedLine);
 			}
 		Frag.m_ATOMs[FragPos] = ResATOMs;
 		}
-
-	//Log("\n");
-	//Log("============================\n");
-	//Log("LoadFrag(%u)\n", FragIdx);
-	//const PDBChain *OldFrag = m_Frags[FragIdx];
-	//OldFrag->LogMe(true);
-	//Log("\n");
-	//Frag.LogMe(true);
-	//string BuildFN;
-	//Ps(BuildFN, "build%u.pdb", FragIdx);
-	//Frag.ToPDB(BuildFN);
 	}
 
-void FakeChain::BuildPDB(const string &LoadDir, PDBChain &Chain) const
+void FakeChain::BuildPDB(const string &LoadDir,
+						 PDBChain &Chain, PDBChain &ChainShuffledCA) const
 	{
+	Chain.Clear();
+	ChainShuffledCA.Clear();
+
+	Chain.m_Label = m_Chain.m_Label;
+	ChainShuffledCA.m_Label = m_Chain.m_Label;
+
 	const uint FragCount = SIZE(m_LibIdxs);
 	for (uint FragIdx = 0; FragIdx < FragCount; ++FragIdx)
 		{
@@ -559,13 +566,22 @@ void FakeChain::BuildPDB(const string &LoadDir, PDBChain &Chain) const
 		asserta(SIZE(Frag.m_Zs) == FragL);
 		asserta(SIZE(Frag.m_ATOMs) == FragL);
 
-		Chain.m_Seq += Frag.m_Seq;
+		string FragSeq = Frag.m_Seq;
+		Chain.m_Seq += FragSeq;
+
+		random_shuffle(FragSeq.begin(), FragSeq.end());
+		ChainShuffledCA.m_Seq += FragSeq;
+		
 		for (uint i = 0; i < FragL; ++i)
 			{
 			Chain.m_Xs.push_back(Frag.m_Xs[i]);
 			Chain.m_Ys.push_back(Frag.m_Ys[i]);
 			Chain.m_Zs.push_back(Frag.m_Zs[i]);
 			Chain.m_ATOMs.push_back(Frag.m_ATOMs[i]);
+
+			ChainShuffledCA.m_Xs.push_back(Frag.m_Xs[i]);
+			ChainShuffledCA.m_Ys.push_back(Frag.m_Ys[i]);
+			ChainShuffledCA.m_Zs.push_back(Frag.m_Zs[i]);
 			}
 		}
 

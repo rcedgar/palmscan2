@@ -31,6 +31,7 @@ STR_OPT(splitb)
 STR_OPT(shapes)
 STR_OPT(loaddir)
 STR_OPT(outdir)
+STR_OPT(outdir_shuffledca)
 STR_OPT(alphastr)
 
 STR_OPT(train_cal)

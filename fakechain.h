@@ -38,7 +38,7 @@ public:
 					double alpha, double beta, double gamma);
 
 	uint FindCollision(coords_t c, uint Lo, uint Hi) const;
-	bool FitOk(const PDBChain &Frag,
+	double FitOk(const PDBChain &Frag,
 			   uint &CollisionFakePos,
 			   uint &CollisionFragPos) const;
 	bool GetAppendCoords(coords_t &Coords) const;
@@ -57,6 +57,7 @@ public:
 	double GetQualityScore(const PDBChain &Chain) const;
 	double GetQualityScoreFrag(const PDBChain &Frag) const;
 	void ToTsv(FILE *f) const;
-	void BuildPDB(const string &LoadDir, PDBChain &Chain) const;
 	void LoadFrag(const string &LoadDir, uint FragIdx, PDBChain &Frag) const;
+	void BuildPDB(const string &LoadDir,
+				  PDBChain &Chain, PDBChain &ChainShuffledCA) const;
 	};
