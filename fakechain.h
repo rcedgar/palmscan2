@@ -8,8 +8,13 @@ class PDBChain;
 class FakeChain
 	{
 public:
+	FakeChain() {}
+	~FakeChain();
+
+public:
+	double m_MinNENDist = 4;
+	double m_CADist = 3.81;
 	PDBChain m_Chain;
-	double m_Size = 5;
 	const vector<PDBChain *> *m_Library = 0;
 	vector<const PDBChain *> m_Frags;
 	vector<coords_t> m_AppendCoordsVec;
@@ -17,9 +22,11 @@ public:
 	vector<double> m_Alphas;
 	vector<double> m_Betas;
 	vector<double> m_Gammas;
-	double m_MinNENDist = 4;
-	double m_CADist = 3.81;
+	double m_MDL = DBL_MAX;
+	double m_NENMed = DBL_MAX;
 
+public:
+	void DeleteFrags();
 	void Init(uint LibIdx);
 	const PDBChain *CreateFrag(uint LibIdx,
 							   const coords_t &AppendCoords,

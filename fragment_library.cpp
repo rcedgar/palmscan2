@@ -4,9 +4,13 @@
 #include "chainreader.h"
 
 static uint s_FragIdx;
-static uint MinLen = 16;
+static uint MinLen = 6;
 static uint MaxLen = 32;
 static uint RandTick = 64;
+static uint Frag_NH = 0;
+static uint Frag_NS = 0;
+static uint Frag_NL = 0;
+static uint LoopPct = 5;
 
 static bool IsCut(const string &SS, uint Pos)
 	{
@@ -46,14 +50,15 @@ static void GetCuts(const string &SS, vector<uint> &Cuts)
 		}
 	}
 
-static void GetSSum(const string &SS, uint Lo, uint Hi, string &SSum)
+static void GetSSns(const string &SS, uint Lo, uint Hi,
+					uint &nh, uint &ns, uint &nl)
 	{
 	const uint L = SIZE(SS);
 	asserta(Lo < Hi);
 	asserta(Hi < L);
-	uint ns = 0;
-	uint nh = 0;
-	uint nl = 0;
+	ns = 0;
+	nh = 0;
+	nl = 0;
 	for (uint Pos = Lo; Pos <= Hi; ++Pos)
 		{
 		char c = SS[Pos];
@@ -66,26 +71,37 @@ static void GetSSum(const string &SS, uint Lo, uint Hi, string &SSum)
 		else
 			Die("Bad ss '%c'", c);
 		}
-	Ps(SSum, "H%uS%uL%u", nh, ns, nl);
 	}
 
-static bool MakeFrag(const string &FN, PDBChain &Q, uint CutPos)
+static bool MakeFrag(const string &FN, const PDBChain &Q, uint CutPos)
 	{
 	uint L = Q.GetSeqLength();
 	uint n = MinLen + randu32()%(MaxLen - MinLen);
 	int Lo = int(CutPos);
-	int Hi = Lo + int(n);
+	int Hi = Lo + int(n) - 1;
 	if (Lo < 0 || Hi >= int(L))
 		return false;
 
 	PDBChain Frag;
 	Q.GetRange(uint(Lo), uint(Hi), Frag);
 
+	string SSum;
+	uint nh, ns, nl;
+	GetSSns(Q.m_SS, Lo, Hi, nh, ns, nl);
+	Ps(SSum, "H%uS%uL%u", nh, ns, nl);
+	if (nl > nh && nl > ns)
+		{
+		if (randu32()%100 > LoopPct)
+			return false;
+		}
+
 	if (opt_shuffle)
 		random_shuffle(Frag.m_Seq.begin(), Frag.m_Seq.end());
 
-	string SSum;
-	GetSSum(Q.m_SS, uint(Lo), uint(Hi), SSum);
+	Frag_NH += nh;
+	Frag_NS += ns;
+	Frag_NL += nl;
+
 	Frag.ZeroOrigin();
 
 	string &Label = Frag.m_Label;
@@ -100,9 +116,8 @@ static bool MakeFrag(const string &FN, PDBChain &Q, uint CutPos)
 	return true;
 	}
 
-static void Chop(const string &FN, PDBChain &Q)
+static void Chop(const string &FN, const PDBChain &Q)
 	{
-	Q.SetSS();
 	vector<uint> Cuts;
 	GetCuts(Q.m_SS, Cuts);
 	const uint N = SIZE(Cuts);
@@ -119,13 +134,16 @@ void cmd_fragment_library()
 	if (!EndsWith(PDBDir, "/"))
 		PDBDir += "/";
 
+	uint NH = 0;
+	uint NS = 0;
+	uint NL = 0;
 	vector<string> FNs;
 	mylistdir(PDBDir, FNs);
 
-	const uint N = SIZE(FNs);
-	for (uint i = 0; i < N; ++i)
+	const uint FileCount = SIZE(FNs);
+	for (uint i = 0; i < FileCount; ++i)
 		{
-		ProgressStep(i, N, "Fragging");
+		ProgressStep(i, FileCount, "Fragging");
 		const string &FN = FNs[i];
 		if (FN == "." || FN == "..")
 			continue;
@@ -139,7 +157,29 @@ void cmd_fragment_library()
 
 		PDBChain Q;
 		Q.FromPDBLines(Label, Lines);
+		Q.SetSS();
+		uint L = Q.GetSeqLength();
+		if (L < 16)
+			continue;
+
+		uint nh, ns, nl;
+		GetSSns(Q.m_SS, 0, L-1, nh, ns, nl);
+		NH += nh;
+		NS += ns;
+		NL += nl;
 
 		Chop(FN, Q);
 		}
+
+	uint N = NS + NH + NL;
+	ProgressLog("NS %u (%.1f%%), NH %u (%.1f%%), NL %u (%.1f%%)\n",
+				NS, GetPct(NS, N),
+				NH, GetPct(NH, N),
+				NL, GetPct(NL, N));
+
+	uint Frag_N = Frag_NS + Frag_NH + Frag_NL;
+	ProgressLog("Frag_NS %u (%.1f%%), Frag_NH %u (%.1f%%), Frag_NL %u (%.1f%%)\n",
+				Frag_NS, GetPct(Frag_NS, Frag_N),
+				Frag_NH, GetPct(Frag_NH, Frag_N),
+				Frag_NL, GetPct(Frag_NL, Frag_N));
 	}
