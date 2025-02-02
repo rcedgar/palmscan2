@@ -110,6 +110,7 @@ UNS_OPT(refn,				10,			1,			UINT_MAX)
 UNS_OPT(minflanklen,		10,			1,			UINT_MAX)
 UNS_OPT(scoretype,			10,			1,			UINT_MAX)
 UNS_OPT(minlen,				10,			1,			UINT_MAX)
+UNS_OPT(maxlen,				10,			1,			UINT_MAX)
 UNS_OPT(lo,					10,			1,			UINT_MAX)
 UNS_OPT(hi,					10,			1,			UINT_MAX)
 UNS_OPT(pos,				10,			1,			UINT_MAX)
@@ -203,6 +204,7 @@ FLAG_OPT(scores_are_evalues)
 FLAG_OPT(flip)
 FLAG_OPT(randrev)
 FLAG_OPT(shuffle)
+FLAG_OPT(strands)
 
 #undef FLAG_OPT
 #undef UNS_OPT

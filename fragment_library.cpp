@@ -89,6 +89,16 @@ static bool MakeFrag(const string &FN, const PDBChain &Q, uint CutPos)
 	uint nh, ns, nl;
 	GetSSns(Q.m_SS, Lo, Hi, nh, ns, nl);
 	Ps(SSum, "H%uS%uL%u", nh, ns, nl);
+
+	if (opt_strands)
+		{
+		if (nh > 0)
+			return false;
+		if (nl > ns)
+		if (randu32()%100 > LoopPct)
+			return false;
+		}
+
 	if (nl > nh && nl > ns)
 		{
 		if (randu32()%100 > LoopPct)

@@ -408,7 +408,6 @@ void FakeChain::Init(uint LibIdx)
 	m_Betas.clear();
 	m_Gammas.clear();
 	m_MDL = DBL_MAX;
-	m_NENMed = DBL_MAX;
 
 	const uint LibSize = SIZE(*m_Library);
 	coords_t ZeroCoords;
@@ -429,7 +428,7 @@ bool FakeChain::MakeFake(uint L)
 
 	for (uint Try = 0; Try < 100; ++Try)
 		{
-		bool Ok = BestFit(50, LibIdx, Alpha, Beta, Gamma, AppendCoords);
+		bool Ok = BestFit(20, LibIdx, Alpha, Beta, Gamma, AppendCoords);
 		if (!Ok)
 			break;
 		if (m_Chain.GetSeqLength() >= L)
@@ -451,10 +450,9 @@ void FakeChain::ToTsv(FILE *f) const
 		return;
 	fprintf(f, "%s", m_Chain.m_Label.c_str());
 	const uint N = SIZE(m_LibIdxs);
-	//double MDL = GetMDL(m_Chain);
-	//double NENMed = GetNENMed(m_Chain);
+	double NENMed = GetNENMed(m_Chain);
 	fprintf(f, "\t%.3f", m_MDL);
-	fprintf(f, "\t%.3f", m_NENMed);
+	fprintf(f, "\t%.3f", NENMed);
 	fprintf(f, "\t%u", N);
 	for (uint i = 0; i < N; ++i)
 		{

@@ -23,7 +23,7 @@ public:
 	vector<double> m_Betas;
 	vector<double> m_Gammas;
 	double m_MDL = DBL_MAX;
-	double m_NENMed = DBL_MAX;
+	double m_NENMed= DBL_MAX;
 
 public:
 	void DeleteFrags();

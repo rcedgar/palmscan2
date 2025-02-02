@@ -61,26 +61,23 @@ void PDBChain::GetSS(string &SS) const
 		}
 	}
 
-void cmd_pdbss()
+void cmd_pdb2ss()
 	{
-	const string &QueryFN = opt_pdbss;
+	const string &QueryFN = opt_pdb2ss;
 
 	vector<PDBChain *> Qs;
 	ReadChains(QueryFN, Qs);
+	FILE *fOut = CreateStdioFile(opt_output);
 
 	const uint N = SIZE(Qs);
 	for (uint i = 0; i < N; ++i)
 		{
 		PDBChain &Q = *Qs[i];
+		Q.SetSS();
 		uint QL = Q.GetSeqLength();
-		string Sketch;
 		string SS;
 		Q.GetSS(SS);
-		Log("%s   SecStr  %s\n", Q.m_Label.c_str(), SS.c_str());
-		if (Q.m_MotifPosVec.size() == 3)
-			{
-			GetPalmSketch(SS, 50, Sketch);
-			Log("%s   Sketch  %s\n", Q.m_Label.c_str(), Sketch.c_str());
-			}
+		SeqToFasta(fOut, Q.m_Label, Q.m_SS);
 		}
+	CloseStdioFile(fOut);
 	}
