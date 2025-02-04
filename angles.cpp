@@ -142,8 +142,6 @@ void LogCoords(const char *Name, coords_t c)
 	Log(", ");
 	LogCoord(c.z);
 	Log(")");
-	double norm = get_norm(c);
-	Log(" |%.3g|", norm);
 	Log("\n");
 	}
 

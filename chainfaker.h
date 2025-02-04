@@ -79,8 +79,11 @@ public:
 	bool SetTakeout();
 	void FindCandidatePlugs();
 	void FindCandidatePlugs1(uint ChainIdx, uint PL_min, uint PL_max);
-	double TryFitPlug(uint PlugIdx, double t[3], double u[3][3]) const;
-	void GetTranform(
-		const coords_t &StartA, const coords_t &EndA,
-		const coords_t &StartB, const coords_t &EndB);
+	void MakePlug(uint PlugIdx, PDBChain &Plug) const;
+	double TryFitPlug(uint PlugIdx,
+					  coords_t &t,
+					  coords_t &axis1,
+					  double &theta1_rad,
+					  coords_t &axis2,
+					  double &theta2_rad) const;
 	};
