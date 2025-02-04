@@ -320,6 +320,8 @@
     <ClCompile Include="fake.cpp" />
     <ClCompile Include="fakechain.cpp" />
     <ClCompile Include="fasta_xlat.cpp" />
+    <ClCompile Include="ffake.cpp" />
+    <ClCompile Include="chainfaker.cpp" />
     <ClCompile Include="filler.cpp" />
     <ClCompile Include="filler_train.cpp" />
     <ClCompile Include="findcavity.cpp" />
@@ -344,6 +346,7 @@
     <ClCompile Include="msaqc2.cpp" />
     <ClCompile Include="msax2aln.cpp" />
     <ClCompile Include="old_search3d.cpp" />
+    <ClCompile Include="overlap.cpp" />
     <ClCompile Include="palmprint_pssms.cpp" />
     <ClCompile Include="pamerger.cpp" />
     <ClCompile Include="pamerge.cpp" />
@@ -517,6 +520,7 @@
     <ClInclude Include="dss.h" />
     <ClInclude Include="dssp.h" />
     <ClInclude Include="fakechain.h" />
+    <ClInclude Include="chainfaker.h" />
     <ClInclude Include="filler.h" />
     <ClInclude Include="glyphs.h" />
     <ClInclude Include="gumbel.h" />

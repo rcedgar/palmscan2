@@ -7,7 +7,7 @@ double get_norm(const coords_t a)
 	return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
 	}
 
-static coords_t normalize(const coords_t a)
+coords_t normalize(const coords_t &a)
 	{
 	coords_t c;
 	double norm = get_norm(a);
@@ -19,7 +19,7 @@ static coords_t normalize(const coords_t a)
 	return c;
 	}
 
-static coords_t subtract(const coords_t a, const coords_t b)
+coords_t subtract(const coords_t &a, const coords_t &b)
 	{
 	coords_t c;
 	c.x = a.x - b.x;
@@ -42,7 +42,7 @@ static double dot_product(const coords_t a, const coords_t b)
 	return a.x*b.x + a.y*b.y + a.z*b.z;
 	}
 
-static coords_t cross_product(const coords_t a, const coords_t b)
+coords_t cross_product(const coords_t &a, const coords_t &b)
 	{
 	coords_t c;
 	c.x = a.y*b.z - a.z*b.y;
@@ -51,7 +51,7 @@ static coords_t cross_product(const coords_t a, const coords_t b)
 	return c;
 	}
 
-static double get_angle(const coords_t a, const coords_t b)
+double get_angle(const coords_t &a, const coords_t &b)
 	{
 	double moda = get_norm(a);
 	double modb = get_norm(b);
@@ -71,17 +71,18 @@ static double get_angle(const coords_t a, const coords_t b)
 //	}
 
 // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-// k_ defines the axis for rotation
-coords_t rotate_around_vector(const coords_t v, const coords_t k_, double theta)
+// axis defines the axis for rotation
+coords_t rotate_around_vector(const coords_t &v,
+							  const coords_t &axis, double theta_rad)
 	{
-	coords_t k = normalize(k_);
+	coords_t k = normalize(axis);
 
 	assert(feq(get_norm(k), 1));
 
 	coords_t k_cross_v = cross_product(v, k);
 
-	double sin_theta = sin(theta);
-	double cos_theta = cos(theta);
+	double sin_theta = sin(theta_rad);
+	double cos_theta = cos(theta_rad);
 
 	coords_t v_cos_theta;
 	v_cos_theta.x = v.x*cos_theta;
@@ -140,7 +141,10 @@ void LogCoords(const char *Name, coords_t c)
 	LogCoord(c.y);
 	Log(", ");
 	LogCoord(c.z);
-	Log(")\n");
+	Log(")");
+	double norm = get_norm(c);
+	Log(" |%.3g|", norm);
+	Log("\n");
 	}
 
 static void calculate_theta_phi(coords_t A, coords_t B, coords_t C, coords_t D,

@@ -755,6 +755,15 @@
     <ClCompile Include="angles_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ffake.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chainfaker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="overlap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myutils.h">
@@ -1055,6 +1064,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="binner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chainfaker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

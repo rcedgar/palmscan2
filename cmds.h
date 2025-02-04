@@ -136,7 +136,9 @@ C(backbone_dist)
 C(nen_dist)
 C(fragment_library)
 C(fake)
+C(ffake)
 C(protein_features)
 C(angles)
+C(overlap)
 
 #undef C
