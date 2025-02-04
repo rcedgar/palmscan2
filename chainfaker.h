@@ -86,4 +86,16 @@ public:
 					  double &theta1_rad,
 					  coords_t &axis2,
 					  double &theta2_rad) const;
+
+	double TryFitPlug1(uint PlugIdx,
+					  coords_t &t,
+					  coords_t &axis1,
+					  double &theta1_rad,
+					   PDBChain &Plug) const;
+	double TryFitPlug2(PDBChain &Plug,
+					  double &theta2_rad) const;
+	double FindBadNENDist(const PDBChain &Plug, uint &FakePos, uint &PlugPos) const;
+	void RotatePlug2(const PDBChain &Plug, double theta2_rad,
+					PDBChain &RotatedPlug) const;
+
 	};

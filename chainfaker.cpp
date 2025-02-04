@@ -1,6 +1,8 @@
 #include "myutils.h"
 #include "chainfaker.h"
 
+static const double PI = 3.1415926535;
+
 void LogCoords(const char *Name, coords_t c);
 coords_t subtract(const coords_t &a, const coords_t &b);
 coords_t add(const coords_t &a, const coords_t &b);
@@ -128,63 +130,6 @@ const PDBChain &ChainFaker::GetChain(uint ChainIdx) const
 	return *m_SCOP40[ChainIdx];
 	}
 
-bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
-	{
-	Reset();
-	m_FakeChain = &FakeChain;
-	m_RealChainIdx = ChainIdx;
-	m_RealChain = &GetChain(m_RealChainIdx);
-	m_RL = m_RealChain->GetSeqLength();
-	m_RealFoldIdx = GetFoldIdx(ChainIdx);
-	uint FoldSize = GetFoldSize(m_RealFoldIdx);
-	if (m_Trace)
-		{
-		Log("\n");
-		Log("MakeFake(ChainIdx=%u)", m_RealChainIdx);
-		Log(" fold=%s", GetFoldName(m_RealFoldIdx));
-		Log(" size=%u", FoldSize);
-		Log("\n");
-		}
-
-	if (FoldSize < 3)
-		{
-		if (m_Trace)
-			Log("	**FAIL** size too small\n");
-		return false;
-		}
-
-	m_RealFoldChainIdxs =
-		&GetChainIdxsByFoldIdx(m_RealFoldIdx);
-	const PDBChain &RealChain = GetRealChain(m_RealChainIdx);
-	*m_FakeChain = RealChain;
-
-	bool Ok = SetTakeout();
-	if (!Ok)
-		{
-		if (m_Trace)
-			Log("	**FAIL** SetTakeout()\n");
-		return false;
-		}
-	m_TakeoutTermDist =
-		m_FakeChain->GetDist(m_TakeoutLo, m_TakeoutHi);
-	if (m_Trace)
-		Log("	m_TakeoutTermDist = %.3g\n", m_TakeoutTermDist);
-
-	FindCandidatePlugs();
-	uint NrCandidatePlugs = SIZE(m_PlugChainIdxs);
-	asserta(SIZE(m_PlugLos) == NrCandidatePlugs);
-	asserta(SIZE(m_PlugHis) == NrCandidatePlugs);
-	if (m_Trace)
-		Log("	%u candidate plugs\n", NrCandidatePlugs);
-	if (NrCandidatePlugs == 0)
-		return false;
-
-	coords_t t, axis1, axis2;
-	double theta1_rad, theta2_rad;
-	TryFitPlug(0, t, axis1, theta1_rad, axis2, theta2_rad);
-	return true;
-	}
-
 void ChainFaker::FindCandidatePlugs1(uint ChainIdx,
 									 uint PL_lo, uint PL_hi)
 	{
@@ -260,14 +205,12 @@ void ChainFaker::MakePlug(uint PlugIdx, PDBChain &Plug) const
 		}
 	}
 
-double ChainFaker::TryFitPlug(uint PlugIdx,
+double ChainFaker::TryFitPlug1(uint PlugIdx,
 	coords_t &t,
 	coords_t &axis1,
 	double &theta1_rad,
-	coords_t &axis2,
-	double &theta2_rad) const
+	PDBChain &Plug) const
 	{
-	PDBChain Plug;
 	MakePlug(PlugIdx, Plug);
 	uint PL = Plug.GetSeqLength();
 	asserta(SIZE(Plug.m_Xs) == PL);
@@ -302,14 +245,18 @@ double ChainFaker::TryFitPlug(uint PlugIdx,
 	centroid_t.x = (tlo.x + thi.x)/2;
 	centroid_t.y = (tlo.y + thi.y)/2;
 	centroid_t.z = (tlo.z + thi.z)/2;
+	
+	t.x = centroid_t.x - centroid_p.x;
+	t.y = centroid_t.y - centroid_p.y;
+	t.z = centroid_t.z - centroid_p.z;
 
 // Translate Plug so that its centroid coincides
 // with Takeout centroid.
 	for (uint i = 0; i < PL; ++i)
 		{
-		Plug.m_Xs[i] += centroid_t.x - centroid_p.x;
-		Plug.m_Ys[i] += centroid_t.y - centroid_p.y;
-		Plug.m_Zs[i] += centroid_t.z - centroid_p.z;
+		Plug.m_Xs[i] += t.x;
+		Plug.m_Ys[i] += t.y;
+		Plug.m_Zs[i] += t.z;
 		}
 
 	coords_t translated_plo, translated_phi;
@@ -342,7 +289,7 @@ double ChainFaker::TryFitPlug(uint PlugIdx,
 
 // Take cross product to get direction perpendicular to plane
 // defined by pv and tv
-	coords_t vert = normalize(cross_product(tv, pv));
+	axis1 = normalize(cross_product(tv, pv));
 
 // Rotate by angle theta around this direction, this brings
 // PlugLo close to TakeoutLo and
@@ -351,7 +298,7 @@ double ChainFaker::TryFitPlug(uint PlugIdx,
 		{
 		coords_t pt = Plug.GetCoords(i);
 		coords_t pt2 = subtract(pt, centroid_t);
-		coords_t pt3 = rotate_around_vector(pt2, vert, theta1_rad);
+		coords_t pt3 = rotate_around_vector(pt2, axis1, theta1_rad);
 		coords_t pt4 = add(pt3, centroid_t);
 
 		Plug.m_Xs[i] = pt4.x;
@@ -388,5 +335,251 @@ double ChainFaker::TryFitPlug(uint PlugIdx,
 		Warning("dtot=%.3g", dtot);
 		return DBL_MAX;
 		}
+	if (m_Trace)
+		Log("TryFitPlug1() dtot=%.3g\n", dtot);
 	return dtot;
+	}
+
+double ChainFaker::FindBadNENDist(const PDBChain &Plug,
+	uint &FakePos, uint &PlugPos) const
+	{
+	FakePos = UINT_MAX;
+	PlugPos = UINT_MAX;
+	const uint FL = m_FakeChain->GetSeqLength();
+	const uint PL = Plug.GetSeqLength();
+	for (uint i = 0; i < PL; ++i)
+		{
+		const coords_t ppt = Plug.GetCoords(i);
+		for (uint j = 0; j < FL; ++j)
+			{
+			if (j >= m_TakeoutLo && j <= m_TakeoutHi)
+				continue;
+			if (i == 0 && j == m_TakeoutLo - 1)
+				continue;
+			if (i + 1 == PL && j == m_TakeoutHi + 1)
+				continue;
+			const coords_t fpt = m_FakeChain->GetCoords(j);
+			double d = get_dist(ppt, fpt);
+			if (d < m_MinNENDist)
+				{
+				PlugPos = i;
+				FakePos = j;
+				return d;
+				}
+			}
+		}
+	return DBL_MAX;
+	}
+
+void ChainFaker::RotatePlug2(const PDBChain &Plug, double theta2_rad,
+	PDBChain &RotatedPlug) const
+	{
+	const uint PL = Plug.GetSeqLength();
+	RotatedPlug.Clear();
+	RotatedPlug.m_Seq = Plug.m_Seq;
+
+	coords_t plo, phi;
+	plo.x = Plug.m_Xs[0];
+	plo.y = Plug.m_Ys[0];
+	plo.z = Plug.m_Zs[0];
+
+	phi.x = Plug.m_Xs[PL-1];
+	phi.y = Plug.m_Ys[PL-1];
+	phi.z = Plug.m_Zs[PL-1];
+
+// Centroids of takeout and plug should be identical
+// (withing rounding error)
+	coords_t centroid;
+	centroid.x = (plo.x + phi.x)/2;
+	centroid.y = (plo.y + phi.y)/2;
+	centroid.z = (plo.z + phi.z)/2;
+
+#if DEBUG
+// Verify centroids are the same
+	coords_t centroid_t;
+	{
+	coords_t tlo, thi;
+	tlo.x = m_FakeChain->m_Xs[m_TakeoutLo];
+	tlo.y = m_FakeChain->m_Ys[m_TakeoutLo];
+	tlo.z = m_FakeChain->m_Zs[m_TakeoutLo];
+
+	thi.x = m_FakeChain->m_Xs[m_TakeoutHi];
+	thi.y = m_FakeChain->m_Ys[m_TakeoutHi];
+	thi.z = m_FakeChain->m_Zs[m_TakeoutHi];
+
+	centroid_t.x = (tlo.x + thi.x)/2;
+	centroid_t.y = (tlo.y + thi.y)/2;
+	centroid_t.z = (tlo.z + thi.z)/2;
+	asserta(fabs(centroid_t.x - centroid.x) < 0.5);
+	asserta(fabs(centroid_t.y - centroid.y) < 0.5);
+	asserta(fabs(centroid_t.z - centroid.z) < 0.5);
+	}
+#endif
+
+// Axis of rotation is start-end of takeout (same as 
+// start-end of plug)
+	coords_t axis = normalize(subtract(phi, plo));
+
+// Rotate by angle theta2 around this direction, this leaves
+// coordinates of start, end and centroid unchanged
+	for (uint i = 0; i < PL; ++i)
+		{
+		coords_t pt = Plug.GetCoords(i);
+		coords_t pt2 = subtract(pt, centroid_t);
+		coords_t pt3 = rotate_around_vector(pt2, axis, theta2_rad);
+		coords_t pt4 = add(pt3, centroid_t);
+
+		RotatedPlug.m_Xs.push_back(pt4.x);
+		RotatedPlug.m_Ys.push_back(pt4.y);
+		RotatedPlug.m_Zs.push_back(pt4.z);
+		}
+
+#if DEBUG
+// Verify unchanged
+	coords_t centroid_r; // _r for rotated
+	{
+	coords_t rlo, rhi;
+	rlo.x = RotatedPlug.m_Xs[0];
+	rlo.y = RotatedPlug.m_Ys[0];
+	rlo.z = RotatedPlug.m_Zs[0];
+
+	rhi.x = RotatedPlug.m_Xs[PL-1];
+	rhi.y = RotatedPlug.m_Ys[PL-1];
+	rhi.z = RotatedPlug.m_Zs[PL-1];
+
+	asserta(feq(rlo.x, plo.x));
+	asserta(feq(rlo.y, plo.y));
+	asserta(feq(rlo.z, plo.z));
+
+	asserta(feq(rhi.x, phi.x));
+	asserta(feq(rhi.y, phi.y));
+	asserta(feq(rhi.z, phi.z));
+
+	centroid_r.x = (rlo.x + rhi.x)/2;
+	centroid_r.y = (rlo.y + rhi.y)/2;
+	centroid_r.z = (rlo.z + rhi.z)/2;
+	asserta(fabs(centroid_r.x - centroid.x) < 0.5);
+	asserta(fabs(centroid_r.y - centroid.y) < 0.5);
+	asserta(fabs(centroid_r.z - centroid.z) < 0.5);
+	}
+#endif
+	return;
+	}
+
+double ChainFaker::TryFitPlug2(PDBChain &Plug,
+	double &theta2_rad) const
+	{
+	const uint PL = Plug.GetSeqLength();
+	asserta(SIZE(Plug.m_Xs) == PL);
+	asserta(SIZE(Plug.m_Ys) == PL);
+	asserta(SIZE(Plug.m_Zs) == PL);
+
+	coords_t plo, phi;
+	plo.x = Plug.m_Xs[0];
+	plo.y = Plug.m_Ys[0];
+	plo.z = Plug.m_Zs[0];
+
+	phi.x = Plug.m_Xs[PL-1];
+	phi.y = Plug.m_Ys[PL-1];
+	phi.z = Plug.m_Zs[PL-1];
+
+#if DEBUG
+	{
+	coords_t tlo, thi;
+	tlo.x = m_FakeChain->m_Xs[m_TakeoutLo];
+	tlo.y = m_FakeChain->m_Ys[m_TakeoutLo];
+	tlo.z = m_FakeChain->m_Zs[m_TakeoutLo];
+
+	thi.x = m_FakeChain->m_Xs[m_TakeoutHi];
+	thi.y = m_FakeChain->m_Ys[m_TakeoutHi];
+	thi.z = m_FakeChain->m_Zs[m_TakeoutHi];
+	double dlo = get_dist(tlo, plo);
+	double dhi = get_dist(thi, phi);
+	double dtot = dlo + dhi;
+	asserta(dtot < 1);
+	}
+#endif
+
+	const uint TICKS = 10;
+	const double Tick = 2*PI/TICKS;
+	PDBChain RotatedPlug;
+	uint Counter = 0;
+	for (theta2_rad = 0; theta2_rad < 2*PI; theta2_rad += Tick)
+		{
+		RotatePlug2(Plug, theta2_rad, RotatedPlug);
+		uint BadFakePos = UINT_MAX;
+		uint BadPlugPos = UINT_MAX;
+		double d = FindBadNENDist(RotatedPlug, BadFakePos, BadPlugPos);
+		Log("Rot %u NEN %.3g\n", Counter, d);
+
+		string FN;
+		Ps(FN, "rot%u.pdb", Counter++);
+		RotatedPlug.ToPDB(FN);
+		}
+	return 0;
+	}
+
+bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
+	{
+	Reset();
+	m_FakeChain = &FakeChain;
+	m_RealChainIdx = ChainIdx;
+	m_RealChain = &GetChain(m_RealChainIdx);
+	m_RL = m_RealChain->GetSeqLength();
+	m_RealFoldIdx = GetFoldIdx(ChainIdx);
+	uint FoldSize = GetFoldSize(m_RealFoldIdx);
+	if (m_Trace)
+		{
+		Log("\n");
+		Log("MakeFake(ChainIdx=%u)", m_RealChainIdx);
+		Log(" fold=%s", GetFoldName(m_RealFoldIdx));
+		Log(" size=%u", FoldSize);
+		Log("\n");
+		}
+
+	if (FoldSize < 3)
+		{
+		if (m_Trace)
+			Log("	**FAIL** size too small\n");
+		return false;
+		}
+
+	m_RealFoldChainIdxs =
+		&GetChainIdxsByFoldIdx(m_RealFoldIdx);
+	const PDBChain &RealChain = GetRealChain(m_RealChainIdx);
+	*m_FakeChain = RealChain;
+
+	bool Ok = SetTakeout();
+	if (!Ok)
+		{
+		if (m_Trace)
+			Log("	**FAIL** SetTakeout()\n");
+		return false;
+		}
+	m_TakeoutTermDist =
+		m_FakeChain->GetDist(m_TakeoutLo, m_TakeoutHi);
+	if (m_Trace)
+		Log("	m_TakeoutTermDist = %.3g\n", m_TakeoutTermDist);
+
+	FindCandidatePlugs();
+	uint NrCandidatePlugs = SIZE(m_PlugChainIdxs);
+	asserta(SIZE(m_PlugLos) == NrCandidatePlugs);
+	asserta(SIZE(m_PlugHis) == NrCandidatePlugs);
+	if (m_Trace)
+		Log("	%u candidate plugs\n", NrCandidatePlugs);
+	if (NrCandidatePlugs == 0)
+		return false;
+
+	coords_t t, axis1;
+	double theta1_rad;
+	PDBChain Plug;
+	TryFitPlug1(0, t, axis1, theta1_rad, Plug);
+
+	m_FakeChain->ToPDB("fake.pdb");
+	Plug.ToPDB("plug.pdb");
+
+	double theta2_rad;
+	TryFitPlug2(Plug, theta2_rad);
+	Die("%u %u", m_TakeoutLo, m_TakeoutHi);
+	return true;
 	}
