@@ -28,7 +28,7 @@ coords_t subtract(const coords_t &a, const coords_t &b)
 	return c;
 	}
 
-static coords_t add(const coords_t a, const coords_t b)
+coords_t add(const coords_t &a, const coords_t &b)
 	{
 	coords_t c;
 	c.x = a.x + b.x;
@@ -51,6 +51,15 @@ coords_t cross_product(const coords_t &a, const coords_t &b)
 	return c;
 	}
 
+double get_dist(const coords_t &a, const coords_t &b)
+	{
+	double dx = a.x - b.x;
+	double dy = a.y - b.y;
+	double dz = a.z - b.z;
+	double d = sqrt(dx*dx + dy*dy + dz*dz);
+	return d;
+	}
+
 double get_angle(const coords_t &a, const coords_t &b)
 	{
 	double moda = get_norm(a);
@@ -61,14 +70,6 @@ double get_angle(const coords_t &a, const coords_t &b)
 	double theta = acos(dotab/(moda*modb));
 	return theta;
 	}
-
-//static void GetAngles(coords_t a, coords_t b, coords_t c,
-//					  double &theta_bc, double &theta_vc)
-//	{
-//	theta_bc = get_angle(b, c);
-//	coords_t v = cross_product(a, b);
-//	theta_vc = get_angle(v, c);
-//	}
 
 // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
 // axis defines the axis for rotation

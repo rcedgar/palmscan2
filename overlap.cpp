@@ -8,7 +8,7 @@ coords_t cross_product(const coords_t &a, const coords_t &b);
 double get_angle(const coords_t &a, const coords_t &b);
 coords_t subtract(const coords_t &a, const coords_t &b);
 coords_t rotate_around_vector(const coords_t &v,
-							  const coords_t &axis, double theta);
+							  const coords_t &axis, double theta_rad);
 
 void cmd_overlap()
 	{

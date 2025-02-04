@@ -3,11 +3,13 @@
 
 void LogCoords(const char *Name, coords_t c);
 coords_t subtract(const coords_t &a, const coords_t &b);
+coords_t add(const coords_t &a, const coords_t &b);
 double get_angle(const coords_t &a, const coords_t &b);
 coords_t cross_product(const coords_t &a, const coords_t &b);
 coords_t normalize(const coords_t &a);
+double get_dist(const coords_t &a, const coords_t &b);
 coords_t rotate_around_vector(const coords_t &v,
-							  const coords_t &axis, double theta);
+							  const coords_t &axis, double theta_rad);
 
 void GetSCOPFoldFromLabel(const string &Label, string &Fold)
 	{
@@ -319,36 +321,42 @@ double ChainFaker::TryFitPlug(uint PlugIdx,
 	translated_phi.y = Plug.m_Ys[PL-1];
 	translated_phi.z = Plug.m_Zs[PL-1];
 
-// Validate that centroids coincide after translation
+#if DEBUG
+	{
 	coords_t translated_centroid_p;
 	translated_centroid_p.x += (translated_plo.x + translated_phi.x)/2;
 	translated_centroid_p.y += (translated_plo.y + translated_phi.y)/2;
 	translated_centroid_p.z += (translated_plo.z + translated_phi.z)/2;
 
+// Validate that centroids coincide after translation
 	asserta(feq(translated_centroid_p.x, centroid_t.x));
 	asserta(feq(translated_centroid_p.y, centroid_t.y));
 	asserta(feq(translated_centroid_p.z, centroid_t.z));
+	}
+#endif
 
 // Find angle between vectors pv=PlugLo->Hi and tv=TakeoutLo->Hi
-	coords_t pv = subtract(phi, plo);
+	coords_t pv = subtract(translated_phi, translated_plo);
 	coords_t tv = subtract(thi, tlo);
 	theta1_rad = get_angle(tv, pv);
 
-// Take cross product to get axis perpendicular to plane
+// Take cross product to get direction perpendicular to plane
 // defined by pv and tv
-	coords_t axis = normalize(cross_product(tv, pv));
+	coords_t vert = normalize(cross_product(tv, pv));
 
-// Rotate by angle theta around this axis, this brings
-// PlugLo,TakeoutLo very close and similarly PlugHi,TakeoutHi.
-
+// Rotate by angle theta around this direction, this brings
+// PlugLo close to TakeoutLo and
+// PlugHi close to TakeoutHi
 	for (uint i = 0; i < PL; ++i)
 		{
 		coords_t pt = Plug.GetCoords(i);
-		coords_t pt_rot = rotate_around_vector(pt, axis, -theta1_rad);
+		coords_t pt2 = subtract(pt, centroid_t);
+		coords_t pt3 = rotate_around_vector(pt2, vert, theta1_rad);
+		coords_t pt4 = add(pt3, centroid_t);
 
-		Plug.m_Xs.push_back(pt.x);
-		Plug.m_Ys.push_back(pt.y);
-		Plug.m_Zs.push_back(pt.z);
+		Plug.m_Xs[i] = pt4.x;
+		Plug.m_Ys[i] = pt4.y;
+		Plug.m_Zs[i] = pt4.z;
 		}
 
 	coords_t final_plo, final_phi;
@@ -360,20 +368,25 @@ double ChainFaker::TryFitPlug(uint PlugIdx,
 	final_phi.y = Plug.m_Ys[PL-1];
 	final_phi.z = Plug.m_Zs[PL-1];
 
+#if DEBUG
+	{
 	coords_t final_centroid_p;
 	final_centroid_p.x += (final_plo.x + final_phi.x)/2;
 	final_centroid_p.y += (final_plo.y + final_phi.y)/2;
 	final_centroid_p.z += (final_plo.z + final_phi.z)/2;
+	double d = get_dist(final_centroid_p, centroid_t);
+	asserta(d < 1);
+	}
+#endif
 
-	LogCoords("tlo", tlo);
-	LogCoords("thi", thi);
-	LogCoords("centroid_t", centroid_t);
-	LogCoords("translated_plo", translated_plo);
-	LogCoords("translated_phi", translated_phi);
-	LogCoords("translated_centroid", translated_centroid_p);
-	LogCoords("final_plo", final_plo);
-	LogCoords("final_phi", final_phi);
-	LogCoords("final_centroid", final_centroid_p);
-
-	return 0;
+// These distances should be small
+	double dlo = get_dist(tlo, final_plo);
+	double dhi = get_dist(thi, final_phi);
+	double dtot = dlo + dhi;
+	if (dtot > 1)
+		{
+		Warning("dtot=%.3g", dtot);
+		return DBL_MAX;
+		}
+	return dtot;
 	}
