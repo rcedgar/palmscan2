@@ -677,6 +677,27 @@ void PDBChain::SetOrigin(double x, double y, double z)
 		}
 	}
 
+uint PDBChain::GetNEN(uint Pos, double &d) const
+	{
+	const uint L = GetSeqLength();
+	if (L == 0)
+		return UINT_MAX;
+	d = DBL_MAX;
+	uint NEN = UINT_MAX;
+	for (uint i = 0; i < L; ++i)
+		{
+		if (i + 2 >= Pos && i <= Pos + 2)
+			continue;
+		double di = GetDist(Pos, i);
+		if (di < d)
+			{
+			NEN = i;
+			d = di;
+			}
+		}
+	return NEN;
+	}
+
 void PDBChain::ZeroOrigin()
 	{
 	const uint L = GetSeqLength();

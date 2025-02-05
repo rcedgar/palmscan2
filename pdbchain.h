@@ -116,6 +116,7 @@ public:
 	  vector<string> &Lines) const;
 	void ZeroOrigin();
 	void SetOrigin(double x, double y, double z);
+	uint GetNEN(uint Pos, double &d) const;
 
 public:
 	static uint GetMotifLength(uint MotifIndex);
