@@ -55,7 +55,6 @@ public:
 	vector<uint> m_InsertedTakeoutHis;
 	vector<uint> m_InsertedLos;
 	vector<uint> m_InsertedHis;
-	vector<double> m_InsertedTheta1_rads;
 	vector<double> m_InsertedTheta2_rads;
 
 public:
@@ -79,7 +78,6 @@ public:
 		m_InsertedTakeoutHis.clear();
 		m_InsertedLos.clear();
 		m_InsertedHis.clear();
-		m_InsertedTheta1_rads.clear();
 		m_InsertedTheta2_rads.clear();
 		}
 
@@ -130,4 +128,6 @@ public:
 	void MakePlug(uint ChainIdx, uint Lo, uint Hi,
 				   double theta2_rad, PDBChain &Plug) const;
 	void AssertPlugsEq(const PDBChain &Plug1, const PDBChain &Plug2) const;
+	void ShuffleFakeSequence(uint w);
+	void GetFoldStr(string &Fold) const;
 	};

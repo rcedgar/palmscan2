@@ -1,7 +1,6 @@
 #include "myutils.h"
 #include "chainfaker.h"
-
-static const double PI = 3.1415926535;
+#include "abcxyz.h"
 
 void GetThreeFromOne(char aa, string &AAA);
 void LogCoords(const char *Name, coords_t c);
@@ -13,6 +12,27 @@ coords_t normalize(const coords_t &a);
 double get_dist(const coords_t &a, const coords_t &b);
 coords_t rotate_around_vector(const coords_t &v,
 							  const coords_t &axis, double theta_rad);
+
+// Fisher-Yates shuffle:
+// To shuffle an array a of n elements (indices 0 .. n-1):
+//  for i from n - 1 downto 1 do
+//       j := random integer with 0 <= j <= i
+//       exchange a[j] and a[i]
+static void Shuffle(string &Seq, uint Lo, uint Hi)
+	{
+	const unsigned N = Hi - Lo + 1;
+	asserta(N > 0);
+	for (unsigned i = N - 1; i >= 1; --i)
+		{
+		unsigned j = randu32()%(i + 1);
+		
+		char ci = Seq[Lo+i];
+		char cj = Seq[Lo+j];
+
+		Seq[Lo+i] = cj;
+		Seq[Lo+j] = ci;
+		}
+	}
 
 void GetSCOPFoldFromLabel(const string &Label, string &Fold)
 	{
@@ -48,6 +68,33 @@ void ChainFaker::ToPDB(const string &FN) const
 	asserta(Zs.size() == L);
 	asserta(Seq.size() == L);
 	asserta(m_PosToInsertIdx.size() == L);
+	const string &Template = m_SCOP40[m_RealChainIdx]->m_Label;
+
+	fprintf(f, "TITLE     %s\n", m_FakeChain->m_Label.c_str());
+	fprintf(f, "REMARK    ");
+	fprintf(f, "TEMPLATE %s", Template.c_str());
+	fprintf(f, "\n");
+
+	const uint InsertCount = SIZE(m_InsertedChainIdxs);
+	for (uint Idx = 0; Idx < InsertCount; ++Idx)
+		{
+
+		uint TakeoutLo = m_InsertedTakeoutLos[Idx];
+		uint TakeoutHi = m_InsertedTakeoutHis[Idx];
+		uint ChainIdx = m_InsertedChainIdxs[Idx];
+		uint Lo = m_InsertedLos[Idx];
+		uint Hi = m_InsertedHis[Idx];
+		double theta_rad = m_InsertedTheta2_rads[Idx];
+		double theta_deg = degrees(theta_rad);
+
+		const string &Dom = m_SCOP40[ChainIdx]->m_Label;
+		fprintf(f, "REMARK    ");
+		fprintf(f, "PLUG %u  [%4u-%4u] =>",
+				Idx+1, TakeoutLo+1, TakeoutHi+1);
+		fprintf(f, " %s/%u-%u/%.1f",
+				Dom.c_str(), Lo+1, Hi+1, theta_deg);
+		fprintf(f, "\n");
+		}
 
 	char Chain = 'A';
 
@@ -906,7 +953,6 @@ bool ChainFaker::Mutate()
 			m_InsertedTakeoutHis.push_back(m_TakeoutHi);
 			m_InsertedLos.push_back(Lo);
 			m_InsertedHis.push_back(Hi);
-			m_InsertedTheta1_rads.push_back(theta1_rad);
 			m_InsertedTheta2_rads.push_back(theta2_rad);
 
 			Log("   Inserted plug %u '%s', fails=%u\n",
@@ -922,6 +968,25 @@ bool ChainFaker::Mutate()
 	if (m_Trace)
 		Log("	Mutate() failed\n");
 	return false;
+	}
+
+void ChainFaker::ShuffleFakeSequence(uint w)
+	{
+	string &Seq = m_FakeChain->m_Seq;
+	const uint FL = SIZE(Seq);
+	for (uint i = 0; i < FL; i += w)
+		{
+		uint hi = i + 1;
+		if (hi >= FL)
+			hi = FL - 1;
+		Shuffle(Seq, i, hi);
+		}
+	}
+
+void ChainFaker::GetFoldStr(string &Fold) const
+	{
+	asserta(m_RealFoldIdx < SIZE(m_Folds));
+	Fold = m_Folds[m_RealFoldIdx];
 	}
 
 bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
@@ -957,8 +1022,21 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 	for (uint i = 0; i < L; ++i)
 		m_PosToInsertIdx.push_back(0);
 
-	for (uint k = 0; k < 3; ++k)
-		Mutate();
+	uint Inserts = 0;
+	uint NI = 3;
+	for (uint k = 0; k < 10; ++k)
+		{
+		bool Ok = Mutate();
+		if (Ok)
+			{
+			++Inserts;
+			if (Inserts == NI)
+				break;
+			}
+		}
 
+	if (m_Trace)
+		Log("	%u inserts\n", Inserts);
+	ShuffleFakeSequence(10);
 	return true;
 	}
