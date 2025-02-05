@@ -17,6 +17,7 @@ void cmd_ffake()
 		PDBOutDir += "/";
 
 	FILE *fCal = CreateStdioFile(opt_cal);
+	FILE *fTsv = CreateStdioFile(opt_tsv);
 
 	uint n = 0;
 	const uint TRIES = 3*SampleSize;
@@ -33,12 +34,13 @@ void cmd_ffake()
 		string Fold;
 		CF.GetFoldStr(Fold);
 		string Label;
-		Ps(Label, "Fake_%u_%s", n+1, Fold.c_str());
+		Ps(Label, "Fake_%u_%s", n, Fold.c_str());
 		assert(Fold[1] == '.');
 		Fold[1] = '_';
 		CF.m_FakeChain->m_Label = Label;
 
 		CF.m_FakeChain->ToCal(fCal);
+		CF.ToTsv(fTsv);
 		if (optset_outdir)
 			CF.ToPDB(PDBOutDir + Label + ".pdb");
 		if (n >= SampleSize)
@@ -48,4 +50,5 @@ void cmd_ffake()
 		Warning("Generated %u / %u", n, SampleSize);
 
 	CloseStdioFile(fCal);
+	CloseStdioFile(fTsv);
 	}

@@ -18,7 +18,7 @@ public:
 	static vector<uint> m_ChainIdxToFoldIdx;
 	static vector<vector<uint> > m_FoldIdxToChainIdxs;
 	static map<string, uint> m_FoldToIdx;
-	bool m_Trace = true;
+	bool m_Trace = false;
 
 public:
 	double m_MinNENDist = 4;
@@ -26,7 +26,8 @@ public:
 	uint m_MinTakeoutLen = 4;
 	uint m_MaxTakeoutLen = 16;
 	double m_MaxFitError = 0.1;
-
+	double m_MinReplacedPct = 25;
+	
 // Fold data, input to construction
 public:
 	const PDBChain *m_RealChain = 0;
@@ -130,4 +131,6 @@ public:
 	void AssertPlugsEq(const PDBChain &Plug1, const PDBChain &Plug2) const;
 	void ShuffleFakeSequence(uint w);
 	void GetFoldStr(string &Fold) const;
+	void ToTsv(FILE *f) const;
+	double GetPctReplaced() const;
 	};

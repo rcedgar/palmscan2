@@ -73,6 +73,7 @@ void ChainFaker::ToPDB(const string &FN) const
 	fprintf(f, "TITLE     %s\n", m_FakeChain->m_Label.c_str());
 	fprintf(f, "REMARK    ");
 	fprintf(f, "TEMPLATE %s", Template.c_str());
+	fprintf(f, "  REPLACED %.1f%%", GetPctReplaced());
 	fprintf(f, "\n");
 
 	const uint InsertCount = SIZE(m_InsertedChainIdxs);
@@ -87,12 +88,20 @@ void ChainFaker::ToPDB(const string &FN) const
 		double theta_rad = m_InsertedTheta2_rads[Idx];
 		double theta_deg = degrees(theta_rad);
 
+		uint PL = Hi - Lo + 1;
+		uint FL = TakeoutHi - TakeoutLo + 1;
+
 		const string &Dom = m_SCOP40[ChainIdx]->m_Label;
+		string Tmp;
+		Ps(Tmp, "(%u-%u,%u)", TakeoutLo+1, TakeoutHi+1, FL);
+
 		fprintf(f, "REMARK    ");
-		fprintf(f, "PLUG %u  [%4u-%4u] =>",
-				Idx+1, TakeoutLo+1, TakeoutHi+1);
-		fprintf(f, " %s/%u-%u/%.1f",
-				Dom.c_str(), Lo+1, Hi+1, theta_deg);
+		fprintf(f, "REPLACE %3u  %16s   =>",
+				Idx+1, Tmp.c_str());
+		fprintf(f, " %s(%u-%u,%u)%.1f",
+				Dom.c_str(),
+				Lo+1, Hi+1, PL,
+				theta_deg);
 		fprintf(f, "\n");
 		}
 
@@ -989,6 +998,45 @@ void ChainFaker::GetFoldStr(string &Fold) const
 	Fold = m_Folds[m_RealFoldIdx];
 	}
 
+double ChainFaker::GetPctReplaced() const
+	{
+	const uint L = m_FakeChain->GetSeqLength();
+	asserta(SIZE(m_PosToInsertIdx) == L);
+	uint n = 0;
+	for (uint i = 0; i < L; ++i)
+		if (m_PosToInsertIdx[i] != 0)
+			++n;
+	return n*100.0/L;
+	}
+
+void ChainFaker::ToTsv(FILE *f) const
+	{
+	if (f == 0)
+		return;
+	fprintf(f, "%s", m_FakeChain->m_Label.c_str());
+	const string &Template = m_SCOP40[m_RealChainIdx]->m_Label;
+	fprintf(f, "\t%s", Template.c_str());
+	const uint InsertCount = SIZE(m_InsertedChainIdxs);
+	double Pct = GetPctReplaced();
+	fprintf(f, "\t%.1f", Pct);
+	fprintf(f, "\t%u", InsertCount);
+	for (uint Idx = 0; Idx < InsertCount; ++Idx)
+		{
+		uint TakeoutLo = m_InsertedTakeoutLos[Idx];
+		uint TakeoutHi = m_InsertedTakeoutHis[Idx];
+		uint ChainIdx = m_InsertedChainIdxs[Idx];
+		uint Lo = m_InsertedLos[Idx];
+		uint Hi = m_InsertedHis[Idx];
+		double theta_rad = m_InsertedTheta2_rads[Idx];
+
+		const string &Dom = m_SCOP40[ChainIdx]->m_Label;
+		fprintf(f, "\t%u\t%u", TakeoutLo+1, TakeoutHi+1);
+		fprintf(f, " \t%s\t%u\t%u\t%.1f", Dom.c_str(),
+				Lo+1, Hi+1, theta_rad);
+		}
+	fprintf(f, "\n");
+	}
+
 bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 	{
 	Reset();
@@ -1022,21 +1070,25 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 	for (uint i = 0; i < L; ++i)
 		m_PosToInsertIdx.push_back(0);
 
-	uint Inserts = 0;
-	uint NI = 3;
-	for (uint k = 0; k < 10; ++k)
+	double ReplacedPct = 0;
+	for (uint k = 0; k < 100; ++k)
 		{
 		bool Ok = Mutate();
-		if (Ok)
-			{
-			++Inserts;
-			if (Inserts == NI)
-				break;
-			}
+		if (!Ok)
+			continue;
+		ReplacedPct = GetPctReplaced();
+		if (ReplacedPct >= m_MinReplacedPct)
+			break;
 		}
 
 	if (m_Trace)
-		Log("	%u inserts\n", Inserts);
-	ShuffleFakeSequence(10);
+		Log("	%u inserts, replaced %.1f%%\n",
+			SIZE(m_InsertedChainIdxs), ReplacedPct);
+	if (ReplacedPct < m_MinReplacedPct)
+		return false;
+	//ShuffleFakeSequence(10);
+	PDBChain ReversedChain;
+	m_FakeChain->GetReverse(ReversedChain);
+	*m_FakeChain = ReversedChain;
 	return true;
 	}
