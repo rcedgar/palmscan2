@@ -466,7 +466,7 @@ void ChainFaker::RotatePlug2(const PDBChain &Plug, double theta2_rad,
 	return;
 	}
 
-double ChainFaker::TryFitPlug2(PDBChain &Plug,
+bool ChainFaker::TryFitPlug2(PDBChain &Plug,
 	double &theta2_rad) const
 	{
 	const uint PL = Plug.GetSeqLength();
@@ -504,19 +504,67 @@ double ChainFaker::TryFitPlug2(PDBChain &Plug,
 	const double Tick = 2*PI/TICKS;
 	PDBChain RotatedPlug;
 	uint Counter = 0;
-	for (theta2_rad = 0; theta2_rad < 2*PI; theta2_rad += Tick)
+	for (double theta_rad = 0; theta_rad < 2*PI; theta_rad += Tick)
 		{
-		RotatePlug2(Plug, theta2_rad, RotatedPlug);
+		RotatePlug2(Plug, theta_rad, RotatedPlug);
+
 		uint BadFakePos = UINT_MAX;
 		uint BadPlugPos = UINT_MAX;
 		double d = FindBadNENDist(RotatedPlug, BadFakePos, BadPlugPos);
-		Log("Rot %u NEN %.3g\n", Counter, d);
-
-		string FN;
-		Ps(FN, "rot%u.pdb", Counter++);
-		RotatedPlug.ToPDB(FN);
+		if (d == DBL_MAX)
+			{
+			theta2_rad = theta_rad;
+			Plug = RotatedPlug;
+			return true;
+			}
 		}
-	return 0;
+	return false;
+	}
+
+void ChainFaker::ReplaceTakeoutWithPlug(const PDBChain &Plug)
+	{
+	const uint FL = m_FakeChain->GetSeqLength();
+	const uint PL = Plug.GetSeqLength();
+
+	PDBChain NewChain;
+	for (uint i = 0; i < m_TakeoutLo; ++i)
+		{
+		NewChain.m_Seq += m_FakeChain->m_Seq[i];
+		NewChain.m_Xs.push_back(m_FakeChain->m_Xs[i]);
+		NewChain.m_Ys.push_back(m_FakeChain->m_Ys[i]);
+		NewChain.m_Zs.push_back(m_FakeChain->m_Zs[i]);
+		}
+
+	for (uint i = 0; i < PL; ++i)
+		{
+		NewChain.m_Seq += Plug.m_Seq[i];
+		NewChain.m_Xs.push_back(Plug.m_Xs[i]);
+		NewChain.m_Ys.push_back(Plug.m_Ys[i]);
+		NewChain.m_Zs.push_back(Plug.m_Zs[i]);
+		}
+
+	for (uint i = m_TakeoutHi+1; i < FL; ++i)
+		{
+		NewChain.m_Seq += m_FakeChain->m_Seq[i];
+		NewChain.m_Xs.push_back(m_FakeChain->m_Xs[i]);
+		NewChain.m_Ys.push_back(m_FakeChain->m_Ys[i]);
+		NewChain.m_Zs.push_back(m_FakeChain->m_Zs[i]);
+		}
+	*m_FakeChain = NewChain;
+	}
+
+bool ChainFaker::TryFitPlug(uint PlugIdx,
+	coords_t &t,
+	coords_t &axis1,
+	double &theta1_rad,
+	double &theta2_rad,
+	PDBChain &Plug) const
+	{
+	double dtot = TryFitPlug1(PlugIdx, t, axis1, theta1_rad, Plug);
+	if (dtot > 1)
+		return false;
+	bool Ok = TryFitPlug2(Plug, theta2_rad);
+	return Ok;
 	}
 
 bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
@@ -562,7 +610,7 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 		Log("	m_TakeoutTermDist = %.3g\n", m_TakeoutTermDist);
 
 	FindCandidatePlugs();
-	uint NrCandidatePlugs = SIZE(m_PlugChainIdxs);
+	const uint NrCandidatePlugs = SIZE(m_PlugChainIdxs);
 	asserta(SIZE(m_PlugLos) == NrCandidatePlugs);
 	asserta(SIZE(m_PlugHis) == NrCandidatePlugs);
 	if (m_Trace)
@@ -570,16 +618,26 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 	if (NrCandidatePlugs == 0)
 		return false;
 
-	coords_t t, axis1;
-	double theta1_rad;
-	PDBChain Plug;
-	TryFitPlug1(0, t, axis1, theta1_rad, Plug);
+	vector<uint> PlugIdxs;
+	for (uint i = 0; i < NrCandidatePlugs; ++i)
+		PlugIdxs.push_back(i);
+	Shuffle(PlugIdxs);
 
-	m_FakeChain->ToPDB("fake.pdb");
-	Plug.ToPDB("plug.pdb");
+	for (uint i = 0; i < NrCandidatePlugs; ++i)
+		{
+		coords_t t, axis1;
+		double theta1_rad, theta2_rad;
+		PDBChain Plug;
+		uint PlugIdx = PlugIdxs[i];
+		bool Ok = TryFitPlug(PlugIdx, t, axis1, theta1_rad, theta2_rad, Plug);
+		if (Ok)
+			{
+			m_FakeChain->ToPDB("before.pdb");
+			ReplaceTakeoutWithPlug(Plug);
+			m_FakeChain->ToPDB("after.pdb");
+			Die("TODO");
+			}
+		}
 
-	double theta2_rad;
-	TryFitPlug2(Plug, theta2_rad);
-	Die("%u %u", m_TakeoutLo, m_TakeoutHi);
 	return true;
 	}
