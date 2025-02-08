@@ -14,26 +14,28 @@ public:
 
 public:
 	static vector<PDBChain *> m_SCOP40;
-	static vector<string> m_Folds;
-	static vector<uint> m_ChainIdxToFoldIdx;
-	static vector<vector<uint> > m_FoldIdxToChainIdxs;
-	static map<string, uint> m_FoldToIdx;
+	static vector<string> m_SFs;
+	static vector<uint> m_ChainIdxToSFIdx;
+	static vector<vector<uint> > m_SFIdxToChainIdxs;
+	static map<string, uint> m_SFToIdx;
 	bool m_Trace = false;
 
 public:
 	double m_MinNENDist = 4;
 	double m_CADist = 3.81;
-	uint m_MinTakeoutLen = 4;
-	uint m_MaxTakeoutLen = 16;
+	uint m_MinTakeoutLen = 6;
+	uint m_MaxTakeoutLen = 6;
 	double m_MaxFitError = 0.1;
-	double m_MinReplacedPct = 25;
+	uint m_MinReplacedPct = 10;
+	uint m_ShufflePct = 50;
+	bool m_Reverse = false;
 	
-// Fold data, input to construction
+// Input to construction
 public:
 	const PDBChain *m_RealChain = 0;
 	uint m_RealChainIdx = UINT_MAX;
-	uint m_RealFoldIdx = UINT_MAX;
-	const vector<uint> *m_RealFoldChainIdxs = 0;
+	uint m_RealSFIdx = UINT_MAX;
+	const vector<uint> *m_RealSFChainIdxs = 0;
 
 // Construction state
 public:
@@ -64,8 +66,8 @@ public:
 		m_RealChain = 0;
 		m_FakeChain = 0;
 		m_RealChainIdx = UINT_MAX;
-		m_RealFoldIdx = UINT_MAX;
-		m_RealFoldChainIdxs = 0;
+		m_RealSFIdx = UINT_MAX;
+		m_RealSFChainIdxs = 0;
 		m_FakeChain = 0;
 		m_TakeoutLo = UINT_MAX;
 		m_TakeoutHi = UINT_MAX;
@@ -84,12 +86,12 @@ public:
 
 	void ReadSCOP40(const string &FN);
 	const PDBChain &GetChain(uint ChainIdx) const;
-	uint GetFoldIdx(uint ChainIdx) const;
-	uint GetFoldSize(uint FoldIdx) const;
-	const vector<uint> &GetChainIdxsByFoldIdx(uint FoldIdx) const;
+	uint GetSFIdx(uint ChainIdx) const;
+	uint GetSFSize(uint SFIdx) const;
+	const vector<uint> &GetChainIdxsBySFIdx(uint SFIdx) const;
 	bool MakeFake(uint ChainIdx, PDBChain &Chain);
 	const PDBChain &GetRealChain(uint ChainIdx) const;
-	const char *GetFoldName(uint FoldIdx) const;
+	const char *GetSFName(uint SFIdx) const;
 	const char *GetChainLabel(uint ChainIdx) const;
 	bool SetTakeout();
 	void FindCandidatePlugs();
@@ -130,7 +132,7 @@ public:
 				   double theta2_rad, PDBChain &Plug) const;
 	void AssertPlugsEq(const PDBChain &Plug1, const PDBChain &Plug2) const;
 	void ShuffleFakeSequence(uint w);
-	void GetFoldStr(string &Fold) const;
+	void GetSFStr(string &SF) const;
 	void ToTsv(FILE *f) const;
 	double GetPctReplaced() const;
 	};

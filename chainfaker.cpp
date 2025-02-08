@@ -34,7 +34,7 @@ static void Shuffle(string &Seq, uint Lo, uint Hi)
 		}
 	}
 
-void GetSCOPFoldFromLabel(const string &Label, string &Fold)
+void GetSCOPSFFromLabel(const string &Label, string &SF)
 	{
 	vector<string> Fields;
 	Split(Label, Fields, '/');
@@ -43,14 +43,14 @@ void GetSCOPFoldFromLabel(const string &Label, string &Fold)
 
 	vector<string> Fields2;
 	Split(Fam, Fields2, '.');
-	Fold = Fields2[0] + "." + Fields2[1];
+	SF = Fields2[0] + "." + Fields2[1] + "." + Fields2[2];
 	}
 
 vector<PDBChain *> ChainFaker::m_SCOP40;
-vector<vector<uint> > ChainFaker::m_FoldIdxToChainIdxs;
-vector<string> ChainFaker::m_Folds;
-vector<uint> ChainFaker::m_ChainIdxToFoldIdx;
-map<string, uint> ChainFaker::m_FoldToIdx;
+vector<vector<uint> > ChainFaker::m_SFIdxToChainIdxs;
+vector<string> ChainFaker::m_SFs;
+vector<uint> ChainFaker::m_ChainIdxToSFIdx;
+map<string, uint> ChainFaker::m_SFToIdx;
 
 void ChainFaker::ToPDB(const string &FN) const
 	{
@@ -235,47 +235,47 @@ void ChainFaker::ReadSCOP40(const string &FN)
 	ReadChains(FN, m_SCOP40);
 	const uint ChainCount = SIZE(m_SCOP40);
 
-	map<string, vector<PDBChain *> > FoldToChains;
+	map<string, vector<PDBChain *> > SFToChains;
 	for (uint ChainIdx = 0; ChainIdx < ChainCount; ++ChainIdx)
 		{
 		PDBChain *Chain = m_SCOP40[ChainIdx];
 		const string &Label = Chain->m_Label;
-		string Fold;
-		GetSCOPFoldFromLabel(Label, Fold);
-		uint FoldIdx = UINT_MAX;
-		if (m_FoldToIdx.find(Fold) == m_FoldToIdx.end())
+		string SF;
+		GetSCOPSFFromLabel(Label, SF);
+		uint SFIdx = UINT_MAX;
+		if (m_SFToIdx.find(SF) == m_SFToIdx.end())
 			{
-			FoldIdx = SIZE(m_Folds);
-			m_FoldToIdx[Fold] = FoldIdx;
-			m_Folds.push_back(Fold);
+			SFIdx = SIZE(m_SFs);
+			m_SFToIdx[SF] = SFIdx;
+			m_SFs.push_back(SF);
 
 			vector<uint> Empty;
-			m_FoldIdxToChainIdxs.push_back(Empty);
+			m_SFIdxToChainIdxs.push_back(Empty);
 			}
 		else
-			FoldIdx = m_FoldToIdx[Fold];
-		m_FoldIdxToChainIdxs[FoldIdx].push_back(ChainIdx);
-		m_ChainIdxToFoldIdx.push_back(FoldIdx);
+			SFIdx = m_SFToIdx[SF];
+		m_SFIdxToChainIdxs[SFIdx].push_back(ChainIdx);
+		m_ChainIdxToSFIdx.push_back(SFIdx);
 		}
 	}
 
-uint ChainFaker::GetFoldIdx(uint ChainIdx) const
+uint ChainFaker::GetSFIdx(uint ChainIdx) const
 	{
-	asserta(ChainIdx < SIZE(m_ChainIdxToFoldIdx));
-	uint FoldIdx = m_ChainIdxToFoldIdx[ChainIdx];
-	return FoldIdx;
+	asserta(ChainIdx < SIZE(m_ChainIdxToSFIdx));
+	uint SFIdx = m_ChainIdxToSFIdx[ChainIdx];
+	return SFIdx;
 	}
 
-const vector<uint> &ChainFaker::GetChainIdxsByFoldIdx(uint FoldIdx) const
+const vector<uint> &ChainFaker::GetChainIdxsBySFIdx(uint SFIdx) const
 	{
-	asserta(FoldIdx < SIZE(m_FoldIdxToChainIdxs));
-	const vector<uint> &ChainIdxs = m_FoldIdxToChainIdxs[FoldIdx];
+	asserta(SFIdx < SIZE(m_SFIdxToChainIdxs));
+	const vector<uint> &ChainIdxs = m_SFIdxToChainIdxs[SFIdx];
 	return ChainIdxs;
 	}
 
-uint ChainFaker::GetFoldSize(uint FoldIdx) const
+uint ChainFaker::GetSFSize(uint SFIdx) const
 	{
-	const vector<uint> &ChainIdxs = GetChainIdxsByFoldIdx(FoldIdx);
+	const vector<uint> &ChainIdxs = GetChainIdxsBySFIdx(SFIdx);
 	uint Size = SIZE(ChainIdxs);
 	return Size;
 	}
@@ -292,10 +292,10 @@ const char *ChainFaker::GetChainLabel(uint ChainIdx) const
 	return m_SCOP40[ChainIdx]->m_Label.c_str();
 	}
 
-const char *ChainFaker::GetFoldName(uint FoldIdx) const
+const char *ChainFaker::GetSFName(uint SFIdx) const
 	{
-	asserta(FoldIdx < SIZE(m_Folds));
-	return m_Folds[FoldIdx].c_str();
+	asserta(SFIdx < SIZE(m_SFs));
+	return m_SFs[SFIdx].c_str();
 	}
 
 const PDBChain &ChainFaker::GetChain(uint ChainIdx) const
@@ -379,13 +379,17 @@ void ChainFaker::FindCandidatePlugs1(uint ChainIdx,
 		return;
 	const double TakeoutTermDist = GetTakeoutDiameter();
 	const PDBChain &Chain = GetRealChain(ChainIdx);
-	uint L = Chain.GetSeqLength();
+	const uint L = Chain.GetSeqLength();
+	const uint TL = m_TakeoutHi - m_TakeoutLo + 1;
 	for (uint Lo = 0; Lo + PL_lo <= L; ++Lo)
 		{
 		for (uint Hi = Lo + PL_lo-1; Hi <= Lo + PL_hi-1; ++Hi)
 			{
 			if (Hi >= L)
 				break;
+			const uint PL = Hi - Lo + 1;
+			if (PL == TL)
+				continue;
 			double d = Chain.GetDist(Lo, Hi);
 			double Error = fabs(d - TakeoutTermDist);
 			if (Error <= m_MaxFitError)
@@ -429,10 +433,10 @@ void ChainFaker::FindCandidatePlugs()
 	uint PL_min = TL - 2;
 	uint PL_max = TL + 4;
 
-	const uint N = SIZE(*m_RealFoldChainIdxs);
+	const uint N = SIZE(*m_RealSFChainIdxs);
 	for (uint i = 0; i < N; ++i)
 		{
-		uint RealChainIdx = (*m_RealFoldChainIdxs)[i];
+		uint RealChainIdx = (*m_RealSFChainIdxs)[i];
 		FindCandidatePlugs1(RealChainIdx, PL_min, PL_max);
 		}
 	}
@@ -979,23 +983,26 @@ bool ChainFaker::Mutate()
 	return false;
 	}
 
-void ChainFaker::ShuffleFakeSequence(uint w)
+void ChainFaker::ShuffleFakeSequence(uint Pct)
 	{
 	string &Seq = m_FakeChain->m_Seq;
-	const uint FL = SIZE(Seq);
-	for (uint i = 0; i < FL; i += w)
+	const uint L = SIZE(Seq);
+
+// Each swap creates two new diffs
+	double Fract = Pct/200.0;
+	const uint N = uint(L*Fract+0.5);
+	for (uint i = 0; i < N; ++i)
 		{
-		uint hi = i + 1;
-		if (hi >= FL)
-			hi = FL - 1;
-		Shuffle(Seq, i, hi);
+		uint Pos1 = randu32()%L;
+		uint Pos2 = randu32()%L;
+		std::swap(Seq[Pos1], Seq[Pos2]);
 		}
 	}
 
-void ChainFaker::GetFoldStr(string &Fold) const
+void ChainFaker::GetSFStr(string &SF) const
 	{
-	asserta(m_RealFoldIdx < SIZE(m_Folds));
-	Fold = m_Folds[m_RealFoldIdx];
+	asserta(m_RealSFIdx < SIZE(m_SFs));
+	SF = m_SFs[m_RealSFIdx];
 	}
 
 double ChainFaker::GetPctReplaced() const
@@ -1043,26 +1050,26 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 	m_FakeChain = &FakeChain;
 	m_RealChainIdx = ChainIdx;
 	m_RealChain = &GetChain(m_RealChainIdx);
-	m_RealFoldIdx = GetFoldIdx(ChainIdx);
-	uint FoldSize = GetFoldSize(m_RealFoldIdx);
+	m_RealSFIdx = GetSFIdx(ChainIdx);
+	uint SFSize = GetSFSize(m_RealSFIdx);
 	if (m_Trace)
 		{
 		Log("\n");
 		Log("MakeFake(ChainIdx=%u)", m_RealChainIdx);
-		Log(" fold=%s", GetFoldName(m_RealFoldIdx));
-		Log(" size=%u", FoldSize);
+		Log(" fold=%s", GetSFName(m_RealSFIdx));
+		Log(" size=%u", SFSize);
 		Log("\n");
 		}
 
-	if (FoldSize < 3)
+	if (SFSize < 3)
 		{
 		if (m_Trace)
 			Log("	**FAIL** size too small\n");
 		return false;
 		}
 
-	m_RealFoldChainIdxs =
-		&GetChainIdxsByFoldIdx(m_RealFoldIdx);
+	m_RealSFChainIdxs =
+		&GetChainIdxsBySFIdx(m_RealSFIdx);
 	const PDBChain &RealChain = GetRealChain(m_RealChainIdx);
 	*m_FakeChain = RealChain;
 	const uint L = m_FakeChain->GetSeqLength();
@@ -1073,12 +1080,10 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 	double ReplacedPct = 0;
 	for (uint k = 0; k < 100; ++k)
 		{
-		bool Ok = Mutate();
-		if (!Ok)
-			continue;
 		ReplacedPct = GetPctReplaced();
 		if (ReplacedPct >= m_MinReplacedPct)
 			break;
+		Mutate();
 		}
 
 	if (m_Trace)
@@ -1086,9 +1091,12 @@ bool ChainFaker::MakeFake(uint ChainIdx, PDBChain &FakeChain)
 			SIZE(m_InsertedChainIdxs), ReplacedPct);
 	if (ReplacedPct < m_MinReplacedPct)
 		return false;
-	//ShuffleFakeSequence(10);
-	PDBChain ReversedChain;
-	m_FakeChain->GetReverse(ReversedChain);
-	*m_FakeChain = ReversedChain;
+	ShuffleFakeSequence(m_ShufflePct);
+	if (m_Reverse)
+		{
+		PDBChain ReversedChain;
+		m_FakeChain->GetReverse(ReversedChain);
+		*m_FakeChain = ReversedChain;
+		}
 	return true;
 	}

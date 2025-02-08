@@ -8,6 +8,23 @@ void cmd_ffake()
 
 	ChainFaker CF;
 	CF.m_Trace = true;
+
+	asserta(optset_minlen);
+	asserta(optset_maxlen);
+	asserta(optset_minreppct);
+	asserta(optset_shufflepct);
+	CF.m_MinTakeoutLen = opt_minlen;
+	CF.m_MaxTakeoutLen = opt_maxlen;
+	CF.m_MinReplacedPct = opt_minreppct;
+	CF.m_ShufflePct = opt_shufflepct;
+
+	ProgressLog("N=%u rep [%u-%u] %u%%, shuffle %u%%\n",
+				SampleSize,
+				CF.m_MinTakeoutLen,
+				CF.m_MaxTakeoutLen,
+				CF.m_MinReplacedPct,
+				CF.m_ShufflePct);
+
 	CF.ReadSCOP40(g_Arg1);
 
 	const uint ChainCount = SIZE(CF.m_SCOP40);
@@ -31,12 +48,10 @@ void cmd_ffake()
 		if (!Ok)
 			continue;
 		++n;
-		string Fold;
-		CF.GetFoldStr(Fold);
+		string SF;
+		CF.GetSFStr(SF);
 		string Label;
-		Ps(Label, "Fake_%u_%s", n, Fold.c_str());
-		assert(Fold[1] == '.');
-		Fold[1] = '_';
+		Ps(Label, "Fake_%u_%s", n, SF.c_str());
 		CF.m_FakeChain->m_Label = Label;
 
 		CF.m_FakeChain->ToCal(fCal);
