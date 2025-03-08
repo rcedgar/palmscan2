@@ -2,6 +2,8 @@
 #include "pdbchain.h"
 #include "abcxyz.h"
 
+// See src/notebooks/2025_01_30_fake_backbone_chain_angles.docx
+
 double get_norm(const coords_t a)
 	{
 	return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
@@ -285,6 +287,8 @@ static void Angles(FILE *f, const PDBChain &Chain)
 	{
 	static uint Counter;
 	const uint L = Chain.GetSeqLength();
+	const string &SS = Chain.m_SS;
+	asserta(SIZE(SS) == L);
 	for (uint Pos = 4; Pos < L; ++Pos)
 		{
 		coords_t A = Chain.GetCoords(Pos-3);
@@ -299,7 +303,7 @@ static void Angles(FILE *f, const PDBChain &Chain)
 			Log("\n");
 		Log(" {%5.1f, %5.1f},", theta_deg, phi_deg);
 		if (f != 0)
-			fprintf(f, "%.1f\t%.1f\n", theta_deg, phi_deg);
+			fprintf(f, "%c\t%.1f\t%.1f\n", SS[Pos], theta_deg, phi_deg);
 		}
 	}
 
@@ -311,6 +315,10 @@ void cmd_angles()
 	ReadChains(InputFN, Chains);
 	const uint N = SIZE(Chains);
 	for (uint i = 0; i < N; ++i)
-		Angles(f, *Chains[i]);
+		{
+		PDBChain &Chain = *Chains[i];
+		Chain.SetSS();
+		Angles(f, Chain);
+		}
 	CloseStdioFile(f);
 	}
